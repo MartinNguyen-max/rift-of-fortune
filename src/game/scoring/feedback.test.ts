@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { makeChampion, makeItem } from '../testUtils'
-import { itemFitLine, LINES, pickLine, roleFitLine } from './feedback'
+import { itemFitLine, LINES, pickLine, roleFitLine, VERDICT_LINES, verdictLine } from './feedback'
 
 describe('pickLine', () => {
   const lines = ['a', 'b', 'c']
@@ -78,5 +78,16 @@ describe('itemFitLine', () => {
 
   it('has a fallback for bad items without a special joke', () => {
     expect(itemFitLine(jinx, makeItem({ id: 'Boots' }), 5)).toBeOneOf(LINES.uselessItem('Boots on Jinx'))
+  })
+})
+
+describe('verdictLine', () => {
+  it('praises high scores and roasts low ones', () => {
+    expect(verdictLine('Ahri', 95)).toBeOneOf(VERDICT_LINES[0].lines)
+    expect(verdictLine('Ahri', 5)).toBeOneOf(VERDICT_LINES[VERDICT_LINES.length - 1]?.lines ?? [])
+  })
+
+  it('always gives the same verdict for the same champion and score', () => {
+    expect(verdictLine('Garen', 50)).toBe(verdictLine('Garen', 50))
   })
 })

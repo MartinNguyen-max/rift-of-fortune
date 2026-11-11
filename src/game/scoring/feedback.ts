@@ -52,6 +52,100 @@ export const LINES = {
   uselessItem: (who: string) => [`${who} does nothing.`, `${who}: the shop misclick of the year.`],
 } as const
 
+/** Team balance lines: one entry per check outcome. */
+export const BALANCE_LINES = {
+  goodDamageMix: (ad: number, ap: number) => [
+    `Nice damage mix: ${ad} AD, ${ap} AP. The enemy can't just build one resist.`,
+    `${ad} AD, ${ap} AP. Itemizing against this is a headache.`,
+  ],
+  lopsidedDamage: (majority: string, count: number, lone: string) => [
+    `${count} ${majority} and a ${lone}. ${majority === 'AD' ? 'Armor' : 'Magic resist'} is on sale.`,
+    `${count} ${majority} damage dealers and ${lone} doing the rest alone.`,
+  ],
+  fullAd: () => ['Full AD team. The enemy will just build armor.', 'Five AD champions. Thornmail sends its regards.'],
+  fullAp: () => [
+    'Full AP team. One Force of Nature and you are done.',
+    'Five AP champions. Magic resist is cheap this season.',
+  ],
+  frontline: (names: string) => [`${names} will hold the frontline.`, `${names} will walk in first. Bravely.`],
+  noFrontline: () => [
+    "No frontline. Who's walking in first?",
+    'No frontline. Everyone is waiting for someone else to engage.',
+  ],
+  tooManyFrontline: (count: number) => [
+    `${count} frontliners. Everyone wants to go first, nobody wants to do damage.`,
+    `${count} frontliners. Very hard to kill, very hard to lose to, very hard to win with.`,
+  ],
+  carries: (names: string) => [`${names} will carry. Hopefully.`, `${names} on carry duty. No pressure.`],
+  noCarry: () => [
+    'No real carry. This team plans to win by being annoying.',
+    'No marksman, mage or assassin. Who is doing the damage?',
+  ],
+  marksmanBot: (name: string) => [`${name} in bot lane. Proper ADC.`, `${name} holding the bot lane. Classic.`],
+  noMarksmanBot: (name: string) => [
+    `${name} ADC. The minions are confused.`,
+    `${name} in the ADC slot. Last hitting will be an adventure.`,
+  ],
+  someRanged: (count: number) => [
+    `${count} ranged champion${count === 1 ? '' : 's'} to poke from safety.`,
+    `${count} ranged champion${count === 1 ? '' : 's'}. Someone can hit from a distance.`,
+  ],
+  allMelee: () => ['Five melee champions. Enemy Caitlyn sends her thanks.', 'All melee. Kiting comps love this one trick.'],
+  damageItems: (count: number) => [`${count} damage items. Something will die.`, `${count} damage items. Enough to hurt.`],
+  fewDamageItems: (count: number) => [
+    `Only ${count} damage item${count === 1 ? '' : 's'}. The enemy Nexus will die of old age.`,
+    `Only ${count} damage item${count === 1 ? '' : 's'}. Fights will last a while.`,
+  ],
+} as const
+
+/** Team-level jokes and awards for the coach's notes. */
+export const COACH_LINES = {
+  mvp: (name: string, role: string) => [
+    `MVP: ${name} ${role}. Carrying this lobby on their back.`,
+    `MVP: ${name} ${role}. The only one who read the patch notes.`,
+    `MVP: ${name} ${role}. Somebody give them a raise.`,
+  ],
+  liability: (name: string, role: string) => [
+    `Liability: ${name} ${role}. Already typing "jg diff".`,
+    `Liability: ${name} ${role}. Will be reported, deserved.`,
+    `Liability: ${name} ${role}. Already 0/3 and pinging everyone else.`,
+  ],
+  manyJunglers: (count: number) => [
+    `${count} junglers on one team. Who is taking Smite?`,
+    `${count} junglers. The enemy jungle has never been so busy.`,
+  ],
+  manySupports: (count: number) => [
+    `${count} supports. Very safe, very slow, very many wards.`,
+    `${count} supports. Somebody has to take the farm eventually.`,
+  ],
+  manyMarksmen: (count: number) => [
+    `${count} marksmen. One bot lane. Somebody is farming the jungle now.`,
+    `${count} marksmen. Glass cannon festival.`,
+  ],
+  nobodyOnRole: () => [
+    'Nobody is playing their own role. Bold, chaotic, beautiful.',
+    'Zero champions on their usual role. This is a Rift Roulette classic.',
+  ],
+  everyoneOnRole: () => [
+    'Everyone is on their usual role. Suspiciously competent.',
+    'All five on role. Did you look at a tier list?',
+  ],
+} as const
+
+/** A short verdict per champion, from best to worst. */
+export const VERDICT_LINES = [
+  { min: 85, lines: ['Hard carrying.', 'Playing a different game.', 'Smurf detected.'] },
+  { min: 65, lines: ['Pulling their weight.', 'Solid. No complaints.', 'Doing the job.'] },
+  { min: 45, lines: ['Present. Mostly.', 'Could be worse.', 'Doing their best, apparently.'] },
+  { min: 25, lines: ['Struggling.', 'Lost in the sauce.', 'Needs a hug and a guide.'] },
+  { min: 0, lines: ['Inting.', 'The enemy\'s favourite player.', 'Will be blamed in post-game, rightly.'] },
+] as const
+
+export function verdictLine(championId: string, score: number): string {
+  const band = VERDICT_LINES.find(({ min }) => score >= min) ?? VERDICT_LINES[VERDICT_LINES.length - 1]
+  return pickLine(band?.lines ?? ['Present.'], `${championId}:verdict`)
+}
+
 /** Special lines for a champion class played in a role it really doesn't belong in. */
 const OFF_ROLE_LINES: Partial<Record<`${ChampionClass}:${Role}`, string>> = {
   'Support:TOP': 'Support in top lane, brave choice.',

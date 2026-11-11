@@ -12,9 +12,10 @@ A browser game where you roll random League of Legends champions, place them in 
 
 Scoring is simple and lives in [`src/game/scoring`](src/game/scoring). All numbers are in [`config.ts`](src/game/scoring/config.ts).
 
-- **Role fit:** does the champion usually play this role?
-- **Item fit:** do the item's stats suit the champion's class and damage type?
-- **Team balance:** a mix of AD and AP, a frontline, at least one carry and enough damage items.
+- **Champion score:** half role fit (does the champion usually play this role?), half item fit (do the item's stats suit the champion's class and damage type?).
+- **Team score:** the average champion score, minus team balance penalties (up to 45 points): one damage type, no or too much frontline, no real carry, no marksman in bot lane, all melee, too few damage items.
+- **Rank:** the score maps to Iron IV up to Challenger. The cut-offs are calibrated by simulating thousands of games ([`simulate.ts`](src/game/scoring/simulate.ts)).
+- **Coach's notes:** an MVP, a liability and jokes about the team as a whole.
 
 ## Status
 

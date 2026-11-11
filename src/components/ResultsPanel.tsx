@@ -28,21 +28,37 @@ export function ResultsPanel({ rating, onPlayAgain }: ResultsPanelProps) {
         />
         <p className={`font-display text-4xl font-black ${scoreColor(rating.score)}`}>{rankLabel(rating.rank)}</p>
         <p className="text-2xl font-bold text-gold-light">{rating.score} / 100</p>
+        <p className="text-xs text-gold-light/50">
+          Champions {rating.championAverage}
+          {rating.balance.penalty > 0 && <> − team balance {rating.balance.penalty}</>}
+        </p>
         <p className="mt-2 text-gold-light/80 italic">{rating.rank.summary}</p>
         <Button onClick={onPlayAgain} className="mt-4">
           Play again
         </Button>
       </motion.div>
 
+      {rating.coachNotes.length > 0 && (
+        <div className="rounded-lg border border-hextech/30 bg-hextech/5 p-3">
+          <h3 className="mb-2 text-xs font-semibold tracking-widest text-hextech uppercase">Coach&apos;s notes</h3>
+          <ul className="flex flex-col gap-1 text-sm text-gold-light/90">
+            {rating.coachNotes.map((note) => (
+              <li key={note}>{note}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <div>
         <h3 className="mb-2 text-xs font-semibold tracking-widest text-gold/80 uppercase">
-          Team balance · {rating.balance.score}
+          Team balance · {rating.balance.penalty > 0 ? `−${rating.balance.penalty}` : 'no penalty'}
         </h3>
         <ul className="flex flex-col gap-1 text-sm">
           {rating.balance.checks.map((check) => (
             <li key={check.id} className="flex gap-2">
               <span className={check.passed ? 'text-emerald-400' : 'text-red-400'}>{check.passed ? '✓' : '✗'}</span>
-              <span className="text-gold-light/90">{check.message}</span>
+              <span className="flex-1 text-gold-light/90">{check.message}</span>
+              {!check.passed && <span className="text-xs font-semibold text-red-400">−{check.penalty}</span>}
             </li>
           ))}
         </ul>
@@ -65,7 +81,7 @@ export function ResultsPanel({ rating, onPlayAgain }: ResultsPanelProps) {
 }
 
 function ChampionResult({ rating }: { rating: ChampionRating }) {
-  const { champion, role, roleFit, itemFit, score, items, feedback } = rating
+  const { champion, role, roleFit, itemFit, score, items, verdict, feedback } = rating
 
   return (
     <article className="rounded-lg border border-gold/20 bg-abyss/60 p-3">
@@ -73,6 +89,7 @@ function ChampionResult({ rating }: { rating: ChampionRating }) {
         <img src={championIconUrl(champion.image)} alt="" className="size-10 rounded-full border border-gold" />
         <div className="min-w-0 flex-1">
           <p className="truncate font-display font-bold text-gold-light">{champion.name}</p>
+          <p className={`text-xs italic ${scoreColor(score)}`}>{verdict}</p>
           <p className="text-xs text-gold-light/60">
             {ROLE_LABELS[role]} · role {roleFit.score} · items {itemFit}
           </p>

@@ -85,6 +85,17 @@ All numbers live in `src/game/scoring/config.ts`. Every score is 0–100.
 - **Ranked tiers replace S–F grades.** Iron to Challenger, with divisions IV–I for Iron–Diamond (the player chose divisions). Master, Grandmaster and Challenger have none. Cut-offs: Challenger 95, Grandmaster 90, Master 85, Diamond 78, Emerald 70, Platinum 62, Gold 54, Silver 45, Bronze 35, Iron 0. Each tier's range is split evenly into four divisions. All in `config.ts` (`RANK_THRESHOLDS`).
 - **Rank emblems come from CommunityDragon** (Data Dragon has none). `npm run data` saves them to `public/ranks/` (~1.5 MB, committed), so the game doesn't depend on a fan site at runtime. The tier list lives in `src/data/types.ts` so the script can import it under Node's stricter module rules. CommunityDragon is credited in the footer and README.
 
+## Scoring rework (after playtest feedback)
+
+A team of four off-role junglers plus Lee Sin ADC got Platinum. Causes: off-role picks whose class "fit" the role still got 50, Vi and Lee Sin counted as carries (secondary Assassin class), team balance was easy to max out, and balance *added* 25% of the score.
+
+- **Stricter role fit:** class fits 35 (was 50), fully off-role 0 (was 15).
+- **Balance only takes points away:** team score = average champion score − balance penalties, capped at 45. New checks: lopsided 4–1 damage (−5), one damage type (−20), no frontline (−20), 4+ frontliners (−10), no carry by *main* class (−15), no marksman in the ADC slot (−10), all melee (−10), fewer than 3 damage items (−15).
+- **Ranks calibrated by simulation** (`simulate.ts`, seeded): a bot that always picks the best-fitting role and item has a median of 65 (Gold/Platinum) and reaches Challenger in under 1% of games; a random bot has a median of 29 (Iron). New cut-offs: Challenger 96, Grandmaster 92, Master 88, Diamond 82, Emerald 75, Platinum 66, Gold 56, Silver 45, Bronze 30. `simulate.test.ts` guards this, so tuning numbers can't silently make ranks too easy.
+- **The playtest team is a regression test:** it must rank Iron even with good items.
+- **More feedback:** a Coach's notes block (MVP, liability, comp jokes like "4 junglers on one team. Who is taking Smite?"), a short verdict per champion ("Hard carrying." … "Inting."), 2 variants per balance line, and the penalty shown next to each failed check.
+- **Champion roll is faster:** 20 frames from 35ms (about 2.2s, was about 3.5s).
+
 ---
 
 # Summary
