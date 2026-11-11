@@ -57,3 +57,10 @@ All numbers live in `src/game/scoring/config.ts`. Every score is 0–100.
 - **Team balance** starts at 100 and loses points for: one damage type only (−30), no frontline (−35), no carry (−25), fewer than 3 damage items (−25). A frontliner is a Tank, or a Fighter holding a tank item. A carry is a Marksman, Mage or Assassin.
 - **Team score** = 75% average champion score + 25% balance, mapped to grades S/A/B/C/D/F. The split started at 70/30, but a sanity run with real data rated an obviously chaotic team a B, so champions now weigh more.
 - **Feedback is deterministic** (rule-based, no randomness), so it is testable. Each champion gets a role line plus a line for every clearly good (≥75) or clearly bad (≤30) item. Average items stay quiet to keep it short.
+
+## Step 7 – Play again, footer, README
+
+- **Play Again** sits right under the grade, so it's visible without scrolling, and resets everything (reducer `reset` + clears the selected item).
+- **The footer** shows Riot's full "Legal Jibber Jabber" disclaimer plus the data sources and patch number.
+- **README** now covers how to play, scoring, commands, data sources and the disclaimer.
+- **Playtested in headless Chrome** (Playwright driver kept outside the repo). It dragged champions into slots, click-assigned items, rated the team and played again, with no console errors. That run surfaced two layout fixes: score badges now sit on the portrait, and the ADC/Support slots moved apart so their items don't overlap.

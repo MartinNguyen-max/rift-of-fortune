@@ -2,13 +2,15 @@ import { motion } from 'framer-motion'
 import { championIconUrl, itemIconUrl } from '../data'
 import { ROLE_LABELS } from '../game/roles'
 import type { ChampionRating, TeamRating } from '../game/scoring/rateTeam'
+import { Button } from './Button'
 import { scoreColor } from './scoreColor'
 
 interface ResultsPanelProps {
   rating: TeamRating
+  onPlayAgain: () => void
 }
 
-export function ResultsPanel({ rating }: ResultsPanelProps) {
+export function ResultsPanel({ rating, onPlayAgain }: ResultsPanelProps) {
   return (
     <section className="flex flex-col gap-6">
       <motion.div
@@ -21,6 +23,9 @@ export function ResultsPanel({ rating }: ResultsPanelProps) {
         <p className={`text-7xl font-black ${scoreColor(rating.score)}`}>{rating.grade}</p>
         <p className="text-2xl font-bold text-gold-light">{rating.score} / 100</p>
         <p className="mt-2 text-gold-light/80 italic">{rating.summary}</p>
+        <Button onClick={onPlayAgain} className="mt-4">
+          Play again
+        </Button>
       </motion.div>
 
       <div>

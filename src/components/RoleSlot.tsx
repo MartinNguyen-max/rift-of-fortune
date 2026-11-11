@@ -35,31 +35,33 @@ export function RoleSlot({
   const label = ROLE_LABELS[role]
 
   return (
-    <div ref={setNodeRef} className="relative flex flex-col items-center gap-1">
-      {score !== undefined && (
-        <span
-          className={`absolute -top-2 -right-3 z-10 rounded-full border border-gold bg-abyss px-1.5 text-sm font-black ${scoreColor(score)}`}
-        >
-          {score}
-        </span>
-      )}
-      <button
-        type="button"
-        onClick={onActivate}
-        disabled={!onActivate}
-        aria-label={champion ? `${label}: ${champion.name}` : `Place in ${label}`}
-        className={`flex size-14 items-center justify-center overflow-hidden rounded-full border-2 bg-panel/80 transition disabled:cursor-default sm:size-16 ${
-          champion ? 'border-gold' : 'border-dashed border-gold/50'
-        } ${highlighted ? 'animate-pulse border-hextech hover:scale-110' : ''} ${
-          isOver ? 'scale-125 border-solid border-hextech bg-hextech/30' : ''
-        }`}
-      >
-        {champion ? (
-          <img src={championIconUrl(champion.image)} alt="" className="size-full object-cover" />
-        ) : (
-          <span className="text-xl text-gold/50">+</span>
+    <div ref={setNodeRef} className="flex flex-col items-center gap-1">
+      <div className="relative">
+        {score !== undefined && (
+          <span
+            className={`absolute -top-2 -right-3 z-10 rounded-full border border-gold bg-abyss px-1.5 text-sm font-black ${scoreColor(score)}`}
+          >
+            {score}
+          </span>
         )}
-      </button>
+        <button
+          type="button"
+          onClick={onActivate}
+          disabled={!onActivate}
+          aria-label={champion ? `${label}: ${champion.name}` : `Place in ${label}`}
+          className={`flex size-14 items-center justify-center overflow-hidden rounded-full border-2 bg-panel/80 transition disabled:cursor-default sm:size-16 ${
+            champion ? 'border-gold' : 'border-dashed border-gold/50'
+          } ${highlighted ? 'animate-pulse border-hextech hover:scale-110' : ''} ${
+            isOver ? 'scale-125 border-solid border-hextech bg-hextech/30' : ''
+          }`}
+        >
+          {champion ? (
+            <img src={championIconUrl(champion.image)} alt="" className="size-full object-cover" />
+          ) : (
+            <span className="text-xl text-gold/50">+</span>
+          )}
+        </button>
+      </div>
 
       <span className="rounded bg-abyss/80 px-1.5 text-xs font-semibold tracking-wide whitespace-nowrap text-gold uppercase">
         {champion ? `${label} · ${champion.name}` : label}

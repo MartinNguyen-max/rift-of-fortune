@@ -9,6 +9,7 @@ import {
 import { useCallback, useReducer, useState } from 'react'
 import { ITEM_POOL_ID, itemIdFromDragId, ROLLED_CHAMPION_ID } from './components/dragIds'
 import { DraftPanel } from './components/DraftPanel'
+import { Footer } from './components/Footer'
 import { ItemPanel } from './components/ItemPanel'
 import { ResultsPanel } from './components/ResultsPanel'
 import { RiftMap } from './components/RiftMap'
@@ -47,7 +48,11 @@ export default function App() {
     setSelectedItemId(null)
   }
   const unassignItem = (itemId: string) => dispatch({ type: 'unassignItem', itemId })
-  const toggleSelected = (itemId: string) => setSelectedItemId((current) => (current === itemId ? null : itemId))
+  const playAgain = () => {
+    dispatch({ type: 'reset' })
+    setSelectedItemId(null)
+  }
+  const toggleSelected =(itemId: string) => setSelectedItemId((current) => (current === itemId ? null : itemId))
 
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
     if (!over) return
@@ -121,9 +126,10 @@ export default function App() {
                 onFinish={() => dispatch({ type: 'finish' })}
               />
             )}
-            {rating && <ResultsPanel rating={rating} />}
+            {rating && <ResultsPanel rating={rating} onPlayAgain={playAgain} />}
           </div>
         </main>
+        <Footer />
       </div>
     </DndContext>
   )
