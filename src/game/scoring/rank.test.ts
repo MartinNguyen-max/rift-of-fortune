@@ -6,15 +6,15 @@ import { rankFor, rankLabel } from './rank'
 describe('rankFor', () => {
   it.each([
     [100, 'Challenger'],
-    [96, 'Challenger'],
-    [93, 'Grandmaster'],
-    [88, 'Master'],
-    [87, 'Diamond I'],
-    [82, 'Diamond IV'],
-    [75, 'Emerald IV'],
-    [66, 'Platinum IV'],
-    [56, 'Gold IV'],
-    [65, 'Gold I'],
+    [88, 'Challenger'],
+    [86, 'Grandmaster'],
+    [82, 'Master'],
+    [81, 'Diamond I'],
+    [77, 'Diamond IV'],
+    [70, 'Emerald IV'],
+    [62, 'Platinum IV'],
+    [54, 'Gold IV'],
+    [61, 'Gold I'],
     [45, 'Silver IV'],
     [30, 'Bronze IV'],
     [29, 'Iron I'],
@@ -24,8 +24,8 @@ describe('rankFor', () => {
   })
 
   it('splits a tier evenly into four divisions', () => {
-    // Silver covers 45–55: eleven points, so about three per division.
-    expect([45, 47, 48, 50, 51, 53, 54, 55].map((score) => rankFor(score).division)).toEqual([
+    // Silver covers 45–53: nine points, so about two per division.
+    expect([45, 47, 48, 49, 50, 51, 52, 53].map((score) => rankFor(score).division)).toEqual([
       'IV',
       'IV',
       'III',

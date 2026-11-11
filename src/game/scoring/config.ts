@@ -112,17 +112,17 @@ export const CARRY_CLASSES: readonly ChampionClass[] = ['Marksman', 'Mage', 'Ass
 /**
  * Ranked tiers from best to worst, with the minimum team score for each.
  * Calibrated with simulate.ts: a bot that always picks the best-fitting role and item has a
- * median score around Gold/Platinum and reaches Challenger in well under 1% of games.
+ * median score around Platinum and reaches Challenger in about 5% of games (real players: less).
  * Tiers with divisions split their score range evenly into IV (lowest) to I (highest).
  */
 export const RANK_THRESHOLDS = [
-  { tier: 'Challenger', min: 96, hasDivisions: false, summary: 'Pro play material. Somebody call the scouts.' },
-  { tier: 'Grandmaster', min: 92, hasDivisions: false, summary: 'One step from the top. The ladder fears you.' },
-  { tier: 'Master', min: 88, hasDivisions: false, summary: 'You actually know what you are doing.' },
-  { tier: 'Diamond', min: 82, hasDivisions: true, summary: 'Solid team. Your LP is in safe hands.' },
-  { tier: 'Emerald', min: 75, hasDivisions: true, summary: 'Decent. Could win, could also int.' },
-  { tier: 'Platinum', min: 66, hasDivisions: true, summary: 'Respectable, as long as nobody tilts.' },
-  { tier: 'Gold', min: 56, hasDivisions: true, summary: 'Coin flip. Buy wards and hope.' },
+  { tier: 'Challenger', min: 88, hasDivisions: false, summary: 'Pro play material. Somebody call the scouts.' },
+  { tier: 'Grandmaster', min: 85, hasDivisions: false, summary: 'One step from the top. The ladder fears you.' },
+  { tier: 'Master', min: 82, hasDivisions: false, summary: 'You actually know what you are doing.' },
+  { tier: 'Diamond', min: 77, hasDivisions: true, summary: 'Solid team. Your LP is in safe hands.' },
+  { tier: 'Emerald', min: 70, hasDivisions: true, summary: 'Decent. Could win, could also int.' },
+  { tier: 'Platinum', min: 62, hasDivisions: true, summary: 'Respectable, as long as nobody tilts.' },
+  { tier: 'Gold', min: 54, hasDivisions: true, summary: 'Coin flip. Buy wards and hope.' },
   { tier: 'Silver', min: 45, hasDivisions: true, summary: "There's a game plan. Somewhere." },
   { tier: 'Bronze', min: 30, hasDivisions: true, summary: 'Rough. Mute all and pray.' },
   { tier: 'Iron', min: 0, hasDivisions: true, summary: 'This team is a crime. FF at 15.' },

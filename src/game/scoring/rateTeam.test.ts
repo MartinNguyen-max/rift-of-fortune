@@ -76,7 +76,7 @@ describe('rateTeam', () => {
   })
 
   it('rates an on-role, well-itemised, balanced team Diamond or higher', () => {
-    expect(rateTeam(dreamTeam).score).toBeGreaterThanOrEqual(82)
+    expect(['Diamond', 'Master', 'Grandmaster', 'Challenger']).toContain(rateTeam(dreamTeam).rank.tier)
   })
 
   it('includes coach notes', () => {

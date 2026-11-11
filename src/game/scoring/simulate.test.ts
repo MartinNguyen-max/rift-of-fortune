@@ -33,12 +33,14 @@ describe('rank calibration', () => {
     expect(['Iron', 'Bronze']).toContain(rankFor(percentile(random, 0.5)).tier)
   })
 
-  it('makes Challenger rare, even for a sensible player', () => {
-    expect(share(sensible, (score) => rankFor(score).tier === 'Challenger')).toBeLessThan(0.02)
+  it('makes Challenger reachable but rare: about 5% of games for a near-perfect player', () => {
+    const challenger = share(sensible, (score) => rankFor(score).tier === 'Challenger')
+    expect(challenger).toBeGreaterThan(0.03)
+    expect(challenger).toBeLessThan(0.08)
   })
 
-  it('makes Master or higher uncommon for a sensible player', () => {
+  it('keeps Master or higher to the top fifth of games for a sensible player', () => {
     const masterPlus = share(sensible, (score) => ['Master', 'Grandmaster', 'Challenger'].includes(rankFor(score).tier))
-    expect(masterPlus).toBeLessThan(0.1)
+    expect(masterPlus).toBeLessThan(0.2)
   })
 })

@@ -117,6 +117,12 @@ A team of four off-role junglers plus Lee Sin ADC got Platinum. Causes: off-role
 - **Calibration rechecked** with 20,000 simulated games. The sensible bot's median went from 65 to 67, with Challenger still 0.4%. The random bot's median went from 29 to 36 (Bronze), since reasonable swaps now get partial credit. The rank cut-offs are unchanged.
 - **Daily note:** Classic and the Daily share this scoring. Once players are comparing Daily scores, scoring changes should go live at midnight, so one day's scores stay comparable.
 
+## Easier top ranks (after playtest feedback)
+
+- **Challenger was too hard** (0.4% of the sensible bot's games, and real players score lower than that bot). The cut-offs now come from the bot's score distribution: Challenger 88 (about 5% of its games), Grandmaster 85, Master 82, Diamond 77, Emerald 70, Platinum 62, Gold 54, Silver 45, Bronze 30. For real players that should mean roughly 2–4% Challenger: reachable, still worth bragging about.
+- 7.5% was considered, but it would make Grandmaster and Master feel cheap.
+- `simulate.test.ts` now checks that Challenger stays between 3% and 8% of the sensible bot's games.
+
 ---
 
 # Summary

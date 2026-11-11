@@ -86,7 +86,7 @@ describe('share', () => {
     expect(text).toBe(
       [
         'LoL Rift Roulette · Daily #3',
-        'Gold II · 61/100',
+        'Gold I · 61/100',
         'Top 🟩 ADC 🟨 Sup 🟥',
         'Beat 50% of players today',
         'https://example.com/#/daily',
