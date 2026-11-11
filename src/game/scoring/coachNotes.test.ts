@@ -9,7 +9,7 @@ function rating(champion: Partial<Champion>, role: Role, score: number, onRole =
   return {
     role,
     champion: makeChampion(champion),
-    roleFit: { kind: onRole ? 'onRole' : 'offRole', score: onRole ? 100 : 0 },
+    roleFit: { kind: onRole ? 'mainRole' : 'offRole', score: onRole ? 100 : 0, usualRole: null },
     items: [],
     itemFit: 50,
     score,

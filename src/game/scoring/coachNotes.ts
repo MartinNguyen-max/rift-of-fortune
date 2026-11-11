@@ -1,6 +1,7 @@
 import { ROLE_LABELS } from '../roles'
 import { COACH_LINES, pickLine } from './feedback'
 import type { ChampionRating } from './rateTeam'
+import { isOnRole } from './roleFit'
 
 /** Show a comp joke when at least this many champions share the same thing. */
 const CROWD_SIZE = 3
@@ -33,7 +34,7 @@ export function compLines(champions: ChampionRating[]): string[] {
   const junglers = count(({ champion }) => champion.positions.includes('JUNGLE'))
   const supports = count(({ champion }) => champion.positions.includes('SUPPORT'))
   const marksmen = count(({ champion }) => champion.classes.includes('Marksman'))
-  const onRole = count(({ roleFit }) => roleFit.kind === 'onRole')
+  const onRole = count(({ roleFit }) => isOnRole(roleFit))
   const pick = (lines: readonly string[], topic: string) => pickLine(lines, seedFor(champions, topic))
 
   const lines: string[] = []

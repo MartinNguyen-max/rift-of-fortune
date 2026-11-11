@@ -118,6 +118,11 @@ describe('filterByPlayRate', () => {
     expect(filterByPlayRate(['TOP'], rates)).toEqual(['TOP'])
   })
 
+  it('puts the most played role first', () => {
+    const malphite = { ...rates, TOP: { playRate: 3 }, UTILITY: { playRate: 1 }, MIDDLE: { playRate: 0.5 } }
+    expect(filterByPlayRate(['MIDDLE', 'SUPPORT', 'TOP'], malphite)).toEqual(['TOP', 'SUPPORT', 'MIDDLE'])
+  })
+
   it('is used by toChampion', () => {
     const champion = toChampion(
       { ...ddragonForRates, tags: ['Support'] },

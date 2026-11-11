@@ -59,17 +59,17 @@ const RATE_ROLES: Record<string, Role> = {
 
 /**
  * Meraki's positions list every role a champion has ever been played in (e.g. Taric mid).
- * Keeps only the roles that also have a play rate. Falls back to all positions when the
- * rates are missing or rule out everything.
+ * Keeps only the roles that also have a play rate, most played first, so the first role is the
+ * champion's main role. Falls back to all positions when the rates are missing or rule out everything.
  */
 export function filterByPlayRate(positions: Role[], rates: MerakiRoleRates | undefined): Role[] {
   if (!rates) return positions
-  const played = new Set(
-    Object.entries(rates)
-      .filter(([, { playRate }]) => playRate > 0)
-      .map(([rateRole]) => RATE_ROLES[rateRole]),
+  const rateOf = new Map<Role | undefined, number>(
+    Object.entries(rates).map(([rateRole, { playRate }]) => [RATE_ROLES[rateRole], playRate]),
   )
-  const kept = positions.filter((position) => played.has(position))
+  const kept = positions
+    .filter((position) => (rateOf.get(position) ?? 0) > 0)
+    .sort((a, b) => (rateOf.get(b) ?? 0) - (rateOf.get(a) ?? 0))
   return kept.length > 0 ? kept : positions
 }
 

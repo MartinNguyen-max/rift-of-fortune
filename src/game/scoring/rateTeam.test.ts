@@ -26,7 +26,7 @@ const zed = makeChampion({ id: 'Zed', classes: ['Assassin'], positions: ['MIDDLE
 describe('rateChampion', () => {
   it('weights role fit and item fit into the champion score', () => {
     const rating = rateChampion({ role: 'MIDDLE', champion: lux, items: [rabadon, ie] })
-    expect(rating.roleFit.score).toBe(ROLE_FIT_SCORE.onRole)
+    expect(rating.roleFit.score).toBe(ROLE_FIT_SCORE.mainRole)
     const fits = rating.items.map(({ fit }) => fit)
     expect(fits).toHaveLength(2)
     expect(rating.itemFit).toBe(Math.round(fits.reduce((sum, fit) => sum + fit, 0) / fits.length))

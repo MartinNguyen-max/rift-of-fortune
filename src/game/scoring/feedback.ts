@@ -2,7 +2,7 @@ import type { Champion, ChampionClass, Item, Role } from '../../data/types'
 import { ROLE_LABELS } from '../roles'
 import { ITEM_FIT_THRESHOLDS } from './config'
 import { getItemTags } from './itemFit'
-import type { RoleFitKind } from './roleFit'
+import type { RoleFit } from './roleFit'
 
 /**
  * Picks one of several lines. The choice depends only on `seed`, so the same
@@ -19,15 +19,23 @@ export function pickLine(lines: readonly string[], seed: string): string {
 
 /** All feedback lines, grouped by situation. Exported so tests can check against them. */
 export const LINES = {
-  onRole: (name: string, role: string) => [
+  mainRole: (name: string, role: string) => [
     `${name} in ${role}. Textbook.`,
     `${name} in ${role}. Exactly where they belong.`,
     `${name} ${role}. The scouts approve.`,
   ],
-  classFit: (name: string, role: string) => [
+  secondaryRole: (name: string, role: string) => [
+    `${name} ${role}. Not their main, but they know the way.`,
+    `${name} in ${role}. A solid flex pick.`,
+  ],
+  closeFit: (name: string, role: string) => [
     `${name} isn't a usual ${role}, but it can work.`,
     `${name} in ${role}? Off-meta, not off the rails.`,
     `${name} ${role}. Not standard, but somebody on Reddit swears by it.`,
+  ],
+  stretch: (name: string, role: string) => [
+    `${name} ${role}. That's a stretch.`,
+    `${name} in ${role}. Possible in theory. Only in theory.`,
   ],
   offRole: (name: string, role: string) => [
     `${name} ${role}? Bold. Very bold.`,
@@ -146,6 +154,24 @@ export function verdictLine(championId: string, score: number): string {
   return pickLine(band?.lines ?? ['Present.'], `${championId}:verdict`)
 }
 
+/** Lines for a champion from one role (their main role) playing another. */
+const SWAP_LINES: Partial<Record<`${Role}:${Role}`, (name: string) => string[]>> = {
+  'MIDDLE:TOP': (name) => [`${name} top. Mid laners in top are a classic lane bully move.`, `${name} top. Mid lane mechanics on an island.`],
+  'TOP:MIDDLE': (name) => [`${name} mid. A top laner in mid. Hope they remember to roam.`, `${name} mid. Bruiser in the middle lane, why not.`],
+  'TOP:JUNGLE': (name) => [`${name} jungle. Bruiser clear, questionable ganks.`, `${name} jungle. A top laner who got lost on the way.`],
+  'JUNGLE:TOP': (name) => [`${name} top. Lonely, but junglers are used to that.`, `${name} top. Missing the camps already.`],
+  'JUNGLE:MIDDLE': (name) => [`${name} mid. A jungler in mid. At least the river is close.`],
+  'BOTTOM:MIDDLE': (name) => [`${name} mid. ADC in mid. Lucian and Tristana would approve.`, `${name} mid. Marksman mid, a time-honoured tradition.`],
+  'MIDDLE:SUPPORT': (name) => [`${name} support. Mage support. Poke the enemy ADC into next week.`],
+  'MIDDLE:BOTTOM': (name) => [`${name} ADC. A mage in bot lane. Ziggs and Seraphine pioneered this.`],
+  'MIDDLE:JUNGLE': (name) => [`${name} jungle. A mid laner in the jungle. Hope the clear speed is fine.`],
+  'TOP:SUPPORT': (name) => [`${name} support. Lots of engage, very little warding.`],
+  'SUPPORT:MIDDLE': (name) => [`${name} mid. A support in mid. Lots of utility, little damage.`],
+  'SUPPORT:JUNGLE': (name) => [`${name} jungle. A support in the jungle. The camps are winning this one.`, `${name} jungle. Smite is not a heal, just so you know.`],
+  'BOTTOM:JUNGLE': (name) => [`${name} jungle. A marksman in the jungle. Scuttle Crab fears nothing.`],
+  'SUPPORT:TOP': (name) => [`${name} top. Support in top lane, brave choice.`],
+}
+
 /** Special lines for a champion class played in a role it really doesn't belong in. */
 const OFF_ROLE_LINES: Partial<Record<`${ChampionClass}:${Role}`, string>> = {
   'Support:TOP': 'Support in top lane, brave choice.',
@@ -158,16 +184,23 @@ const OFF_ROLE_LINES: Partial<Record<`${ChampionClass}:${Role}`, string>> = {
   'Fighter:SUPPORT': 'A fighter on support. Lane bully or lane disaster.',
 }
 
-export function roleFitLine(champion: Champion, role: Role, kind: RoleFitKind): string {
-  const roleName = ROLE_LABELS[role]
+function classLine(champion: Champion, role: Role): string | undefined {
+  return champion.classes
+    .map((championClass) => OFF_ROLE_LINES[`${championClass}:${role}`])
+    .find((line) => line !== undefined)
+}
+
+export function roleFitLine(champion: Champion, role: Role, { kind, usualRole }: RoleFit): string {
   const seed = `${champion.id}:${role}`
-  if (kind === 'offRole') {
-    const special = champion.classes
-      .map((championClass) => OFF_ROLE_LINES[`${championClass}:${role}`])
-      .find((line) => line !== undefined)
-    if (special) return special
+  if (kind === 'mainRole' || kind === 'secondaryRole') {
+    return pickLine(LINES[kind](champion.name, ROLE_LABELS[role]), seed)
   }
-  return pickLine(LINES[kind](champion.name, roleName), seed)
+  const swapLines = usualRole ? SWAP_LINES[`${usualRole}:${role}`]?.(champion.name) : undefined
+  // Disasters get the class joke first ("A tank as ADC..."), swaps the lane-specific line.
+  const special = kind === 'offRole' ? (classLine(champion, role) ?? swapLines) : (swapLines ?? classLine(champion, role))
+  if (typeof special === 'string') return special
+  if (special && special.length > 0) return pickLine(special, seed)
+  return pickLine(LINES[kind](champion.name, ROLE_LABELS[role]), seed)
 }
 
 const findClass = (champion: Champion, ...classes: ChampionClass[]) =>

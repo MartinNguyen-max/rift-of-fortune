@@ -45,7 +45,7 @@ export function rateChampion({ role, champion, items }: TeamMember): ChampionRat
   const score = Math.round(roleFit.score * CHAMPION_SCORE_WEIGHTS.roleFit + itemFit * CHAMPION_SCORE_WEIGHTS.itemFit)
 
   const feedback = [
-    roleFitLine(champion, role, roleFit.kind),
+    roleFitLine(champion, role, roleFit),
     ...itemRatings.flatMap(({ item, fit }) => itemFitLine(champion, item, fit) ?? []),
   ]
   return { role, champion, roleFit, items: itemRatings, itemFit, score, verdict: verdictLine(champion.id, score), feedback }

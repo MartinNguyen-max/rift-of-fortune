@@ -6,13 +6,29 @@ import type { ChampionClass, RankTier, Role } from '../../data/types'
  */
 
 export const ROLE_FIT_SCORE = {
-  /** The champion normally plays this role. */
-  onRole: 100,
-  /** Off-role, but the champion's class suits the role (e.g. a tank in top lane). */
+  /** The champion's most played role. */
+  mainRole: 100,
+  /** Another role the champion is regularly played in. */
+  secondaryRole: 85,
+  /** Minimum when off-role but the champion's class suits the role (e.g. a tank in top lane). */
   classFit: 35,
-  /** Off-role and the class doesn't suit it either. */
-  offRole: 0,
 } as const
+
+/**
+ * How well a champion from one role (rows) does in another (columns), based on how League plays:
+ * mid laners in top are fairly normal, a support in the jungle is a disaster.
+ * The diagonal is never used (that's the champion's own role).
+ */
+export const LANE_SWAP_SCORE: Record<Role, Record<Role, number>> = {
+  TOP: { TOP: 100, JUNGLE: 45, MIDDLE: 55, BOTTOM: 15, SUPPORT: 35 },
+  JUNGLE: { TOP: 50, JUNGLE: 100, MIDDLE: 45, BOTTOM: 10, SUPPORT: 30 },
+  MIDDLE: { TOP: 50, JUNGLE: 35, MIDDLE: 100, BOTTOM: 40, SUPPORT: 40 },
+  BOTTOM: { TOP: 20, JUNGLE: 10, MIDDLE: 50, BOTTOM: 100, SUPPORT: 35 },
+  SUPPORT: { TOP: 20, JUNGLE: 5, MIDDLE: 35, BOTTOM: 30, SUPPORT: 100 },
+}
+
+/** Off-role scores at or above `closeFit` are a reasonable swap, below `stretch` a disaster. */
+export const ROLE_FIT_BANDS = { closeFit: 45, stretch: 20 } as const
 
 /** Classes that can get by in a role even when it isn't their usual one. */
 export const ROLE_CLASSES: Record<Role, ChampionClass[]> = {

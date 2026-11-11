@@ -28,6 +28,7 @@ export interface Champion {
   title: string
   image: string
   classes: ChampionClass[]
+  /** Roles this champion is played in, most played first (the first one is their main role). */
   positions: Role[]
   damageType: DamageType
   attackType: AttackType

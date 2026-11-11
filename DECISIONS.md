@@ -107,6 +107,16 @@ A team of four off-role junglers plus Lee Sin ADC got Platinum. Causes: off-role
 - **Role data:** Meraki's positions list every role a champion has ever been played in (e.g. Taric mid). They are now intersected with Meraki's role play rates (`championrates.json`). Total positions went from 244 to 193. A few champions lose a real second role (Pantheon, Seraphine and Swain are now Support only). Accepted, since the player said it doesn't need to be perfect. The rank calibration tests still pass.
 - **New folders:** `src/pages/` (one component per mode), `src/services/` (localStorage and Supabase; the only code with side effects outside React), `supabase/` (SQL). CLAUDE.md's project structure list doesn't mention these yet.
 
+## Lane-swap role fit (after playtest feedback)
+
+- **Problem:** role fit only knew on-role (100), class fits (35) and off-role (0), so Ahri top and Janna jungle both scored 0.
+- **Main vs secondary role:** `npm run data` now sorts each champion's roles by Meraki play rate, so the first role is their main one. Main role 100, secondary 85.
+- **Lane-swap table** (`LANE_SWAP_SCORE` in `config.ts`): how well a champion from one role does in another. Jungle is the hardest role to fake (support → jungle 5, ADC → jungle 10). Mid ↔ top and ADC → mid are reasonable (50–55). The best swap from any of the champion's roles counts. The class fit (35) stays as a minimum, so a tank in top or support is never a disaster.
+- **Five role-fit levels** drive the feedback: main role, secondary role, close fit (45+), stretch (20–44) and off-role (below 20). Each level has its own lines, and common swaps get lane-specific jokes ("Mid laners in top are a classic lane-bully move"). Disasters get the class joke first ("A tank as ADC...").
+- **Results** show where an off-role champion usually plays ("Top (usually Mid)").
+- **Calibration rechecked** with 20,000 simulated games. The sensible bot's median went from 65 to 67, with Challenger still 0.4%. The random bot's median went from 29 to 36 (Bronze), since reasonable swaps now get partial credit. The rank cut-offs are unchanged.
+- **Daily note:** Classic and the Daily share this scoring. Once players are comparing Daily scores, scoring changes should go live at midnight, so one day's scores stay comparable.
+
 ---
 
 # Summary

@@ -4,6 +4,7 @@ import { championIconUrl, itemIconUrl, rankEmblemUrl } from '../data'
 import { ROLE_LABELS } from '../game/roles'
 import { rankLabel } from '../game/scoring/rank'
 import type { ChampionRating, TeamRating } from '../game/scoring/rateTeam'
+import { isOnRole } from '../game/scoring/roleFit'
 import { scoreBorderColor, scoreColor } from './scoreColor'
 
 interface ResultsPanelProps {
@@ -90,7 +91,9 @@ function ChampionResult({ rating }: { rating: ChampionRating }) {
           <p className="truncate font-display font-bold text-gold-light">{champion.name}</p>
           <p className={`text-xs italic ${scoreColor(score)}`}>{verdict}</p>
           <p className="text-xs text-gold-light/60">
-            {ROLE_LABELS[role]} · role {roleFit.score} · items {itemFit}
+            {ROLE_LABELS[role]}
+            {!isOnRole(roleFit) && roleFit.usualRole && <> (usually {ROLE_LABELS[roleFit.usualRole]})</>} · role{' '}
+            {roleFit.score} · items {itemFit}
           </p>
         </div>
         <div className="flex gap-1">
