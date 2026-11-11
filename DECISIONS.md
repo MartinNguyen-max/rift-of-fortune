@@ -22,3 +22,9 @@ Decisions made while building the MVP autonomously, with the reasoning.
 - **Damage type and melee/ranged come from Meraki** (`adaptiveType`, `attackType`).
 - **New champions missing from Meraki** (currently Locke and Zaahen) get positions guessed from their main Data Dragon class, and a damage type from `info.attack` vs `info.magic`. The script prints a warning listing them.
 - **Images are loaded from Riot's Data Dragon CDN at runtime**, not committed. This keeps the repo small, and it's how Riot intends the CDN to be used. Only the JSON data is committed.
+
+## Step 3 – Map
+
+- **Map background is Data Dragon's `map11.png` minimap.** Slots sit on top of it at fixed percentages, so the map scales with the screen.
+- **The team is drawn on the blue side** (bottom-left base), so Jungle sits in the blue jungle and ADC/Support share the bottom-right lane corner.
+- **Role labels:** Top, Jungle, Mid, ADC, Support. Internally they map to Meraki's `TOP/JUNGLE/MIDDLE/BOTTOM/SUPPORT`.
