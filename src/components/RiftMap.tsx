@@ -9,11 +9,11 @@ interface RiftMapProps {
 
 export function RiftMap({ renderSlot }: RiftMapProps) {
   return (
-    <div className="relative aspect-square w-full max-w-xl overflow-hidden rounded-xl border border-gold/40 shadow-2xl shadow-black">
+    <div className="relative aspect-square w-full max-w-xl">
       <img
         src={summonersRiftMapUrl}
         alt="Summoner's Rift"
-        className="absolute inset-0 size-full object-cover opacity-70"
+        className="absolute inset-0 size-full rounded-xl border border-gold/40 object-cover opacity-70 shadow-2xl shadow-black"
       />
       {ROLES.map((role) => {
         const { x, y } = ROLE_MAP_POSITIONS[role]

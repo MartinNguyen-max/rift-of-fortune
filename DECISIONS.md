@@ -36,3 +36,11 @@ Decisions made while building the MVP autonomously, with the reasoning.
 - **Placement:** drag the champion with dnd-kit, or click a glowing empty slot. Click is the accessible fallback. Keyboard dragging also works via dnd-kit's `KeyboardSensor`. A placed slot can't be changed (locked).
 - **The player presses "Roll" for each pick** (no auto-roll), so every roll is a moment of anticipation.
 - **The champion card shows "Usually plays: …"** so the player can make an informed (or brave) placement.
+
+## Step 5 – Items
+
+- **The item phase starts with a "Draw 10 items" button** after the 5th pick, rather than automatically, so the player sees the finished team first.
+- **10 distinct items** are drawn from the full-item pool with no balancing (per the spec: fully random).
+- **Assignment state is `itemId -> role`.** A role holds at most 2 items, and "Rate my team" unlocks only when all 10 are assigned (so exactly 2 each).
+- **Interaction:** drag an item onto a champion, or click an item and then a glowing champion. Equipped items can be dragged to another champion, dragged back to the list, or clicked to return them. Hovering an item shows its stats in a tooltip, and the list shows them inline.
+- **Item stats are shown in short form** (AD, AP, MR, Haste, ...) to fit the side panel.

@@ -3,8 +3,7 @@ import { motion } from 'framer-motion'
 import { championIconUrl } from '../data'
 import type { Champion } from '../data/types'
 import { ROLE_LABELS } from '../game/roles'
-
-export const ROLLED_CHAMPION_ID = 'rolled-champion'
+import { ROLLED_CHAMPION_ID } from './dragIds'
 
 interface RolledChampionCardProps {
   champion: Champion

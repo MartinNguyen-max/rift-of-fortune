@@ -1,32 +1,37 @@
 import { useDroppable } from '@dnd-kit/core'
 import { championIconUrl } from '../data'
-import type { Champion, Role } from '../data/types'
+import type { Champion, Item, Role } from '../data/types'
+import { ITEMS_PER_CHAMPION } from '../game/items'
 import { ROLE_LABELS } from '../game/roles'
+import { DraggableItem } from './DraggableItem'
 
 interface RoleSlotProps {
   role: Role
   champion: Champion | null
-  /** Set when a champion can be placed here; enables drop and click. */
-  onPlace?: () => void
+  /** Equipped items; `undefined` hides the item sockets (draft phase). */
+  items?: Item[]
+  /** Accepts drops when true. */
+  droppable: boolean
+  /** Glows to show that clicking it does something. */
+  highlighted: boolean
+  onActivate?: () => void
+  onItemClick?: (itemId: string) => void
 }
 
-export function RoleSlot({ role, champion, onPlace }: RoleSlotProps) {
-  const { setNodeRef, isOver } = useDroppable({ id: role, disabled: !onPlace })
-  const canPlace = onPlace !== undefined
+export function RoleSlot({ role, champion, items, droppable, highlighted, onActivate, onItemClick }: RoleSlotProps) {
+  const { setNodeRef, isOver } = useDroppable({ id: role, disabled: !droppable })
+  const label = ROLE_LABELS[role]
 
   return (
-    <button
-      ref={setNodeRef}
-      type="button"
-      onClick={onPlace}
-      disabled={!canPlace}
-      aria-label={champion ? `${ROLE_LABELS[role]}: ${champion.name}` : `Place in ${ROLE_LABELS[role]}`}
-      className="group flex flex-col items-center gap-1 disabled:cursor-default"
-    >
-      <div
-        className={`flex size-14 items-center justify-center overflow-hidden rounded-full border-2 bg-panel/80 transition sm:size-16 ${
+    <div ref={setNodeRef} className="flex flex-col items-center gap-1">
+      <button
+        type="button"
+        onClick={onActivate}
+        disabled={!onActivate}
+        aria-label={champion ? `${label}: ${champion.name}` : `Place in ${label}`}
+        className={`flex size-14 items-center justify-center overflow-hidden rounded-full border-2 bg-panel/80 transition disabled:cursor-default sm:size-16 ${
           champion ? 'border-gold' : 'border-dashed border-gold/50'
-        } ${canPlace ? 'animate-pulse border-hextech group-hover:scale-110' : ''} ${
+        } ${highlighted ? 'animate-pulse border-hextech hover:scale-110' : ''} ${
           isOver ? 'scale-125 border-solid border-hextech bg-hextech/30' : ''
         }`}
       >
@@ -35,10 +40,24 @@ export function RoleSlot({ role, champion, onPlace }: RoleSlotProps) {
         ) : (
           <span className="text-xl text-gold/50">+</span>
         )}
-      </div>
-      <span className="rounded bg-abyss/80 px-1.5 text-xs font-semibold tracking-wide text-gold uppercase">
-        {champion ? champion.name : ROLE_LABELS[role]}
+      </button>
+
+      <span className="rounded bg-abyss/80 px-1.5 text-xs font-semibold tracking-wide whitespace-nowrap text-gold uppercase">
+        {champion ? `${label} · ${champion.name}` : label}
       </span>
-    </button>
+
+      {items && (
+        <div className="flex gap-1">
+          {Array.from({ length: ITEMS_PER_CHAMPION }, (_, index) => {
+            const item = items[index]
+            return item ? (
+              <DraggableItem key={item.id} item={item} size="small" onClick={() => onItemClick?.(item.id)} />
+            ) : (
+              <div key={index} className="size-6 rounded border border-dashed border-gold/40 bg-abyss/60 sm:size-7" />
+            )
+          })}
+        </div>
+      )}
+    </div>
   )
 }
