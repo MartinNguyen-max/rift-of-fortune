@@ -1,0 +1,3777 @@
+{
+  "patch": "16.22.1",
+  "champions": [
+    {
+      "id": "Ahri",
+      "name": "Ahri",
+      "title": "the Nine-Tailed Fox",
+      "image": "Ahri.png",
+      "classes": [
+        "Mage",
+        "Assassin"
+      ],
+      "positions": [
+        "MIDDLE"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Akali",
+      "name": "Akali",
+      "title": "the Rogue Assassin",
+      "image": "Akali.png",
+      "classes": [
+        "Assassin"
+      ],
+      "positions": [
+        "MIDDLE",
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Akshan",
+      "name": "Akshan",
+      "title": "the Rogue Sentinel",
+      "image": "Akshan.png",
+      "classes": [
+        "Marksman",
+        "Assassin"
+      ],
+      "positions": [
+        "MIDDLE"
+      ],
+      "damageType": "AD",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Alistar",
+      "name": "Alistar",
+      "title": "the Minotaur",
+      "image": "Alistar.png",
+      "classes": [
+        "Tank",
+        "Support"
+      ],
+      "positions": [
+        "SUPPORT"
+      ],
+      "damageType": "AP",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Ambessa",
+      "name": "Ambessa",
+      "title": "Matriarch of War",
+      "image": "Ambessa.png",
+      "classes": [
+        "Fighter",
+        "Assassin"
+      ],
+      "positions": [
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Amumu",
+      "name": "Amumu",
+      "title": "the Sad Mummy",
+      "image": "Amumu.png",
+      "classes": [
+        "Tank",
+        "Support"
+      ],
+      "positions": [
+        "JUNGLE",
+        "SUPPORT"
+      ],
+      "damageType": "AP",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Anivia",
+      "name": "Anivia",
+      "title": "the Cryophoenix",
+      "image": "Anivia.png",
+      "classes": [
+        "Mage"
+      ],
+      "positions": [
+        "MIDDLE"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Annie",
+      "name": "Annie",
+      "title": "the Dark Child",
+      "image": "Annie.png",
+      "classes": [
+        "Mage",
+        "Support"
+      ],
+      "positions": [
+        "MIDDLE"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Aphelios",
+      "name": "Aphelios",
+      "title": "the Weapon of the Faithful",
+      "image": "Aphelios.png",
+      "classes": [
+        "Marksman"
+      ],
+      "positions": [
+        "BOTTOM"
+      ],
+      "damageType": "AD",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Ashe",
+      "name": "Ashe",
+      "title": "the Frost Archer",
+      "image": "Ashe.png",
+      "classes": [
+        "Marksman",
+        "Support"
+      ],
+      "positions": [
+        "BOTTOM",
+        "SUPPORT"
+      ],
+      "damageType": "AD",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "AurelionSol",
+      "name": "Aurelion Sol",
+      "title": "The Star Forger",
+      "image": "AurelionSol.png",
+      "classes": [
+        "Mage"
+      ],
+      "positions": [
+        "MIDDLE"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Aurora",
+      "name": "Aurora",
+      "title": "the Witch Between Worlds",
+      "image": "Aurora.png",
+      "classes": [
+        "Mage",
+        "Assassin"
+      ],
+      "positions": [
+        "MIDDLE",
+        "TOP"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Azir",
+      "name": "Azir",
+      "title": "the Emperor of the Sands",
+      "image": "Azir.png",
+      "classes": [
+        "Mage",
+        "Marksman"
+      ],
+      "positions": [
+        "MIDDLE"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Bard",
+      "name": "Bard",
+      "title": "the Wandering Caretaker",
+      "image": "Bard.png",
+      "classes": [
+        "Support",
+        "Mage"
+      ],
+      "positions": [
+        "SUPPORT"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Belveth",
+      "name": "Bel'Veth",
+      "title": "the Empress of the Void",
+      "image": "Belveth.png",
+      "classes": [
+        "Fighter"
+      ],
+      "positions": [
+        "JUNGLE"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Blitzcrank",
+      "name": "Blitzcrank",
+      "title": "the Great Steam Golem",
+      "image": "Blitzcrank.png",
+      "classes": [
+        "Tank",
+        "Support"
+      ],
+      "positions": [
+        "SUPPORT"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Brand",
+      "name": "Brand",
+      "title": "the Burning Vengeance",
+      "image": "Brand.png",
+      "classes": [
+        "Mage",
+        "Support"
+      ],
+      "positions": [
+        "JUNGLE",
+        "MIDDLE",
+        "SUPPORT"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Braum",
+      "name": "Braum",
+      "title": "the Heart of the Freljord",
+      "image": "Braum.png",
+      "classes": [
+        "Tank",
+        "Support"
+      ],
+      "positions": [
+        "SUPPORT"
+      ],
+      "damageType": "AP",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Briar",
+      "name": "Briar",
+      "title": "the Restrained Hunger",
+      "image": "Briar.png",
+      "classes": [
+        "Fighter",
+        "Assassin"
+      ],
+      "positions": [
+        "JUNGLE"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Caitlyn",
+      "name": "Caitlyn",
+      "title": "the Sheriff of Piltover",
+      "image": "Caitlyn.png",
+      "classes": [
+        "Marksman"
+      ],
+      "positions": [
+        "BOTTOM"
+      ],
+      "damageType": "AD",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Camille",
+      "name": "Camille",
+      "title": "the Steel Shadow",
+      "image": "Camille.png",
+      "classes": [
+        "Fighter",
+        "Assassin"
+      ],
+      "positions": [
+        "SUPPORT",
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Cassiopeia",
+      "name": "Cassiopeia",
+      "title": "the Serpent's Embrace",
+      "image": "Cassiopeia.png",
+      "classes": [
+        "Mage"
+      ],
+      "positions": [
+        "MIDDLE"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Chogath",
+      "name": "Cho'Gath",
+      "title": "the Terror of the Void",
+      "image": "Chogath.png",
+      "classes": [
+        "Tank",
+        "Mage"
+      ],
+      "positions": [
+        "TOP"
+      ],
+      "damageType": "AP",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Corki",
+      "name": "Corki",
+      "title": "the Daring Bombardier",
+      "image": "Corki.png",
+      "classes": [
+        "Marksman",
+        "Mage"
+      ],
+      "positions": [
+        "MIDDLE"
+      ],
+      "damageType": "AD",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Darius",
+      "name": "Darius",
+      "title": "the Hand of Noxus",
+      "image": "Darius.png",
+      "classes": [
+        "Fighter",
+        "Tank"
+      ],
+      "positions": [
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Diana",
+      "name": "Diana",
+      "title": "Scorn of the Moon",
+      "image": "Diana.png",
+      "classes": [
+        "Fighter",
+        "Assassin"
+      ],
+      "positions": [
+        "JUNGLE",
+        "MIDDLE"
+      ],
+      "damageType": "AP",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "DrMundo",
+      "name": "Dr. Mundo",
+      "title": "the Madman of Zaun",
+      "image": "DrMundo.png",
+      "classes": [
+        "Tank",
+        "Fighter"
+      ],
+      "positions": [
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Draven",
+      "name": "Draven",
+      "title": "the Glorious Executioner",
+      "image": "Draven.png",
+      "classes": [
+        "Marksman"
+      ],
+      "positions": [
+        "BOTTOM"
+      ],
+      "damageType": "AD",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Ekko",
+      "name": "Ekko",
+      "title": "the Boy Who Shattered Time",
+      "image": "Ekko.png",
+      "classes": [
+        "Assassin",
+        "Mage"
+      ],
+      "positions": [
+        "JUNGLE",
+        "MIDDLE"
+      ],
+      "damageType": "AP",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Elise",
+      "name": "Elise",
+      "title": "the Spider Queen",
+      "image": "Elise.png",
+      "classes": [
+        "Assassin",
+        "Mage"
+      ],
+      "positions": [
+        "JUNGLE"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Evelynn",
+      "name": "Evelynn",
+      "title": "Agony's Embrace",
+      "image": "Evelynn.png",
+      "classes": [
+        "Assassin",
+        "Mage"
+      ],
+      "positions": [
+        "JUNGLE"
+      ],
+      "damageType": "AP",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Ezreal",
+      "name": "Ezreal",
+      "title": "the Prodigal Explorer",
+      "image": "Ezreal.png",
+      "classes": [
+        "Marksman",
+        "Mage"
+      ],
+      "positions": [
+        "BOTTOM"
+      ],
+      "damageType": "AD",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Fiddlesticks",
+      "name": "Fiddlesticks",
+      "title": "the Ancient Fear",
+      "image": "Fiddlesticks.png",
+      "classes": [
+        "Mage",
+        "Support"
+      ],
+      "positions": [
+        "JUNGLE"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Fiora",
+      "name": "Fiora",
+      "title": "the Grand Duelist",
+      "image": "Fiora.png",
+      "classes": [
+        "Fighter",
+        "Assassin"
+      ],
+      "positions": [
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Fizz",
+      "name": "Fizz",
+      "title": "the Tidal Trickster",
+      "image": "Fizz.png",
+      "classes": [
+        "Assassin",
+        "Fighter"
+      ],
+      "positions": [
+        "MIDDLE"
+      ],
+      "damageType": "AP",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Galio",
+      "name": "Galio",
+      "title": "the Colossus",
+      "image": "Galio.png",
+      "classes": [
+        "Tank",
+        "Mage"
+      ],
+      "positions": [
+        "MIDDLE",
+        "SUPPORT"
+      ],
+      "damageType": "AP",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Gangplank",
+      "name": "Gangplank",
+      "title": "the Saltwater Scourge",
+      "image": "Gangplank.png",
+      "classes": [
+        "Fighter"
+      ],
+      "positions": [
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Garen",
+      "name": "Garen",
+      "title": "The Might of Demacia",
+      "image": "Garen.png",
+      "classes": [
+        "Fighter",
+        "Tank"
+      ],
+      "positions": [
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Gnar",
+      "name": "Gnar",
+      "title": "the Missing Link",
+      "image": "Gnar.png",
+      "classes": [
+        "Fighter",
+        "Tank"
+      ],
+      "positions": [
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Gragas",
+      "name": "Gragas",
+      "title": "the Rabble Rouser",
+      "image": "Gragas.png",
+      "classes": [
+        "Fighter",
+        "Mage"
+      ],
+      "positions": [
+        "JUNGLE",
+        "MIDDLE",
+        "TOP"
+      ],
+      "damageType": "AP",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Graves",
+      "name": "Graves",
+      "title": "the Outlaw",
+      "image": "Graves.png",
+      "classes": [
+        "Marksman"
+      ],
+      "positions": [
+        "JUNGLE"
+      ],
+      "damageType": "AD",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Gwen",
+      "name": "Gwen",
+      "title": "The Hallowed Seamstress",
+      "image": "Gwen.png",
+      "classes": [
+        "Fighter"
+      ],
+      "positions": [
+        "JUNGLE",
+        "TOP"
+      ],
+      "damageType": "AP",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Hecarim",
+      "name": "Hecarim",
+      "title": "the Shadow of War",
+      "image": "Hecarim.png",
+      "classes": [
+        "Fighter",
+        "Tank"
+      ],
+      "positions": [
+        "JUNGLE"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Heimerdinger",
+      "name": "Heimerdinger",
+      "title": "the Revered Inventor",
+      "image": "Heimerdinger.png",
+      "classes": [
+        "Mage",
+        "Support"
+      ],
+      "positions": [
+        "MIDDLE",
+        "SUPPORT",
+        "TOP"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Hwei",
+      "name": "Hwei",
+      "title": "the Visionary",
+      "image": "Hwei.png",
+      "classes": [
+        "Mage",
+        "Support"
+      ],
+      "positions": [
+        "MIDDLE",
+        "SUPPORT"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Illaoi",
+      "name": "Illaoi",
+      "title": "the Kraken Priestess",
+      "image": "Illaoi.png",
+      "classes": [
+        "Fighter",
+        "Tank"
+      ],
+      "positions": [
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Irelia",
+      "name": "Irelia",
+      "title": "the Blade Dancer",
+      "image": "Irelia.png",
+      "classes": [
+        "Fighter",
+        "Assassin"
+      ],
+      "positions": [
+        "MIDDLE",
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Ivern",
+      "name": "Ivern",
+      "title": "the Green Father",
+      "image": "Ivern.png",
+      "classes": [
+        "Support",
+        "Mage"
+      ],
+      "positions": [
+        "JUNGLE"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Janna",
+      "name": "Janna",
+      "title": "the Storm's Fury",
+      "image": "Janna.png",
+      "classes": [
+        "Support",
+        "Mage"
+      ],
+      "positions": [
+        "SUPPORT"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "JarvanIV",
+      "name": "Jarvan IV",
+      "title": "the Exemplar of Demacia",
+      "image": "JarvanIV.png",
+      "classes": [
+        "Fighter",
+        "Tank"
+      ],
+      "positions": [
+        "JUNGLE"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Jax",
+      "name": "Jax",
+      "title": "Grandmaster at Arms",
+      "image": "Jax.png",
+      "classes": [
+        "Fighter"
+      ],
+      "positions": [
+        "JUNGLE",
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Jayce",
+      "name": "Jayce",
+      "title": "the Defender of Tomorrow",
+      "image": "Jayce.png",
+      "classes": [
+        "Fighter",
+        "Marksman"
+      ],
+      "positions": [
+        "MIDDLE",
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Jhin",
+      "name": "Jhin",
+      "title": "the Virtuoso",
+      "image": "Jhin.png",
+      "classes": [
+        "Marksman",
+        "Mage"
+      ],
+      "positions": [
+        "BOTTOM"
+      ],
+      "damageType": "AD",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Jinx",
+      "name": "Jinx",
+      "title": "the Loose Cannon",
+      "image": "Jinx.png",
+      "classes": [
+        "Marksman"
+      ],
+      "positions": [
+        "BOTTOM"
+      ],
+      "damageType": "AD",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "KSante",
+      "name": "K'Sante",
+      "title": "the Pride of Nazumah",
+      "image": "KSante.png",
+      "classes": [
+        "Tank",
+        "Fighter"
+      ],
+      "positions": [
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Kaisa",
+      "name": "Kai'Sa",
+      "title": "Daughter of the Void",
+      "image": "Kaisa.png",
+      "classes": [
+        "Marksman",
+        "Mage"
+      ],
+      "positions": [
+        "BOTTOM"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Kalista",
+      "name": "Kalista",
+      "title": "the Spear of Vengeance",
+      "image": "Kalista.png",
+      "classes": [
+        "Marksman"
+      ],
+      "positions": [
+        "BOTTOM"
+      ],
+      "damageType": "AD",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Karma",
+      "name": "Karma",
+      "title": "the Enlightened One",
+      "image": "Karma.png",
+      "classes": [
+        "Mage",
+        "Support"
+      ],
+      "positions": [
+        "MIDDLE",
+        "SUPPORT",
+        "TOP"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Karthus",
+      "name": "Karthus",
+      "title": "the Deathsinger",
+      "image": "Karthus.png",
+      "classes": [
+        "Mage"
+      ],
+      "positions": [
+        "JUNGLE"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Kassadin",
+      "name": "Kassadin",
+      "title": "the Void Walker",
+      "image": "Kassadin.png",
+      "classes": [
+        "Assassin",
+        "Mage"
+      ],
+      "positions": [
+        "MIDDLE"
+      ],
+      "damageType": "AP",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Katarina",
+      "name": "Katarina",
+      "title": "the Sinister Blade",
+      "image": "Katarina.png",
+      "classes": [
+        "Assassin",
+        "Mage"
+      ],
+      "positions": [
+        "MIDDLE"
+      ],
+      "damageType": "AP",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Kayle",
+      "name": "Kayle",
+      "title": "the Righteous",
+      "image": "Kayle.png",
+      "classes": [
+        "Marksman",
+        "Mage"
+      ],
+      "positions": [
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Kayn",
+      "name": "Kayn",
+      "title": "the Shadow Reaper",
+      "image": "Kayn.png",
+      "classes": [
+        "Fighter",
+        "Assassin"
+      ],
+      "positions": [
+        "JUNGLE"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Kennen",
+      "name": "Kennen",
+      "title": "the Heart of the Tempest",
+      "image": "Kennen.png",
+      "classes": [
+        "Mage"
+      ],
+      "positions": [
+        "TOP"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Khazix",
+      "name": "Kha'Zix",
+      "title": "the Voidreaver",
+      "image": "Khazix.png",
+      "classes": [
+        "Assassin"
+      ],
+      "positions": [
+        "JUNGLE"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Kindred",
+      "name": "Kindred",
+      "title": "The Eternal Hunters",
+      "image": "Kindred.png",
+      "classes": [
+        "Marksman"
+      ],
+      "positions": [
+        "JUNGLE"
+      ],
+      "damageType": "AD",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Kled",
+      "name": "Kled",
+      "title": "the Cantankerous Cavalier",
+      "image": "Kled.png",
+      "classes": [
+        "Fighter"
+      ],
+      "positions": [
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "KogMaw",
+      "name": "Kog'Maw",
+      "title": "the Mouth of the Abyss",
+      "image": "KogMaw.png",
+      "classes": [
+        "Marksman",
+        "Mage"
+      ],
+      "positions": [
+        "BOTTOM"
+      ],
+      "damageType": "AD",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Leblanc",
+      "name": "LeBlanc",
+      "title": "the Deceiver",
+      "image": "Leblanc.png",
+      "classes": [
+        "Assassin",
+        "Mage"
+      ],
+      "positions": [
+        "MIDDLE"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "LeeSin",
+      "name": "Lee Sin",
+      "title": "the Blind Monk",
+      "image": "LeeSin.png",
+      "classes": [
+        "Fighter",
+        "Assassin"
+      ],
+      "positions": [
+        "JUNGLE"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Leona",
+      "name": "Leona",
+      "title": "the Radiant Dawn",
+      "image": "Leona.png",
+      "classes": [
+        "Tank",
+        "Support"
+      ],
+      "positions": [
+        "SUPPORT"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Lillia",
+      "name": "Lillia",
+      "title": "the Bashful Bloom",
+      "image": "Lillia.png",
+      "classes": [
+        "Fighter",
+        "Mage"
+      ],
+      "positions": [
+        "JUNGLE"
+      ],
+      "damageType": "AP",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Lissandra",
+      "name": "Lissandra",
+      "title": "the Ice Witch",
+      "image": "Lissandra.png",
+      "classes": [
+        "Mage"
+      ],
+      "positions": [
+        "MIDDLE"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Locke",
+      "name": "Locke",
+      "title": "the Ashen Exorcist",
+      "image": "Locke.png",
+      "classes": [
+        "Assassin",
+        "Mage"
+      ],
+      "positions": [
+        "MIDDLE",
+        "JUNGLE"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Lucian",
+      "name": "Lucian",
+      "title": "the Purifier",
+      "image": "Lucian.png",
+      "classes": [
+        "Marksman",
+        "Assassin"
+      ],
+      "positions": [
+        "BOTTOM"
+      ],
+      "damageType": "AD",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Lulu",
+      "name": "Lulu",
+      "title": "the Fae Sorceress",
+      "image": "Lulu.png",
+      "classes": [
+        "Support",
+        "Mage"
+      ],
+      "positions": [
+        "SUPPORT"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Lux",
+      "name": "Lux",
+      "title": "the Lady of Luminosity",
+      "image": "Lux.png",
+      "classes": [
+        "Mage",
+        "Support"
+      ],
+      "positions": [
+        "MIDDLE",
+        "SUPPORT"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Malphite",
+      "name": "Malphite",
+      "title": "Shard of the Monolith",
+      "image": "Malphite.png",
+      "classes": [
+        "Tank",
+        "Mage"
+      ],
+      "positions": [
+        "MIDDLE",
+        "SUPPORT",
+        "TOP"
+      ],
+      "damageType": "AP",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Malzahar",
+      "name": "Malzahar",
+      "title": "the Prophet of the Void",
+      "image": "Malzahar.png",
+      "classes": [
+        "Mage"
+      ],
+      "positions": [
+        "MIDDLE"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Maokai",
+      "name": "Maokai",
+      "title": "the Twisted Treant",
+      "image": "Maokai.png",
+      "classes": [
+        "Tank",
+        "Support"
+      ],
+      "positions": [
+        "JUNGLE",
+        "SUPPORT"
+      ],
+      "damageType": "AP",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "MasterYi",
+      "name": "Master Yi",
+      "title": "the Wuju Bladesman",
+      "image": "MasterYi.png",
+      "classes": [
+        "Fighter",
+        "Assassin"
+      ],
+      "positions": [
+        "JUNGLE"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Mel",
+      "name": "Mel",
+      "title": "the Soul's Reflection",
+      "image": "Mel.png",
+      "classes": [
+        "Mage",
+        "Support"
+      ],
+      "positions": [
+        "MIDDLE",
+        "SUPPORT"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Milio",
+      "name": "Milio",
+      "title": "The Gentle Flame",
+      "image": "Milio.png",
+      "classes": [
+        "Support",
+        "Mage"
+      ],
+      "positions": [
+        "SUPPORT"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "MissFortune",
+      "name": "Miss Fortune",
+      "title": "the Bounty Hunter",
+      "image": "MissFortune.png",
+      "classes": [
+        "Marksman",
+        "Mage"
+      ],
+      "positions": [
+        "BOTTOM"
+      ],
+      "damageType": "AD",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Mordekaiser",
+      "name": "Mordekaiser",
+      "title": "the Iron Revenant",
+      "image": "Mordekaiser.png",
+      "classes": [
+        "Fighter",
+        "Mage"
+      ],
+      "positions": [
+        "TOP"
+      ],
+      "damageType": "AP",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Morgana",
+      "name": "Morgana",
+      "title": "the Fallen",
+      "image": "Morgana.png",
+      "classes": [
+        "Support",
+        "Mage"
+      ],
+      "positions": [
+        "SUPPORT"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Nami",
+      "name": "Nami",
+      "title": "the Tidecaller",
+      "image": "Nami.png",
+      "classes": [
+        "Support",
+        "Mage"
+      ],
+      "positions": [
+        "SUPPORT"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Nasus",
+      "name": "Nasus",
+      "title": "the Curator of the Sands",
+      "image": "Nasus.png",
+      "classes": [
+        "Fighter",
+        "Tank"
+      ],
+      "positions": [
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Nautilus",
+      "name": "Nautilus",
+      "title": "the Titan of the Depths",
+      "image": "Nautilus.png",
+      "classes": [
+        "Tank",
+        "Support"
+      ],
+      "positions": [
+        "SUPPORT"
+      ],
+      "damageType": "AP",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Neeko",
+      "name": "Neeko",
+      "title": "the Curious Chameleon",
+      "image": "Neeko.png",
+      "classes": [
+        "Mage",
+        "Support"
+      ],
+      "positions": [
+        "MIDDLE",
+        "SUPPORT"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Nidalee",
+      "name": "Nidalee",
+      "title": "the Bestial Huntress",
+      "image": "Nidalee.png",
+      "classes": [
+        "Assassin",
+        "Mage"
+      ],
+      "positions": [
+        "JUNGLE"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Nilah",
+      "name": "Nilah",
+      "title": "the Joy Unbound",
+      "image": "Nilah.png",
+      "classes": [
+        "Fighter",
+        "Assassin"
+      ],
+      "positions": [
+        "BOTTOM"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Nocturne",
+      "name": "Nocturne",
+      "title": "the Eternal Nightmare",
+      "image": "Nocturne.png",
+      "classes": [
+        "Fighter",
+        "Assassin"
+      ],
+      "positions": [
+        "JUNGLE"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Nunu",
+      "name": "Nunu & Willump",
+      "title": "the Boy and His Yeti",
+      "image": "Nunu.png",
+      "classes": [
+        "Tank",
+        "Mage"
+      ],
+      "positions": [
+        "JUNGLE"
+      ],
+      "damageType": "AP",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Naafiri",
+      "name": "Naafiri",
+      "title": "the Hound of a Hundred Bites",
+      "image": "Naafiri.png",
+      "classes": [
+        "Assassin",
+        "Fighter"
+      ],
+      "positions": [
+        "MIDDLE"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Olaf",
+      "name": "Olaf",
+      "title": "the Berserker",
+      "image": "Olaf.png",
+      "classes": [
+        "Fighter",
+        "Tank"
+      ],
+      "positions": [
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Orianna",
+      "name": "Orianna",
+      "title": "the Lady of Clockwork",
+      "image": "Orianna.png",
+      "classes": [
+        "Mage",
+        "Support"
+      ],
+      "positions": [
+        "MIDDLE"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Ornn",
+      "name": "Ornn",
+      "title": "The Fire below the Mountain",
+      "image": "Ornn.png",
+      "classes": [
+        "Tank"
+      ],
+      "positions": [
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Pantheon",
+      "name": "Pantheon",
+      "title": "the Unbreakable Spear",
+      "image": "Pantheon.png",
+      "classes": [
+        "Fighter",
+        "Assassin"
+      ],
+      "positions": [
+        "JUNGLE",
+        "MIDDLE",
+        "SUPPORT",
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Poppy",
+      "name": "Poppy",
+      "title": "Keeper of the Hammer",
+      "image": "Poppy.png",
+      "classes": [
+        "Tank",
+        "Fighter"
+      ],
+      "positions": [
+        "JUNGLE",
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Pyke",
+      "name": "Pyke",
+      "title": "the Bloodharbor Ripper",
+      "image": "Pyke.png",
+      "classes": [
+        "Support",
+        "Assassin"
+      ],
+      "positions": [
+        "SUPPORT"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Qiyana",
+      "name": "Qiyana",
+      "title": "Empress of the Elements",
+      "image": "Qiyana.png",
+      "classes": [
+        "Assassin"
+      ],
+      "positions": [
+        "MIDDLE"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Quinn",
+      "name": "Quinn",
+      "title": "Demacia's Wings",
+      "image": "Quinn.png",
+      "classes": [
+        "Marksman",
+        "Assassin"
+      ],
+      "positions": [
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Rakan",
+      "name": "Rakan",
+      "title": "The Charmer",
+      "image": "Rakan.png",
+      "classes": [
+        "Support"
+      ],
+      "positions": [
+        "SUPPORT"
+      ],
+      "damageType": "AP",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Rammus",
+      "name": "Rammus",
+      "title": "the Armordillo",
+      "image": "Rammus.png",
+      "classes": [
+        "Tank"
+      ],
+      "positions": [
+        "JUNGLE"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "RekSai",
+      "name": "Rek'Sai",
+      "title": "the Void Burrower",
+      "image": "RekSai.png",
+      "classes": [
+        "Fighter",
+        "Tank"
+      ],
+      "positions": [
+        "JUNGLE"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Rell",
+      "name": "Rell",
+      "title": "the Iron Maiden",
+      "image": "Rell.png",
+      "classes": [
+        "Tank",
+        "Support"
+      ],
+      "positions": [
+        "SUPPORT"
+      ],
+      "damageType": "AP",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Renata",
+      "name": "Renata Glasc",
+      "title": "the Chem-Baroness",
+      "image": "Renata.png",
+      "classes": [
+        "Support",
+        "Mage"
+      ],
+      "positions": [
+        "SUPPORT"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Renekton",
+      "name": "Renekton",
+      "title": "the Butcher of the Sands",
+      "image": "Renekton.png",
+      "classes": [
+        "Fighter",
+        "Tank"
+      ],
+      "positions": [
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Rengar",
+      "name": "Rengar",
+      "title": "the Pridestalker",
+      "image": "Rengar.png",
+      "classes": [
+        "Assassin",
+        "Fighter"
+      ],
+      "positions": [
+        "JUNGLE",
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Riven",
+      "name": "Riven",
+      "title": "the Exile",
+      "image": "Riven.png",
+      "classes": [
+        "Fighter",
+        "Assassin"
+      ],
+      "positions": [
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Rumble",
+      "name": "Rumble",
+      "title": "the Mechanized Menace",
+      "image": "Rumble.png",
+      "classes": [
+        "Fighter",
+        "Mage"
+      ],
+      "positions": [
+        "MIDDLE",
+        "TOP"
+      ],
+      "damageType": "AP",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Ryze",
+      "name": "Ryze",
+      "title": "the Rune Mage",
+      "image": "Ryze.png",
+      "classes": [
+        "Mage"
+      ],
+      "positions": [
+        "MIDDLE"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Samira",
+      "name": "Samira",
+      "title": "the Desert Rose",
+      "image": "Samira.png",
+      "classes": [
+        "Marksman",
+        "Assassin"
+      ],
+      "positions": [
+        "BOTTOM"
+      ],
+      "damageType": "AD",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Sejuani",
+      "name": "Sejuani",
+      "title": "Fury of the North",
+      "image": "Sejuani.png",
+      "classes": [
+        "Tank"
+      ],
+      "positions": [
+        "JUNGLE"
+      ],
+      "damageType": "AP",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Senna",
+      "name": "Senna",
+      "title": "the Redeemer",
+      "image": "Senna.png",
+      "classes": [
+        "Support",
+        "Marksman"
+      ],
+      "positions": [
+        "BOTTOM",
+        "SUPPORT"
+      ],
+      "damageType": "AD",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Seraphine",
+      "name": "Seraphine",
+      "title": "the Starry-Eyed Songstress",
+      "image": "Seraphine.png",
+      "classes": [
+        "Support",
+        "Mage"
+      ],
+      "positions": [
+        "BOTTOM",
+        "SUPPORT"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Sett",
+      "name": "Sett",
+      "title": "the Boss",
+      "image": "Sett.png",
+      "classes": [
+        "Fighter",
+        "Tank"
+      ],
+      "positions": [
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Shaco",
+      "name": "Shaco",
+      "title": "the Demon Jester",
+      "image": "Shaco.png",
+      "classes": [
+        "Assassin"
+      ],
+      "positions": [
+        "JUNGLE",
+        "SUPPORT"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Shen",
+      "name": "Shen",
+      "title": "the Eye of Twilight",
+      "image": "Shen.png",
+      "classes": [
+        "Tank"
+      ],
+      "positions": [
+        "SUPPORT",
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Shyvana",
+      "name": "Shyvana",
+      "title": "the Half-Dragon",
+      "image": "Shyvana.png",
+      "classes": [
+        "Fighter",
+        "Tank"
+      ],
+      "positions": [
+        "JUNGLE"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Singed",
+      "name": "Singed",
+      "title": "the Mad Chemist",
+      "image": "Singed.png",
+      "classes": [
+        "Tank",
+        "Mage"
+      ],
+      "positions": [
+        "TOP"
+      ],
+      "damageType": "AP",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Sion",
+      "name": "Sion",
+      "title": "The Undead Juggernaut",
+      "image": "Sion.png",
+      "classes": [
+        "Tank",
+        "Fighter"
+      ],
+      "positions": [
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Sivir",
+      "name": "Sivir",
+      "title": "the Battle Mistress",
+      "image": "Sivir.png",
+      "classes": [
+        "Marksman"
+      ],
+      "positions": [
+        "BOTTOM"
+      ],
+      "damageType": "AD",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Skarner",
+      "name": "Skarner",
+      "title": "the Primordial Sovereign",
+      "image": "Skarner.png",
+      "classes": [
+        "Tank",
+        "Fighter"
+      ],
+      "positions": [
+        "JUNGLE",
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Smolder",
+      "name": "Smolder",
+      "title": "the Fiery Fledgling",
+      "image": "Smolder.png",
+      "classes": [
+        "Marksman",
+        "Mage"
+      ],
+      "positions": [
+        "BOTTOM",
+        "MIDDLE",
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Sona",
+      "name": "Sona",
+      "title": "Maven of the Strings",
+      "image": "Sona.png",
+      "classes": [
+        "Support",
+        "Mage"
+      ],
+      "positions": [
+        "SUPPORT"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Soraka",
+      "name": "Soraka",
+      "title": "the Starchild",
+      "image": "Soraka.png",
+      "classes": [
+        "Support",
+        "Mage"
+      ],
+      "positions": [
+        "SUPPORT"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Swain",
+      "name": "Swain",
+      "title": "the Noxian Grand General",
+      "image": "Swain.png",
+      "classes": [
+        "Mage",
+        "Support"
+      ],
+      "positions": [
+        "BOTTOM",
+        "MIDDLE",
+        "SUPPORT"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Sylas",
+      "name": "Sylas",
+      "title": "the Unshackled",
+      "image": "Sylas.png",
+      "classes": [
+        "Mage",
+        "Assassin"
+      ],
+      "positions": [
+        "MIDDLE",
+        "TOP"
+      ],
+      "damageType": "AP",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Syndra",
+      "name": "Syndra",
+      "title": "the Dark Sovereign",
+      "image": "Syndra.png",
+      "classes": [
+        "Mage"
+      ],
+      "positions": [
+        "MIDDLE"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "TahmKench",
+      "name": "Tahm Kench",
+      "title": "The River King",
+      "image": "TahmKench.png",
+      "classes": [
+        "Tank",
+        "Support"
+      ],
+      "positions": [
+        "SUPPORT",
+        "TOP"
+      ],
+      "damageType": "AP",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Taliyah",
+      "name": "Taliyah",
+      "title": "the Stoneweaver",
+      "image": "Taliyah.png",
+      "classes": [
+        "Mage",
+        "Support"
+      ],
+      "positions": [
+        "JUNGLE",
+        "MIDDLE"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Talon",
+      "name": "Talon",
+      "title": "the Blade's Shadow",
+      "image": "Talon.png",
+      "classes": [
+        "Assassin"
+      ],
+      "positions": [
+        "JUNGLE"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Taric",
+      "name": "Taric",
+      "title": "the Shield of Valoran",
+      "image": "Taric.png",
+      "classes": [
+        "Support",
+        "Tank"
+      ],
+      "positions": [
+        "MIDDLE",
+        "SUPPORT"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Teemo",
+      "name": "Teemo",
+      "title": "the Swift Scout",
+      "image": "Teemo.png",
+      "classes": [
+        "Marksman",
+        "Mage"
+      ],
+      "positions": [
+        "JUNGLE",
+        "SUPPORT",
+        "TOP"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Thresh",
+      "name": "Thresh",
+      "title": "the Chain Warden",
+      "image": "Thresh.png",
+      "classes": [
+        "Support",
+        "Tank"
+      ],
+      "positions": [
+        "SUPPORT"
+      ],
+      "damageType": "AD",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Tristana",
+      "name": "Tristana",
+      "title": "the Yordle Gunner",
+      "image": "Tristana.png",
+      "classes": [
+        "Marksman",
+        "Assassin"
+      ],
+      "positions": [
+        "BOTTOM",
+        "MIDDLE"
+      ],
+      "damageType": "AD",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Trundle",
+      "name": "Trundle",
+      "title": "the Troll King",
+      "image": "Trundle.png",
+      "classes": [
+        "Fighter",
+        "Tank"
+      ],
+      "positions": [
+        "JUNGLE",
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Tryndamere",
+      "name": "Tryndamere",
+      "title": "the Barbarian King",
+      "image": "Tryndamere.png",
+      "classes": [
+        "Fighter",
+        "Assassin"
+      ],
+      "positions": [
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "TwistedFate",
+      "name": "Twisted Fate",
+      "title": "the Card Master",
+      "image": "TwistedFate.png",
+      "classes": [
+        "Mage",
+        "Marksman"
+      ],
+      "positions": [
+        "BOTTOM",
+        "MIDDLE",
+        "TOP"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Twitch",
+      "name": "Twitch",
+      "title": "the Plague Rat",
+      "image": "Twitch.png",
+      "classes": [
+        "Marksman",
+        "Assassin"
+      ],
+      "positions": [
+        "BOTTOM",
+        "SUPPORT"
+      ],
+      "damageType": "AD",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Udyr",
+      "name": "Udyr",
+      "title": "the Spirit Walker",
+      "image": "Udyr.png",
+      "classes": [
+        "Fighter",
+        "Tank"
+      ],
+      "positions": [
+        "JUNGLE",
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Urgot",
+      "name": "Urgot",
+      "title": "the Dreadnought",
+      "image": "Urgot.png",
+      "classes": [
+        "Fighter",
+        "Tank"
+      ],
+      "positions": [
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Varus",
+      "name": "Varus",
+      "title": "the Arrow of Retribution",
+      "image": "Varus.png",
+      "classes": [
+        "Marksman",
+        "Mage"
+      ],
+      "positions": [
+        "BOTTOM"
+      ],
+      "damageType": "AD",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Vayne",
+      "name": "Vayne",
+      "title": "the Night Hunter",
+      "image": "Vayne.png",
+      "classes": [
+        "Marksman",
+        "Assassin"
+      ],
+      "positions": [
+        "BOTTOM",
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Veigar",
+      "name": "Veigar",
+      "title": "the Tiny Master of Evil",
+      "image": "Veigar.png",
+      "classes": [
+        "Mage"
+      ],
+      "positions": [
+        "MIDDLE",
+        "SUPPORT"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Velkoz",
+      "name": "Vel'Koz",
+      "title": "the Eye of the Void",
+      "image": "Velkoz.png",
+      "classes": [
+        "Mage",
+        "Support"
+      ],
+      "positions": [
+        "MIDDLE",
+        "SUPPORT"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Vex",
+      "name": "Vex",
+      "title": "the Gloomist",
+      "image": "Vex.png",
+      "classes": [
+        "Mage"
+      ],
+      "positions": [
+        "MIDDLE"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Vi",
+      "name": "Vi",
+      "title": "the Piltover Enforcer",
+      "image": "Vi.png",
+      "classes": [
+        "Fighter",
+        "Assassin"
+      ],
+      "positions": [
+        "JUNGLE"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Viego",
+      "name": "Viego",
+      "title": "The Ruined King",
+      "image": "Viego.png",
+      "classes": [
+        "Fighter",
+        "Assassin"
+      ],
+      "positions": [
+        "JUNGLE"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Viktor",
+      "name": "Viktor",
+      "title": "the Herald of the Arcane",
+      "image": "Viktor.png",
+      "classes": [
+        "Mage"
+      ],
+      "positions": [
+        "MIDDLE"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Vladimir",
+      "name": "Vladimir",
+      "title": "the Crimson Reaper",
+      "image": "Vladimir.png",
+      "classes": [
+        "Mage",
+        "Fighter"
+      ],
+      "positions": [
+        "MIDDLE",
+        "TOP"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Volibear",
+      "name": "Volibear",
+      "title": "the Relentless Storm",
+      "image": "Volibear.png",
+      "classes": [
+        "Fighter",
+        "Tank"
+      ],
+      "positions": [
+        "JUNGLE",
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Warwick",
+      "name": "Warwick",
+      "title": "the Uncaged Wrath of Zaun",
+      "image": "Warwick.png",
+      "classes": [
+        "Fighter",
+        "Tank"
+      ],
+      "positions": [
+        "JUNGLE",
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "MonkeyKing",
+      "name": "Wukong",
+      "title": "the Monkey King",
+      "image": "MonkeyKing.png",
+      "classes": [
+        "Fighter",
+        "Tank"
+      ],
+      "positions": [
+        "JUNGLE",
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Xayah",
+      "name": "Xayah",
+      "title": "the Rebel",
+      "image": "Xayah.png",
+      "classes": [
+        "Marksman"
+      ],
+      "positions": [
+        "BOTTOM"
+      ],
+      "damageType": "AD",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Xerath",
+      "name": "Xerath",
+      "title": "the Magus Ascendant",
+      "image": "Xerath.png",
+      "classes": [
+        "Mage",
+        "Support"
+      ],
+      "positions": [
+        "MIDDLE",
+        "SUPPORT"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "XinZhao",
+      "name": "Xin Zhao",
+      "title": "the Seneschal of Demacia",
+      "image": "XinZhao.png",
+      "classes": [
+        "Fighter",
+        "Tank"
+      ],
+      "positions": [
+        "JUNGLE"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Yasuo",
+      "name": "Yasuo",
+      "title": "the Unforgiven",
+      "image": "Yasuo.png",
+      "classes": [
+        "Fighter",
+        "Assassin"
+      ],
+      "positions": [
+        "BOTTOM",
+        "MIDDLE",
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Yone",
+      "name": "Yone",
+      "title": "the Unforgotten",
+      "image": "Yone.png",
+      "classes": [
+        "Fighter",
+        "Assassin"
+      ],
+      "positions": [
+        "MIDDLE",
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Yorick",
+      "name": "Yorick",
+      "title": "Shepherd of Souls",
+      "image": "Yorick.png",
+      "classes": [
+        "Fighter",
+        "Tank"
+      ],
+      "positions": [
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Yunara",
+      "name": "Yunara",
+      "title": "the Unbroken Faith",
+      "image": "Yunara.png",
+      "classes": [
+        "Marksman"
+      ],
+      "positions": [
+        "BOTTOM"
+      ],
+      "damageType": "AD",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Yuumi",
+      "name": "Yuumi",
+      "title": "the Magical Cat",
+      "image": "Yuumi.png",
+      "classes": [
+        "Support",
+        "Mage"
+      ],
+      "positions": [
+        "SUPPORT"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Zac",
+      "name": "Zac",
+      "title": "the Secret Weapon",
+      "image": "Zac.png",
+      "classes": [
+        "Tank",
+        "Fighter"
+      ],
+      "positions": [
+        "JUNGLE",
+        "SUPPORT",
+        "TOP"
+      ],
+      "damageType": "AP",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Zed",
+      "name": "Zed",
+      "title": "the Master of Shadows",
+      "image": "Zed.png",
+      "classes": [
+        "Assassin"
+      ],
+      "positions": [
+        "JUNGLE",
+        "MIDDLE"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Zeri",
+      "name": "Zeri",
+      "title": "The Spark of Zaun",
+      "image": "Zeri.png",
+      "classes": [
+        "Marksman"
+      ],
+      "positions": [
+        "BOTTOM"
+      ],
+      "damageType": "AD",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Ziggs",
+      "name": "Ziggs",
+      "title": "the Hexplosives Expert",
+      "image": "Ziggs.png",
+      "classes": [
+        "Mage"
+      ],
+      "positions": [
+        "BOTTOM",
+        "MIDDLE"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Zilean",
+      "name": "Zilean",
+      "title": "the Chronokeeper",
+      "image": "Zilean.png",
+      "classes": [
+        "Support",
+        "Mage"
+      ],
+      "positions": [
+        "SUPPORT"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Zoe",
+      "name": "Zoe",
+      "title": "the Aspect of Twilight",
+      "image": "Zoe.png",
+      "classes": [
+        "Mage"
+      ],
+      "positions": [
+        "MIDDLE"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Zyra",
+      "name": "Zyra",
+      "title": "Rise of the Thorns",
+      "image": "Zyra.png",
+      "classes": [
+        "Mage",
+        "Support"
+      ],
+      "positions": [
+        "SUPPORT"
+      ],
+      "damageType": "AP",
+      "attackType": "RANGED"
+    },
+    {
+      "id": "Zaahen",
+      "name": "Zaahen",
+      "title": "The Unsundered",
+      "image": "Zaahen.png",
+      "classes": [
+        "Fighter"
+      ],
+      "positions": [
+        "TOP",
+        "JUNGLE"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    },
+    {
+      "id": "Aatrox",
+      "name": "Aatrox",
+      "title": "the Darkin Blade",
+      "image": "Aatrox.png",
+      "classes": [
+        "Fighter"
+      ],
+      "positions": [
+        "TOP"
+      ],
+      "damageType": "AD",
+      "attackType": "MELEE"
+    }
+  ],
+  "items": [
+    {
+      "id": "8020",
+      "name": "Abyssal Mask",
+      "image": "8020.png",
+      "gold": 2650,
+      "stats": {
+        "health": 350,
+        "magicResist": 45,
+        "abilityHaste": 15
+      }
+    },
+    {
+      "id": "2522",
+      "name": "Actualizer",
+      "image": "2522.png",
+      "gold": 2800,
+      "stats": {
+        "abilityPower": 90,
+        "mana": 300,
+        "abilityHaste": 10
+      }
+    },
+    {
+      "id": "3003",
+      "name": "Archangel's Staff",
+      "image": "3003.png",
+      "gold": 2900,
+      "stats": {
+        "abilityPower": 70,
+        "mana": 600,
+        "abilityHaste": 25
+      }
+    },
+    {
+      "id": "3504",
+      "name": "Ardent Censer",
+      "image": "3504.png",
+      "gold": 2200,
+      "stats": {
+        "abilityPower": 45,
+        "healAndShieldPower": 10,
+        "manaRegen": 125,
+        "moveSpeed": 4
+      }
+    },
+    {
+      "id": "6696",
+      "name": "Axiom Arc",
+      "image": "6696.png",
+      "gold": 2750,
+      "stats": {
+        "attackDamage": 55,
+        "lethality": 18,
+        "abilityHaste": 20
+      }
+    },
+    {
+      "id": "2524",
+      "name": "Bandlepipes",
+      "image": "2524.png",
+      "gold": 2300,
+      "stats": {
+        "health": 200,
+        "abilityHaste": 15,
+        "armor": 20,
+        "magicResist": 20
+      }
+    },
+    {
+      "id": "3102",
+      "name": "Banshee's Veil",
+      "image": "3102.png",
+      "gold": 3000,
+      "stats": {
+        "abilityPower": 105,
+        "magicResist": 40
+      }
+    },
+    {
+      "id": "2520",
+      "name": "Bastionbreaker",
+      "image": "2520.png",
+      "gold": 3000,
+      "stats": {
+        "attackDamage": 55,
+        "lethality": 18,
+        "abilityHaste": 15
+      }
+    },
+    {
+      "id": "3071",
+      "name": "Black Cleaver",
+      "image": "3071.png",
+      "gold": 3000,
+      "stats": {
+        "attackDamage": 45,
+        "health": 400,
+        "abilityHaste": 20
+      }
+    },
+    {
+      "id": "2503",
+      "name": "Blackfire Torch",
+      "image": "2503.png",
+      "gold": 2800,
+      "stats": {
+        "abilityPower": 80,
+        "mana": 600,
+        "abilityHaste": 20
+      }
+    },
+    {
+      "id": "3153",
+      "name": "Blade of The Ruined King",
+      "image": "3153.png",
+      "gold": 3200,
+      "stats": {
+        "attackDamage": 40,
+        "attackSpeed": 25,
+        "lifeSteal": 10
+      }
+    },
+    {
+      "id": "8010",
+      "name": "Bloodletter's Curse",
+      "image": "8010.png",
+      "gold": 2900,
+      "stats": {
+        "abilityPower": 65,
+        "health": 400,
+        "abilityHaste": 15
+      }
+    },
+    {
+      "id": "3072",
+      "name": "Bloodthirster",
+      "image": "3072.png",
+      "gold": 3400,
+      "stats": {
+        "attackDamage": 80,
+        "lifeSteal": 15
+      }
+    },
+    {
+      "id": "6609",
+      "name": "Chempunk Chainsword",
+      "image": "6609.png",
+      "gold": 3000,
+      "stats": {
+        "attackDamage": 45,
+        "health": 450,
+        "abilityHaste": 15
+      }
+    },
+    {
+      "id": "4629",
+      "name": "Cosmic Drive",
+      "image": "4629.png",
+      "gold": 3000,
+      "stats": {
+        "abilityPower": 70,
+        "health": 350,
+        "abilityHaste": 25,
+        "moveSpeed": 4
+      }
+    },
+    {
+      "id": "3137",
+      "name": "Cryptbloom",
+      "image": "3137.png",
+      "gold": 3000,
+      "stats": {
+        "abilityPower": 75,
+        "magicPenetration": 30,
+        "abilityHaste": 20
+      }
+    },
+    {
+      "id": "6621",
+      "name": "Dawncore",
+      "image": "6621.png",
+      "gold": 2500,
+      "stats": {
+        "abilityPower": 45,
+        "healAndShieldPower": 16,
+        "manaRegen": 100
+      }
+    },
+    {
+      "id": "3742",
+      "name": "Dead Man's Plate",
+      "image": "3742.png",
+      "gold": 2900,
+      "stats": {
+        "health": 350,
+        "armor": 55,
+        "moveSpeed": 4
+      }
+    },
+    {
+      "id": "6333",
+      "name": "Death's Dance",
+      "image": "6333.png",
+      "gold": 3300,
+      "stats": {
+        "attackDamage": 60,
+        "armor": 50,
+        "abilityHaste": 15
+      }
+    },
+    {
+      "id": "2510",
+      "name": "Dusk and Dawn",
+      "image": "2510.png",
+      "gold": 3100,
+      "stats": {
+        "health": 300,
+        "abilityPower": 60,
+        "abilityHaste": 20,
+        "attackSpeed": 20
+      }
+    },
+    {
+      "id": "6620",
+      "name": "Echoes of Helia",
+      "image": "6620.png",
+      "gold": 2200,
+      "stats": {
+        "abilityPower": 35,
+        "health": 200,
+        "abilityHaste": 20,
+        "manaRegen": 125
+      }
+    },
+    {
+      "id": "6692",
+      "name": "Eclipse",
+      "image": "6692.png",
+      "gold": 2900,
+      "stats": {
+        "attackDamage": 60,
+        "abilityHaste": 15
+      }
+    },
+    {
+      "id": "3814",
+      "name": "Edge of Night",
+      "image": "3814.png",
+      "gold": 3000,
+      "stats": {
+        "attackDamage": 50,
+        "lethality": 15,
+        "health": 250
+      }
+    },
+    {
+      "id": "2517",
+      "name": "Endless Hunger",
+      "image": "2517.png",
+      "gold": 3100,
+      "stats": {
+        "attackDamage": 65,
+        "omnivamp": 5,
+        "tenacity": 20
+      }
+    },
+    {
+      "id": "3508",
+      "name": "Essence Reaver",
+      "image": "3508.png",
+      "gold": 3050,
+      "stats": {
+        "attackDamage": 50,
+        "abilityHaste": 20,
+        "critChance": 25
+      }
+    },
+    {
+      "id": "3073",
+      "name": "Experimental Hexplate",
+      "image": "3073.png",
+      "gold": 3000,
+      "stats": {
+        "attackDamage": 40,
+        "attackSpeed": 20,
+        "health": 450
+      }
+    },
+    {
+      "id": "2512",
+      "name": "Fiendhunter Bolts",
+      "image": "2512.png",
+      "gold": 2650,
+      "stats": {
+        "attackSpeed": 45,
+        "critChance": 25,
+        "moveSpeed": 4
+      }
+    },
+    {
+      "id": "4401",
+      "name": "Force of Nature",
+      "image": "4401.png",
+      "gold": 2800,
+      "stats": {
+        "health": 400,
+        "magicResist": 55,
+        "moveSpeed": 4
+      }
+    },
+    {
+      "id": "3110",
+      "name": "Frozen Heart",
+      "image": "3110.png",
+      "gold": 2500,
+      "stats": {
+        "armor": 75,
+        "mana": 400,
+        "abilityHaste": 20
+      }
+    },
+    {
+      "id": "3026",
+      "name": "Guardian Angel",
+      "image": "3026.png",
+      "gold": 3200,
+      "stats": {
+        "attackDamage": 55,
+        "armor": 45
+      }
+    },
+    {
+      "id": "3124",
+      "name": "Guinsoo's Rageblade",
+      "image": "3124.png",
+      "gold": 3000,
+      "stats": {
+        "attackDamage": 30,
+        "abilityPower": 30,
+        "attackSpeed": 25
+      }
+    },
+    {
+      "id": "3084",
+      "name": "Heartsteel",
+      "image": "3084.png",
+      "gold": 3000,
+      "stats": {
+        "health": 900,
+        "healthRegen": 100
+      }
+    },
+    {
+      "id": "2523",
+      "name": "Hexoptics C44",
+      "image": "2523.png",
+      "gold": 2800,
+      "stats": {
+        "attackDamage": 55,
+        "critChance": 25
+      }
+    },
+    {
+      "id": "3146",
+      "name": "Hextech Gunblade",
+      "image": "3146.png",
+      "gold": 3000,
+      "stats": {
+        "abilityPower": 80,
+        "attackDamage": 40,
+        "omnivamp": 10
+      }
+    },
+    {
+      "id": "3152",
+      "name": "Hextech Rocketbelt",
+      "image": "3152.png",
+      "gold": 2650,
+      "stats": {
+        "abilityPower": 60,
+        "health": 350,
+        "abilityHaste": 10
+      }
+    },
+    {
+      "id": "6664",
+      "name": "Hollow Radiance",
+      "image": "6664.png",
+      "gold": 2800,
+      "stats": {
+        "health": 400,
+        "magicResist": 40,
+        "abilityHaste": 10,
+        "healthRegen": 100
+      }
+    },
+    {
+      "id": "4628",
+      "name": "Horizon Focus",
+      "image": "4628.png",
+      "gold": 2700,
+      "stats": {
+        "abilityPower": 75,
+        "abilityHaste": 25
+      }
+    },
+    {
+      "id": "6697",
+      "name": "Hubris",
+      "image": "6697.png",
+      "gold": 2800,
+      "stats": {
+        "attackDamage": 55,
+        "lethality": 18,
+        "abilityHaste": 10
+      }
+    },
+    {
+      "id": "3181",
+      "name": "Hullbreaker",
+      "image": "3181.png",
+      "gold": 3000,
+      "stats": {
+        "attackDamage": 40,
+        "health": 500,
+        "moveSpeed": 4
+      }
+    },
+    {
+      "id": "6662",
+      "name": "Iceborn Gauntlet",
+      "image": "6662.png",
+      "gold": 2900,
+      "stats": {
+        "health": 300,
+        "armor": 50,
+        "abilityHaste": 15
+      }
+    },
+    {
+      "id": "6673",
+      "name": "Immortal Shieldbow",
+      "image": "6673.png",
+      "gold": 3000,
+      "stats": {
+        "attackDamage": 55,
+        "critChance": 25
+      }
+    },
+    {
+      "id": "4005",
+      "name": "Imperial Mandate",
+      "image": "4005.png",
+      "gold": 2400,
+      "stats": {
+        "abilityPower": 60,
+        "abilityHaste": 15,
+        "manaRegen": 150
+      }
+    },
+    {
+      "id": "3031",
+      "name": "Infinity Edge",
+      "image": "3031.png",
+      "gold": 3500,
+      "stats": {
+        "attackDamage": 75,
+        "critChance": 25,
+        "critDamage": 30
+      }
+    },
+    {
+      "id": "6665",
+      "name": "Jak'Sho, The Protean",
+      "image": "6665.png",
+      "gold": 3200,
+      "stats": {
+        "health": 350,
+        "armor": 45,
+        "magicResist": 45
+      }
+    },
+    {
+      "id": "2504",
+      "name": "Kaenic Rookern",
+      "image": "2504.png",
+      "gold": 2900,
+      "stats": {
+        "health": 400,
+        "magicResist": 80,
+        "healthRegen": 100
+      }
+    },
+    {
+      "id": "3109",
+      "name": "Knight's Vow",
+      "image": "3109.png",
+      "gold": 2300,
+      "stats": {
+        "health": 200,
+        "armor": 40,
+        "abilityHaste": 10,
+        "healthRegen": 100
+      }
+    },
+    {
+      "id": "6672",
+      "name": "Kraken Slayer",
+      "image": "6672.png",
+      "gold": 3000,
+      "stats": {
+        "attackDamage": 45,
+        "attackSpeed": 40,
+        "moveSpeed": 4
+      }
+    },
+    {
+      "id": "6653",
+      "name": "Liandry's Torment",
+      "image": "6653.png",
+      "gold": 3000,
+      "stats": {
+        "abilityPower": 60,
+        "health": 300
+      }
+    },
+    {
+      "id": "3100",
+      "name": "Lich Bane",
+      "image": "3100.png",
+      "gold": 2900,
+      "stats": {
+        "abilityPower": 100,
+        "moveSpeed": 6,
+        "abilityHaste": 10
+      }
+    },
+    {
+      "id": "3190",
+      "name": "Locket of the Iron Solari",
+      "image": "3190.png",
+      "gold": 2200,
+      "stats": {
+        "health": 200,
+        "armor": 30,
+        "magicResist": 30,
+        "abilityHaste": 10
+      }
+    },
+    {
+      "id": "3036",
+      "name": "Lord Dominik's Regards",
+      "image": "3036.png",
+      "gold": 3300,
+      "stats": {
+        "attackDamage": 35,
+        "armorPenetration": 35,
+        "critChance": 25
+      }
+    },
+    {
+      "id": "6655",
+      "name": "Luden's Echo",
+      "image": "6655.png",
+      "gold": 2750,
+      "stats": {
+        "abilityPower": 100,
+        "mana": 600,
+        "abilityHaste": 10
+      }
+    },
+    {
+      "id": "3118",
+      "name": "Malignance",
+      "image": "3118.png",
+      "gold": 2700,
+      "stats": {
+        "abilityPower": 90,
+        "mana": 600,
+        "abilityHaste": 15
+      }
+    },
+    {
+      "id": "3004",
+      "name": "Manamune",
+      "image": "3004.png",
+      "gold": 2900,
+      "stats": {
+        "attackDamage": 35,
+        "mana": 500,
+        "abilityHaste": 15
+      }
+    },
+    {
+      "id": "3156",
+      "name": "Maw of Malmortius",
+      "image": "3156.png",
+      "gold": 3100,
+      "stats": {
+        "attackDamage": 60,
+        "abilityHaste": 15,
+        "magicResist": 40
+      }
+    },
+    {
+      "id": "3139",
+      "name": "Mercurial Scimitar",
+      "image": "3139.png",
+      "gold": 3200,
+      "stats": {
+        "attackDamage": 50,
+        "magicResist": 35,
+        "lifeSteal": 10
+      }
+    },
+    {
+      "id": "3222",
+      "name": "Mikael's Blessing",
+      "image": "3222.png",
+      "gold": 2300,
+      "stats": {
+        "health": 250,
+        "manaRegen": 100,
+        "healAndShieldPower": 12,
+        "abilityHaste": 15
+      }
+    },
+    {
+      "id": "6617",
+      "name": "Moonstone Renewer",
+      "image": "6617.png",
+      "gold": 2200,
+      "stats": {
+        "abilityPower": 25,
+        "health": 200,
+        "abilityHaste": 20,
+        "manaRegen": 125
+      }
+    },
+    {
+      "id": "3165",
+      "name": "Morellonomicon",
+      "image": "3165.png",
+      "gold": 2850,
+      "stats": {
+        "abilityPower": 75,
+        "health": 350,
+        "abilityHaste": 15
+      }
+    },
+    {
+      "id": "3033",
+      "name": "Mortal Reminder",
+      "image": "3033.png",
+      "gold": 3000,
+      "stats": {
+        "attackDamage": 35,
+        "armorPenetration": 30,
+        "critChance": 25
+      }
+    },
+    {
+      "id": "3115",
+      "name": "Nashor's Tooth",
+      "image": "3115.png",
+      "gold": 2900,
+      "stats": {
+        "abilityPower": 80,
+        "attackSpeed": 50,
+        "abilityHaste": 15
+      }
+    },
+    {
+      "id": "6675",
+      "name": "Navori Flickerblade",
+      "image": "6675.png",
+      "gold": 2650,
+      "stats": {
+        "attackSpeed": 40,
+        "critChance": 25,
+        "moveSpeed": 4
+      }
+    },
+    {
+      "id": "2501",
+      "name": "Overlord's Bloodmail",
+      "image": "2501.png",
+      "gold": 3300,
+      "stats": {
+        "attackDamage": 40,
+        "health": 550
+      }
+    },
+    {
+      "id": "3046",
+      "name": "Phantom Dancer",
+      "image": "3046.png",
+      "gold": 2650,
+      "stats": {
+        "attackSpeed": 65,
+        "critChance": 25,
+        "moveSpeed": 10
+      }
+    },
+    {
+      "id": "6698",
+      "name": "Profane Hydra",
+      "image": "6698.png",
+      "gold": 2850,
+      "stats": {
+        "attackDamage": 55,
+        "lethality": 18,
+        "abilityHaste": 10
+      }
+    },
+    {
+      "id": "2525",
+      "name": "Protoplasm Harness",
+      "image": "2525.png",
+      "gold": 2600,
+      "stats": {
+        "health": 600,
+        "abilityHaste": 20
+      }
+    },
+    {
+      "id": "3089",
+      "name": "Rabadon's Deathcap",
+      "image": "3089.png",
+      "gold": 3500,
+      "stats": {
+        "abilityPower": 130
+      }
+    },
+    {
+      "id": "3143",
+      "name": "Randuin's Omen",
+      "image": "3143.png",
+      "gold": 2700,
+      "stats": {
+        "health": 350,
+        "armor": 75
+      }
+    },
+    {
+      "id": "3094",
+      "name": "Rapid Firecannon",
+      "image": "3094.png",
+      "gold": 2650,
+      "stats": {
+        "attackSpeed": 35,
+        "critChance": 25,
+        "moveSpeed": 4
+      }
+    },
+    {
+      "id": "3074",
+      "name": "Ravenous Hydra",
+      "image": "3074.png",
+      "gold": 3300,
+      "stats": {
+        "attackDamage": 65,
+        "abilityHaste": 15,
+        "lifeSteal": 12
+      }
+    },
+    {
+      "id": "3107",
+      "name": "Redemption",
+      "image": "3107.png",
+      "gold": 2300,
+      "stats": {
+        "abilityPower": 30,
+        "abilityHaste": 15,
+        "manaRegen": 100,
+        "healAndShieldPower": 10
+      }
+    },
+    {
+      "id": "4633",
+      "name": "Riftmaker",
+      "image": "4633.png",
+      "gold": 3100,
+      "stats": {
+        "abilityPower": 70,
+        "health": 350,
+        "abilityHaste": 15
+      }
+    },
+    {
+      "id": "6657",
+      "name": "Rod of Ages",
+      "image": "6657.png",
+      "gold": 2600,
+      "stats": {
+        "abilityPower": 45,
+        "health": 350,
+        "mana": 500
+      }
+    },
+    {
+      "id": "3085",
+      "name": "Runaan's Hurricane",
+      "image": "3085.png",
+      "gold": 2650,
+      "stats": {
+        "attackSpeed": 40,
+        "critChance": 25,
+        "moveSpeed": 5
+      }
+    },
+    {
+      "id": "3116",
+      "name": "Rylai's Crystal Scepter",
+      "image": "3116.png",
+      "gold": 2600,
+      "stats": {
+        "abilityPower": 65,
+        "health": 400
+      }
+    },
+    {
+      "id": "6695",
+      "name": "Serpent's Fang",
+      "image": "6695.png",
+      "gold": 2500,
+      "stats": {
+        "attackDamage": 55,
+        "lethality": 15
+      }
+    },
+    {
+      "id": "6694",
+      "name": "Serylda's Grudge",
+      "image": "6694.png",
+      "gold": 3000,
+      "stats": {
+        "attackDamage": 45,
+        "armorPenetration": 35,
+        "abilityHaste": 15
+      }
+    },
+    {
+      "id": "4645",
+      "name": "Shadowflame",
+      "image": "4645.png",
+      "gold": 3200,
+      "stats": {
+        "abilityPower": 110,
+        "magicPenetration": 15
+      }
+    },
+    {
+      "id": "2065",
+      "name": "Shurelya's Battlesong",
+      "image": "2065.png",
+      "gold": 2200,
+      "stats": {
+        "abilityPower": 50,
+        "abilityHaste": 15,
+        "moveSpeed": 4,
+        "manaRegen": 125
+      }
+    },
+    {
+      "id": "3161",
+      "name": "Spear of Shojin",
+      "image": "3161.png",
+      "gold": 3100,
+      "stats": {
+        "attackDamage": 45,
+        "health": 450
+      }
+    },
+    {
+      "id": "3065",
+      "name": "Spirit Visage",
+      "image": "3065.png",
+      "gold": 2700,
+      "stats": {
+        "health": 400,
+        "magicResist": 50,
+        "abilityHaste": 10,
+        "healthRegen": 100
+      }
+    },
+    {
+      "id": "6616",
+      "name": "Staff of Flowing Water",
+      "image": "6616.png",
+      "gold": 2250,
+      "stats": {
+        "abilityPower": 35,
+        "healAndShieldPower": 10,
+        "manaRegen": 125,
+        "abilityHaste": 10
+      }
+    },
+    {
+      "id": "3087",
+      "name": "Statikk Shiv",
+      "image": "3087.png",
+      "gold": 3000,
+      "stats": {
+        "attackDamage": 45,
+        "abilityPower": 45,
+        "attackSpeed": 30,
+        "moveSpeed": 4
+      }
+    },
+    {
+      "id": "3053",
+      "name": "Sterak's Gage",
+      "image": "3053.png",
+      "gold": 3200,
+      "stats": {
+        "health": 400,
+        "tenacity": 20
+      }
+    },
+    {
+      "id": "3095",
+      "name": "Stormrazor",
+      "image": "3095.png",
+      "gold": 3200,
+      "stats": {
+        "attackDamage": 50,
+        "attackSpeed": 25,
+        "critChance": 25
+      }
+    },
+    {
+      "id": "4646",
+      "name": "Stormsurge",
+      "image": "4646.png",
+      "gold": 2800,
+      "stats": {
+        "abilityPower": 90,
+        "magicPenetration": 15,
+        "moveSpeed": 6
+      }
+    },
+    {
+      "id": "6631",
+      "name": "Stridebreaker",
+      "image": "6631.png",
+      "gold": 3300,
+      "stats": {
+        "attackDamage": 40,
+        "attackSpeed": 25,
+        "health": 450
+      }
+    },
+    {
+      "id": "6610",
+      "name": "Sundered Sky",
+      "image": "6610.png",
+      "gold": 3100,
+      "stats": {
+        "attackDamage": 40,
+        "health": 400,
+        "abilityHaste": 10
+      }
+    },
+    {
+      "id": "3068",
+      "name": "Sunfire Aegis",
+      "image": "3068.png",
+      "gold": 2800,
+      "stats": {
+        "health": 350,
+        "armor": 50,
+        "abilityHaste": 10
+      }
+    },
+    {
+      "id": "3302",
+      "name": "Terminus",
+      "image": "3302.png",
+      "gold": 3000,
+      "stats": {
+        "attackDamage": 30,
+        "attackSpeed": 35
+      }
+    },
+    {
+      "id": "6676",
+      "name": "The Collector",
+      "image": "6676.png",
+      "gold": 3000,
+      "stats": {
+        "attackDamage": 50,
+        "lethality": 10,
+        "critChance": 25
+      }
+    },
+    {
+      "id": "3075",
+      "name": "Thornmail",
+      "image": "3075.png",
+      "gold": 2450,
+      "stats": {
+        "health": 150,
+        "armor": 75
+      }
+    },
+    {
+      "id": "3748",
+      "name": "Titanic Hydra",
+      "image": "3748.png",
+      "gold": 3300,
+      "stats": {
+        "attackDamage": 40,
+        "health": 600
+      }
+    },
+    {
+      "id": "3078",
+      "name": "Trinity Force",
+      "image": "3078.png",
+      "gold": 3333,
+      "stats": {
+        "attackDamage": 36,
+        "attackSpeed": 30,
+        "health": 333,
+        "abilityHaste": 15
+      }
+    },
+    {
+      "id": "3179",
+      "name": "Umbral Glaive",
+      "image": "3179.png",
+      "gold": 2800,
+      "stats": {
+        "attackDamage": 60,
+        "lethality": 18,
+        "abilityHaste": 15
+      }
+    },
+    {
+      "id": "2502",
+      "name": "Unending Despair",
+      "image": "2502.png",
+      "gold": 2800,
+      "stats": {
+        "health": 400,
+        "armor": 50,
+        "abilityHaste": 15
+      }
+    },
+    {
+      "id": "3135",
+      "name": "Void Staff",
+      "image": "3135.png",
+      "gold": 3000,
+      "stats": {
+        "abilityPower": 95,
+        "magicPenetration": 40
+      }
+    },
+    {
+      "id": "6699",
+      "name": "Voltaic Cyclosword",
+      "image": "6699.png",
+      "gold": 3000,
+      "stats": {
+        "attackDamage": 55,
+        "lethality": 10,
+        "abilityHaste": 10
+      }
+    },
+    {
+      "id": "3083",
+      "name": "Warmog's Armor",
+      "image": "3083.png",
+      "gold": 3100,
+      "stats": {
+        "health": 1000,
+        "healthRegen": 100
+      }
+    },
+    {
+      "id": "3119",
+      "name": "Winter's Approach",
+      "image": "3119.png",
+      "gold": 2400,
+      "stats": {
+        "health": 550,
+        "mana": 500,
+        "abilityHaste": 15
+      }
+    },
+    {
+      "id": "3091",
+      "name": "Wit's End",
+      "image": "3091.png",
+      "gold": 2800,
+      "stats": {
+        "attackSpeed": 50,
+        "magicResist": 45,
+        "tenacity": 20
+      }
+    },
+    {
+      "id": "3142",
+      "name": "Youmuu's Ghostblade",
+      "image": "3142.png",
+      "gold": 2800,
+      "stats": {
+        "attackDamage": 55,
+        "lethality": 18,
+        "moveSpeed": 4
+      }
+    },
+    {
+      "id": "3032",
+      "name": "Yun Tal Wildarrows",
+      "image": "3032.png",
+      "gold": 3000,
+      "stats": {
+        "attackDamage": 50,
+        "attackSpeed": 45,
+        "critChance": 0
+      }
+    },
+    {
+      "id": "3050",
+      "name": "Zeke's Convergence",
+      "image": "3050.png",
+      "gold": 2200,
+      "stats": {
+        "health": 300,
+        "armor": 25,
+        "magicResist": 25,
+        "abilityHaste": 10
+      }
+    },
+    {
+      "id": "3157",
+      "name": "Zhonya's Hourglass",
+      "image": "3157.png",
+      "gold": 3250,
+      "stats": {
+        "abilityPower": 105,
+        "armor": 50
+      }
+    }
+  ]
+}

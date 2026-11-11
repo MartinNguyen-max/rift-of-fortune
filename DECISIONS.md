@@ -12,3 +12,13 @@ Decisions made while building the MVP autonomously, with the reasoning.
 - **`npm run data` runs `node scripts/fetch-data.ts` directly.** Node 22.18+ strips TypeScript types natively, so no `tsx`/`ts-node` dependency.
 - **`@dnd-kit/core` only.** Sortable/utilities aren't needed for dropping cards into slots.
 - **npm audit warning (minimatch, moderate)** comes from ESLint's dev-only tooling. It does not ship to the browser. The only "fix" downgrades ESLint, so it was left as is.
+
+## Step 2 – Data
+
+- **One output file, `src/data/game-data.json`** (`{ patch, champions, items }`), typed by `src/data/types.ts` and loaded through `src/data/index.ts`.
+- **Pure transform logic lives in `scripts/transform.ts`** (tested), the network/file code in `scripts/fetch-data.ts`.
+- **"Full item" filter:** on Summoner's Rift (map 11), purchasable, built from components and builds into nothing, total cost ≥ 2000 gold, not boots/consumable, no champion- or Ornn-only items, id < 10000. The id rule drops copies of items for other modes (Arena/Swiftplay ids like `323003`). The gold rule drops support-quest upgrades (400g), Mejai's (1500g) and Gunmetal Greaves. Duplicates by name keep the lowest id. Result: ~105 items.
+- **Item stats are parsed from the description's `<stats>` block**, not Data Dragon's `stats` object, because the latter misses Ability Haste, Lethality, Omnivamp and more.
+- **Damage type and melee/ranged come from Meraki** (`adaptiveType`, `attackType`).
+- **New champions missing from Meraki** (currently Locke and Zaahen) get positions guessed from their main Data Dragon class, and a damage type from `info.attack` vs `info.magic`. The script prints a warning listing them.
+- **Images are loaded from Riot's Data Dragon CDN at runtime**, not committed. This keeps the repo small, and it's how Riot intends the CDN to be used. Only the JSON data is committed.
