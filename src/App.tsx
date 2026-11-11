@@ -10,14 +10,24 @@ import { useCallback, useReducer, useState } from 'react'
 import { ITEM_POOL_ID, itemIdFromDragId, ROLLED_CHAMPION_ID } from './components/dragIds'
 import { DraftPanel } from './components/DraftPanel'
 import { ItemPanel } from './components/ItemPanel'
+import { ResultsPanel } from './components/ResultsPanel'
 import { RiftMap } from './components/RiftMap'
 import { RoleSlot } from './components/RoleSlot'
 import { gameData } from './data'
 import type { Role } from './data/types'
 import { rollChampion } from './game/draft'
-import { canFinish, canPlace, canRoll, canStartItems, gameReducer, initialGameState } from './game/gameState'
+import {
+  canFinish,
+  canPlace,
+  canRoll,
+  canStartItems,
+  gameReducer,
+  getTeamMembers,
+  initialGameState,
+} from './game/gameState'
 import { canAssignItem, drawItems, itemsForRole, ITEMS_PER_CHAMPION, unassignedItems } from './game/items'
 import { isRole } from './game/roles'
+import { rateTeam } from './game/scoring/rateTeam'
 import { emptyRoles } from './game/team'
 
 export default function App() {
@@ -50,6 +60,7 @@ export default function App() {
   }
 
   const isItemPhase = state.phase === 'items'
+  const rating = state.phase === 'results' ? rateTeam(getTeamMembers(state)) : null
   const hasRoomForItem = (role: Role) => itemsForRole(state.items, state.assignments, role).length < ITEMS_PER_CHAMPION
 
   const renderSlot = (role: Role) => {
@@ -76,6 +87,7 @@ export default function App() {
         highlighted={isItemPhase && assignable}
         onActivate={isItemPhase && assignable ? () => assignItem(selectedItemId, role) : undefined}
         onItemClick={isItemPhase ? unassignItem : undefined}
+        score={rating?.champions.find((championRating) => championRating.role === role)?.score}
       />
     )
   }
@@ -88,7 +100,7 @@ export default function App() {
         </header>
         <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center gap-8 px-4 pb-8 lg:flex-row lg:items-start lg:justify-center">
           <RiftMap renderSlot={renderSlot} />
-          <div className="w-full max-w-sm rounded-xl border border-gold/30 bg-panel/60 p-6">
+          <div className="w-full max-w-md rounded-xl border border-gold/30 bg-panel/60 p-6">
             {state.phase === 'draft' && (
               <DraftPanel
                 rolled={state.rolled}
@@ -109,6 +121,7 @@ export default function App() {
                 onFinish={() => dispatch({ type: 'finish' })}
               />
             )}
+            {rating && <ResultsPanel rating={rating} />}
           </div>
         </main>
       </div>

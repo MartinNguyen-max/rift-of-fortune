@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Role } from '../data/types'
-import { canRoll, gameReducer, initialGameState, type GameState } from './gameState'
+import { canRoll, gameReducer, getTeamMembers, initialGameState, type GameState } from './gameState'
 import { makeChampion, makeItem } from './testUtils'
 
 const ahri = makeChampion({ id: 'Ahri' })
@@ -86,5 +86,13 @@ describe('gameReducer: items', () => {
       state = gameReducer(state, { type: 'assignItem', itemId: item.id, role: roles[Math.floor(index / 2)] ?? 'TOP' })
     })
     expect(gameReducer(state, { type: 'finish' }).phase).toBe('results')
+  })
+})
+
+describe('getTeamMembers', () => {
+  it('returns placed champions with their items in role order', () => {
+    let state = gameReducer(rollAndReveal(initialGameState()), { type: 'place', role: 'MIDDLE' })
+    state = { ...state, phase: 'items', items: [makeItem({ id: 'x' })], assignments: { x: 'MIDDLE' } }
+    expect(getTeamMembers(state)).toEqual([{ role: 'MIDDLE', champion: ahri, items: [makeItem({ id: 'x' })] }])
   })
 })

@@ -1,5 +1,7 @@
 import type { Champion, Item, Role } from '../data/types'
-import { allItemsAssigned, canAssignItem, type ItemAssignments } from './items'
+import { allItemsAssigned, canAssignItem, itemsForRole, type ItemAssignments } from './items'
+import { ROLES } from './roles'
+import type { TeamMember } from './scoring/teamBalance'
 import { emptyTeam, isTeamComplete, type Team } from './team'
 
 export type Phase = 'draft' | 'items' | 'results'
@@ -46,6 +48,14 @@ export function canStartItems(state: GameState): boolean {
 
 export function canFinish(state: GameState): boolean {
   return state.phase === 'items' && allItemsAssigned(state.items, state.assignments)
+}
+
+/** The placed champions with their equipped items, in role order. */
+export function getTeamMembers(state: GameState): TeamMember[] {
+  return ROLES.flatMap((role) => {
+    const champion = state.team[role]
+    return champion ? [{ role, champion, items: itemsForRole(state.items, state.assignments, role) }] : []
+  })
 }
 
 function hasItem(state: GameState, itemId: string): boolean {

@@ -44,3 +44,16 @@ Decisions made while building the MVP autonomously, with the reasoning.
 - **Assignment state is `itemId -> role`.** A role holds at most 2 items, and "Rate my team" unlocks only when all 10 are assigned (so exactly 2 each).
 - **Interaction:** drag an item onto a champion, or click an item and then a glowing champion. Equipped items can be dragged to another champion, dragged back to the list, or clicked to return them. Hovering an item shows its stats in a tooltip, and the list shows them inline.
 - **Item stats are shown in short form** (AD, AP, MR, Haste, ...) to fit the side panel.
+
+## Step 6 – Scoring
+
+All numbers live in `src/game/scoring/config.ts`. Every score is 0–100.
+
+- **Role fit:** on-role 100, off-role but the class suits the role 50 (e.g. a tank in top), fully off-role 15. Meraki lists positions alphabetically, not by popularity, so there is no "main vs secondary role" bonus.
+- **Item fit:** each item gets tags from its stats (AD, AP, CRIT, ATTACK_SPEED, LETHALITY, TANK, ENCHANTER). A champion's affinity per tag comes from its best class. AD/AP depend on whether the item matches the champion's damage type, weighted by how much that class wants damage. Item fit is the average over the item's tags, so Infinity Edge has to be good for both "AD" and "CRIT" (great on Jinx, 20 on Leona).
+  - Defensive stats only count as TANK when the item has no offensive stats, so Zhonya's and Liandry's count as mage items, not tank items.
+  - Heal & shield power or base mana regen marks an enchanter (support) item.
+- **Champion score** = 50% role fit + 50% average item fit.
+- **Team balance** starts at 100 and loses points for: one damage type only (−30), no frontline (−35), no carry (−25), fewer than 3 damage items (−25). A frontliner is a Tank, or a Fighter holding a tank item. A carry is a Marksman, Mage or Assassin.
+- **Team score** = 75% average champion score + 25% balance, mapped to grades S/A/B/C/D/F. The split started at 70/30, but a sanity run with real data rated an obviously chaotic team a B, so champions now weigh more.
+- **Feedback is deterministic** (rule-based, no randomness), so it is testable. Each champion gets a role line plus a line for every clearly good (≥75) or clearly bad (≤30) item. Average items stay quiet to keep it short.
