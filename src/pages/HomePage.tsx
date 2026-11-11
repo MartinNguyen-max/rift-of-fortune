@@ -60,7 +60,50 @@ export function HomePage() {
           </span>
         ) : null}
       </ModeCard>
+
+      <ComingSoonCard title="Match vs Bots" icon="⚔️" delay={0.2}>
+        Send your team into a simulated match against level 1–3 bots. Live scoreboard, first blood, stolen Barons and
+        a commentator who has seen too much.
+      </ComingSoonCard>
+
+      <ComingSoonCard title="Multiplayer" icon="🤝" delay={0.3}>
+        Draft against a friend, then watch both teams fight it out on the Rift. Settle who the real Rift Roulette
+        champion is.
+      </ComingSoonCard>
     </div>
+  )
+}
+
+interface ComingSoonCardProps {
+  title: string
+  icon: string
+  delay: number
+  children: ReactNode
+}
+
+/** A mode that isn't playable yet: no link, dimmed, with a "Coming soon" badge. */
+function ComingSoonCard({ title, icon, delay, children }: ComingSoonCardProps) {
+  return (
+    <motion.div
+      initial={{ y: 20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ delay }}
+      aria-disabled="true"
+      className="flex flex-col gap-2 rounded-xl border border-dashed border-gold/25 bg-panel/40 p-5"
+    >
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="font-display text-xl font-black text-gold/70">
+          <span aria-hidden="true" className="mr-2">
+            {icon}
+          </span>
+          {title}
+        </h2>
+        <span className="shrink-0 rounded-full border border-gold/30 px-2.5 py-0.5 text-xs font-semibold tracking-wider text-gold/60 uppercase">
+          Coming soon
+        </span>
+      </div>
+      <p className="text-sm text-gold-light/60">{children}</p>
+    </motion.div>
   )
 }
 

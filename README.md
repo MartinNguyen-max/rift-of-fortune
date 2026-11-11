@@ -35,6 +35,8 @@ Only an anonymous random player id, the Daily number and the score are stored. S
 
 ## Status
 
+See [docs/launch-setup.md](docs/launch-setup.md) for deploying (Vercel + Supabase), [docs/match-simulation.md](docs/match-simulation.md) for the planned match mode, and [docs/ideas.md](docs/ideas.md) for the ideas backlog.
+
 MVP. See [SPEC.md](SPEC.md) for the design and [DECISIONS.md](DECISIONS.md) for decisions made while building it.
 
 ## Tech Stack
