@@ -35,11 +35,11 @@ export function RoleSlot({
   const label = ROLE_LABELS[role]
 
   return (
-    <div ref={setNodeRef} className="flex flex-col items-center gap-1">
+    <div ref={setNodeRef} className="flex flex-col items-center gap-0.5 sm:gap-1">
       <div className="relative">
         {score !== undefined && (
           <span
-            className={`absolute -top-2 -right-3 z-10 rounded-full border border-gold bg-abyss px-1.5 text-sm font-black ${scoreColor(score)}`}
+            className={`absolute -top-2 -right-3 z-10 rounded-full border border-gold bg-abyss px-1 text-xs font-black sm:px-1.5 sm:text-sm ${scoreColor(score)}`}
           >
             {score}
           </span>
@@ -49,7 +49,7 @@ export function RoleSlot({
           onClick={onActivate}
           disabled={!onActivate}
           aria-label={champion ? `${label}: ${champion.name}` : `Place in ${label}`}
-          className={`flex size-14 items-center justify-center overflow-hidden rounded-full border-2 bg-panel/80 transition disabled:cursor-default sm:size-16 ${
+          className={`flex size-11 items-center justify-center overflow-hidden rounded-full border-2 bg-panel/80 transition disabled:cursor-default sm:size-16 ${
             champion ? 'border-gold' : 'border-dashed border-gold/50'
           } ${highlighted ? 'animate-pulse border-hextech hover:scale-110' : ''} ${
             isOver ? 'scale-125 border-solid border-hextech bg-hextech/30' : ''
@@ -63,8 +63,15 @@ export function RoleSlot({
         </button>
       </div>
 
-      <span className="rounded bg-abyss/80 px-1.5 text-xs font-semibold tracking-wide whitespace-nowrap text-gold uppercase">
-        {champion ? `${label} · ${champion.name}` : label}
+      <span className="rounded bg-abyss/80 px-1 text-[10px] font-semibold sm:px-1.5 sm:text-xs tracking-wide whitespace-nowrap text-gold uppercase">
+        {champion ? (
+          <>
+            <span className="hidden sm:inline">{label} · </span>
+            {champion.name}
+          </>
+        ) : (
+          label
+        )}
       </span>
 
       {items && (
@@ -74,7 +81,7 @@ export function RoleSlot({
             return item ? (
               <DraggableItem key={item.id} item={item} size="small" onClick={() => onItemClick?.(item.id)} />
             ) : (
-              <div key={index} className="size-6 rounded border border-dashed border-gold/40 bg-abyss/60 sm:size-7" />
+              <div key={index} className="size-5 rounded border border-dashed border-gold/40 bg-abyss/60 sm:size-7" />
             )
           })}
         </div>

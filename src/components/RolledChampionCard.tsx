@@ -1,6 +1,6 @@
 import { useDraggable } from '@dnd-kit/core'
 import { motion } from 'framer-motion'
-import { championIconUrl } from '../data'
+import { championIconUrl, championSplashUrl } from '../data'
 import type { Champion } from '../data/types'
 import { ROLE_LABELS } from '../game/roles'
 import { ROLLED_CHAMPION_ID } from './dragIds'
@@ -18,8 +18,13 @@ export function RolledChampionCard({ champion }: RolledChampionCardProps) {
       initial={{ scale: 0.6, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-      className="flex flex-col items-center gap-3"
+      className="relative isolate flex w-full flex-col items-center gap-3 rounded-lg border border-gold/20 px-4 pt-6 pb-4"
     >
+      {/* Clipped background layer; the card itself must not clip, or the dragged icon gets cut off. */}
+      <div className="absolute inset-0 -z-10 overflow-hidden rounded-lg">
+        <img src={championSplashUrl(champion.id)} alt="" className="size-full object-cover object-top opacity-35" />
+        <div className="absolute inset-0 bg-linear-to-t from-panel via-panel/70 to-transparent" />
+      </div>
       <div
         ref={setNodeRef}
         style={style}
@@ -33,7 +38,7 @@ export function RolledChampionCard({ champion }: RolledChampionCardProps) {
         <img src={championIconUrl(champion.image)} alt={champion.name} className="size-full object-cover" />
       </div>
       <div className="text-center">
-        <p className="text-xl font-bold text-gold">{champion.name}</p>
+        <p className="font-display text-2xl font-bold text-gold">{champion.name}</p>
         <p className="text-sm text-gold-light/70 capitalize">{champion.title}</p>
         <p className="mt-1 text-xs text-gold-light/60">
           {champion.classes.join(' · ')} · {champion.damageType}

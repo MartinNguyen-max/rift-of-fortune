@@ -65,6 +65,14 @@ All numbers live in `src/game/scoring/config.ts`. Every score is 0–100.
 - **README** now covers how to play, scoring, commands, data sources and the disclaimer.
 - **Playtested in headless Chrome** (Playwright driver kept outside the repo). It dragged champions into slots, click-assigned items, rated the team and played again, with no console errors. That run surfaced two layout fixes: score badges now sit on the portrait, and the ADC/Support slots moved apart so their items don't overlap.
 
+## Polish pass (after the MVP)
+
+- **Mobile:** smaller portraits, the role prefix hidden on placed slots, and the Jungle/ADC/Support slots moved apart so nothing overlaps on a 390px phone. In the item phase, small screens show a 5×2 icon grid plus the selected item's stats, instead of a long list that pushed the map off-screen.
+- **Look:** Cinzel heading font from Google Fonts (a stylesheet link, not an npm dependency), a subtle hextech/gold background glow, a tagline, a Draft → Items → Rating stepper, splash art behind the revealed champion, a custom roulette-wheel favicon (replacing the Vite logo), and item borders in the results coloured by fit (green/gold/red).
+- **Feedback variety:** each situation has 2–3 lines. The line is picked by hashing champion + role/item, so the same team always gets the same text and tests stay deterministic, but the lines no longer repeat word for word.
+- **Performance:** item icons are preloaded when items are drawn, and the champion splash during the roll.
+- **Accessibility:** , and the roll skips the spin when the OS asks for reduced motion.
+
 ---
 
 # Summary

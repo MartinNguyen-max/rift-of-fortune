@@ -3,7 +3,7 @@ import { championIconUrl, itemIconUrl } from '../data'
 import { ROLE_LABELS } from '../game/roles'
 import type { ChampionRating, TeamRating } from '../game/scoring/rateTeam'
 import { Button } from './Button'
-import { scoreColor } from './scoreColor'
+import { scoreBorderColor, scoreColor } from './scoreColor'
 
 interface ResultsPanelProps {
   rating: TeamRating
@@ -20,7 +20,7 @@ export function ResultsPanel({ rating, onPlayAgain }: ResultsPanelProps) {
         className="text-center"
       >
         <h2 className="text-sm font-semibold tracking-widest text-gold/80 uppercase">Team rating</h2>
-        <p className={`text-7xl font-black ${scoreColor(rating.score)}`}>{rating.grade}</p>
+        <p className={`font-display text-7xl font-black ${scoreColor(rating.score)}`}>{rating.grade}</p>
         <p className="text-2xl font-bold text-gold-light">{rating.score} / 100</p>
         <p className="mt-2 text-gold-light/80 italic">{rating.summary}</p>
         <Button onClick={onPlayAgain} className="mt-4">
@@ -66,7 +66,7 @@ function ChampionResult({ rating }: { rating: ChampionRating }) {
       <header className="flex items-center gap-3">
         <img src={championIconUrl(champion.image)} alt="" className="size-10 rounded-full border border-gold" />
         <div className="min-w-0 flex-1">
-          <p className="truncate font-bold text-gold-light">{champion.name}</p>
+          <p className="truncate font-display font-bold text-gold-light">{champion.name}</p>
           <p className="text-xs text-gold-light/60">
             {ROLE_LABELS[role]} · role {roleFit.score} · items {itemFit}
           </p>
@@ -78,7 +78,7 @@ function ChampionResult({ rating }: { rating: ChampionRating }) {
               src={itemIconUrl(item.image)}
               alt={item.name}
               title={`${item.name}: fit ${fit}`}
-              className="size-7 rounded border border-gold/50"
+              className={`size-7 rounded border-2 ${scoreBorderColor(fit)}`}
             />
           ))}
         </div>

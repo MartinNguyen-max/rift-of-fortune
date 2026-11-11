@@ -1,6 +1,6 @@
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { useEffect, useState } from 'react'
-import { championIconUrl, gameData } from '../data'
+import { championIconUrl, championSplashUrl, gameData } from '../data'
 import type { Champion } from '../data/types'
 import { sample } from '../game/random'
 
@@ -16,9 +16,13 @@ interface ChampionRollProps {
 export function ChampionRoll({ champion, onRevealed }: ChampionRollProps) {
   const [frame, setFrame] = useState<Champion | null>(null)
 
+  const reduceMotion = useReducedMotion() === true
+
   useEffect(() => {
-    const frames = [...sample(gameData.champions, SPIN_FRAMES), champion]
+    const spinFrames = reduceMotion ? 0 : SPIN_FRAMES
+    const frames = [...sample(gameData.champions, spinFrames), champion]
     for (const { image } of frames) new Image().src = championIconUrl(image)
+    new Image().src = championSplashUrl(champion.id)
 
     let index = 0
     let timer: ReturnType<typeof setTimeout>
@@ -35,7 +39,7 @@ export function ChampionRoll({ champion, onRevealed }: ChampionRollProps) {
     }
     timer = setTimeout(tick, 0)
     return () => clearTimeout(timer)
-  }, [champion, onRevealed])
+  }, [champion, onRevealed, reduceMotion])
 
   return (
     <div className="flex flex-col items-center gap-3">

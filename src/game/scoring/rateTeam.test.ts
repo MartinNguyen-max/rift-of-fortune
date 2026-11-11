@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { makeChampion, makeItem } from '../testUtils'
 import { CHAMPION_SCORE_WEIGHTS, ROLE_FIT_SCORE, TEAM_SCORE_WEIGHTS } from './config'
+import { LINES } from './feedback'
 import { gradeFor, rateChampion, rateTeam } from './rateTeam'
 import type { TeamMember } from './teamBalance'
 
@@ -32,11 +33,10 @@ describe('rateChampion', () => {
 
   it('collects role and item feedback lines', () => {
     const { feedback } = rateChampion({ role: 'BOTTOM', champion: leona, items: [ie, thornmail] })
-    expect(feedback).toEqual([
-      'A tank as ADC. Bold strategy to never kill anything.',
-      'IE on Leona? Crit on a tank, sure.',
-      'Thornmail on Leona: great fit.',
-    ])
+    expect(feedback).toHaveLength(3)
+    expect(feedback[0]).toBe('A tank as ADC. Bold strategy to never kill anything.')
+    expect(feedback[1]).toBeOneOf(LINES.critOnTank('IE on Leona', 'tank'))
+    expect(feedback[2]).toBeOneOf(LINES.goodItem('Thornmail on Leona'))
   })
 })
 

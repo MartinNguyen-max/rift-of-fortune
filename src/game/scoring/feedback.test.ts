@@ -1,16 +1,33 @@
 import { describe, expect, it } from 'vitest'
 import { makeChampion, makeItem } from '../testUtils'
-import { itemFitLine, roleFitLine } from './feedback'
+import { itemFitLine, LINES, pickLine, roleFitLine } from './feedback'
+
+describe('pickLine', () => {
+  const lines = ['a', 'b', 'c']
+
+  it('always picks the same line for the same seed', () => {
+    expect(pickLine(lines, 'Ahri:MIDDLE')).toBe(pickLine(lines, 'Ahri:MIDDLE'))
+  })
+
+  it('spreads different seeds over different lines', () => {
+    const picked = new Set(['Ahri', 'Garen', 'Jinx', 'Leona', 'Lux', 'Zed', 'Teemo'].map((seed) => pickLine(lines, seed)))
+    expect(picked.size).toBeGreaterThan(1)
+  })
+
+  it('throws when there is nothing to pick', () => {
+    expect(() => pickLine([], 'x')).toThrow()
+  })
+})
 
 describe('roleFitLine', () => {
   const janna = makeChampion({ id: 'Janna', classes: ['Support', 'Mage'] })
 
   it('approves on-role picks', () => {
-    expect(roleFitLine(janna, 'SUPPORT', 'onRole')).toBe('Janna in Support. Textbook.')
+    expect(roleFitLine(janna, 'SUPPORT', 'onRole')).toBeOneOf(LINES.onRole('Janna', 'Support'))
   })
 
   it('is lenient when the class fits', () => {
-    expect(roleFitLine(janna, 'MIDDLE', 'classFit')).toBe("Janna isn't a usual Mid, but it can work.")
+    expect(roleFitLine(janna, 'MIDDLE', 'classFit')).toBeOneOf(LINES.classFit('Janna', 'Mid'))
   })
 
   it('has special lines for famous off-role disasters', () => {
@@ -19,7 +36,7 @@ describe('roleFitLine', () => {
 
   it('falls back to a generic off-role line', () => {
     const zed = makeChampion({ id: 'Zed', classes: ['Assassin'] })
-    expect(roleFitLine(zed, 'BOTTOM', 'offRole')).toBe('Zed ADC? Bold. Very bold.')
+    expect(roleFitLine(zed, 'BOTTOM', 'offRole')).toBeOneOf(LINES.offRole('Zed', 'ADC'))
   })
 })
 
@@ -30,7 +47,7 @@ describe('itemFitLine', () => {
   const jinx = makeChampion({ id: 'Jinx', classes: ['Marksman'], damageType: 'AD' })
 
   it('compliments good fits', () => {
-    expect(itemFitLine(lux, makeItem({ id: 'Rabadon' }), 100)).toBe('Rabadon on Lux: great fit.')
+    expect(itemFitLine(lux, makeItem({ id: 'Rabadon' }), 100)).toBeOneOf(LINES.goodItem('Rabadon on Lux'))
   })
 
   it('stays quiet for average fits', () => {
@@ -39,27 +56,27 @@ describe('itemFitLine', () => {
 
   it('roasts crit on a tank', () => {
     const ie = makeItem({ id: 'IE', stats: { attackDamage: 75, critChance: 25 } })
-    expect(itemFitLine(leona, ie, 20)).toBe('IE on Leona? Crit on a tank, sure.')
+    expect(itemFitLine(leona, ie, 20)).toBeOneOf(LINES.critOnTank('IE on Leona', 'tank'))
   })
 
   it('roasts AP items on AD champions and the other way round', () => {
-    expect(itemFitLine(garen, makeItem({ id: 'Rabadon', stats: { abilityPower: 130 } }), 10)).toContain(
-      'nowhere to put it',
-    )
-    expect(itemFitLine(lux, makeItem({ id: 'Sword', stats: { attackDamage: 60 } }), 10)).toContain(
-      "Auto attacks won't save you",
-    )
+    const rabadon = makeItem({ id: 'Rabadon', stats: { abilityPower: 130 } })
+    const sword = makeItem({ id: 'Sword', stats: { attackDamage: 60 } })
+    expect(itemFitLine(garen, rabadon, 10)).toBeOneOf(LINES.apOnAd('Rabadon on Garen'))
+    expect(itemFitLine(lux, sword, 10)).toBeOneOf(LINES.adOnAp('Sword on Lux'))
   })
 
   it('roasts tank items on carries', () => {
-    expect(itemFitLine(jinx, makeItem({ id: 'Thornmail', stats: { armor: 75 } }), 10)).toBe(
-      'Thornmail on Jinx: very safe, very harmless.',
-    )
+    const thornmail = makeItem({ id: 'Thornmail', stats: { armor: 75 } })
+    expect(itemFitLine(jinx, thornmail, 10)).toBeOneOf(LINES.tankOnCarry('Thornmail on Jinx'))
   })
 
   it('roasts support items on non-supports', () => {
-    expect(itemFitLine(garen, makeItem({ id: 'Redemption', stats: { healAndShieldPower: 10 } }), 5)).toContain(
-      'Healing allies is nice',
-    )
+    const redemption = makeItem({ id: 'Redemption', stats: { healAndShieldPower: 10 } })
+    expect(itemFitLine(garen, redemption, 5)).toBeOneOf(LINES.enchanterOnCarry('Redemption on Garen'))
+  })
+
+  it('has a fallback for bad items without a special joke', () => {
+    expect(itemFitLine(jinx, makeItem({ id: 'Boots' }), 5)).toBeOneOf(LINES.uselessItem('Boots on Jinx'))
   })
 })

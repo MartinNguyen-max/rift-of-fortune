@@ -13,10 +13,10 @@ export const ROLE_LABELS: Record<Role, string> = {
 /** Slot positions on the Summoner's Rift minimap, in percent of its width/height. */
 export const ROLE_MAP_POSITIONS: Record<Role, { x: number; y: number }> = {
   TOP: { x: 14, y: 16 },
-  JUNGLE: { x: 30, y: 58 },
+  JUNGLE: { x: 25, y: 62 },
   MIDDLE: { x: 50, y: 50 },
-  BOTTOM: { x: 70, y: 88 },
-  SUPPORT: { x: 87, y: 67 },
+  BOTTOM: { x: 68, y: 89 },
+  SUPPORT: { x: 88, y: 65 },
 }
 
 export function isRole(value: unknown): value is Role {

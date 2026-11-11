@@ -6,15 +6,17 @@ import {
   useSensors,
   type DragEndEvent,
 } from '@dnd-kit/core'
+import { MotionConfig } from 'framer-motion'
 import { useCallback, useReducer, useState } from 'react'
 import { ITEM_POOL_ID, itemIdFromDragId, ROLLED_CHAMPION_ID } from './components/dragIds'
 import { DraftPanel } from './components/DraftPanel'
 import { Footer } from './components/Footer'
+import { PhaseSteps } from './components/PhaseSteps'
 import { ItemPanel } from './components/ItemPanel'
 import { ResultsPanel } from './components/ResultsPanel'
 import { RiftMap } from './components/RiftMap'
 import { RoleSlot } from './components/RoleSlot'
-import { gameData } from './data'
+import { gameData, itemIconUrl } from './data'
 import type { Role } from './data/types'
 import { rollChampion } from './game/draft'
 import {
@@ -42,7 +44,11 @@ export default function App() {
   const reveal = useCallback(() => dispatch({ type: 'reveal' }), [])
   const roll = () => dispatch({ type: 'roll', champion: rollChampion(gameData.champions, state.team) })
   const place = (role: Role) => dispatch({ type: 'place', role })
-  const startItems = () => dispatch({ type: 'startItems', items: drawItems(gameData.items) })
+  const startItems = () => {
+    const items = drawItems(gameData.items)
+    for (const item of items) new Image().src = itemIconUrl(item.image)
+    dispatch({ type: 'startItems', items })
+  }
   const assignItem = (itemId: string, role: Role) => {
     dispatch({ type: 'assignItem', itemId, role })
     setSelectedItemId(null)
@@ -98,39 +104,45 @@ export default function App() {
   }
 
   return (
-    <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-      <div className="flex min-h-screen flex-col">
-        <header className="px-4 py-6 text-center">
-          <h1 className="text-3xl font-bold tracking-wide text-gold sm:text-4xl">LoL Rift Roulette</h1>
-        </header>
-        <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center gap-8 px-4 pb-8 lg:flex-row lg:items-start lg:justify-center">
-          <RiftMap renderSlot={renderSlot} />
-          <div className="w-full max-w-md rounded-xl border border-gold/30 bg-panel/60 p-6">
-            {state.phase === 'draft' && (
-              <DraftPanel
-                rolled={state.rolled}
-                pickNumber={6 - emptyRoles(state.team).length}
-                canRoll={canRoll(state)}
-                teamComplete={canStartItems(state)}
-                onRoll={roll}
-                onRevealed={reveal}
-                onStartItems={startItems}
-              />
-            )}
-            {isItemPhase && (
-              <ItemPanel
-                items={unassignedItems(state.items, state.assignments)}
-                selectedItemId={selectedItemId}
-                canFinish={canFinish(state)}
-                onSelect={toggleSelected}
-                onFinish={() => dispatch({ type: 'finish' })}
-              />
-            )}
-            {rating && <ResultsPanel rating={rating} onPlayAgain={playAgain} />}
-          </div>
-        </main>
-        <Footer />
-      </div>
-    </DndContext>
+    <MotionConfig reducedMotion="user">
+      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+        <div className="flex min-h-screen flex-col">
+          <header className="px-4 pt-6 pb-4 text-center sm:pt-8 sm:pb-6">
+            <h1 className="font-display text-3xl font-black tracking-wide text-gold drop-shadow-[0_0_12px_rgb(200_170_110/0.35)] sm:text-5xl">
+              LoL Rift Roulette
+            </h1>
+            <p className="mt-1 text-sm text-gold-light/60">Random champions. Random items. Honest feedback.</p>
+          </header>
+          <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center gap-6 px-4 pb-8 sm:gap-8 lg:flex-row lg:items-start lg:justify-center">
+            <RiftMap renderSlot={renderSlot} />
+            <div className="w-full max-w-md rounded-xl border border-gold/30 bg-panel/70 p-5 shadow-2xl shadow-black/50 backdrop-blur sm:p-6">
+              <PhaseSteps current={state.phase} />
+              {state.phase === 'draft' && (
+                <DraftPanel
+                  rolled={state.rolled}
+                  pickNumber={6 - emptyRoles(state.team).length}
+                  canRoll={canRoll(state)}
+                  teamComplete={canStartItems(state)}
+                  onRoll={roll}
+                  onRevealed={reveal}
+                  onStartItems={startItems}
+                />
+              )}
+              {isItemPhase && (
+                <ItemPanel
+                  items={unassignedItems(state.items, state.assignments)}
+                  selectedItemId={selectedItemId}
+                  canFinish={canFinish(state)}
+                  onSelect={toggleSelected}
+                  onFinish={() => dispatch({ type: 'finish' })}
+                />
+              )}
+              {rating && <ResultsPanel rating={rating} onPlayAgain={playAgain} />}
+            </div>
+          </main>
+          <Footer />
+        </div>
+      </DndContext>
+    </MotionConfig>
   )
 }

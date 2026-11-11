@@ -28,7 +28,7 @@ export function DraggableItem({ item, size, selected = false, onClick }: Draggab
       aria-label={item.name}
       aria-pressed={selected}
       className={`relative shrink-0 cursor-grab touch-none overflow-hidden rounded border-2 transition active:cursor-grabbing ${
-        size === 'large' ? 'size-12' : 'size-6 sm:size-7'
+        size === 'large' ? 'size-12' : 'size-5 sm:size-7'
       } ${selected ? 'scale-110 border-hextech shadow-lg shadow-hextech/50' : 'border-gold/60'} ${
         isDragging ? 'z-50 opacity-80' : ''
       }`}
