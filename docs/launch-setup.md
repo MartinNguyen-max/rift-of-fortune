@@ -2,6 +2,24 @@
 
 What the project owner needs to set up (accounts can't be created from code). Each step can be done separately; the game works after step 3 even without Supabase.
 
+## Status (handoff for the next session)
+
+- **Built and committed locally, not pushed yet:** Classic mode, Daily Rift, homepage with "Coming soon" cards (Match vs Bots, Multiplayer), ranked scoring with a lane-swap table, and optional Supabase stats. Lint, build and all tests pass.
+- **Name decided: Rift of Fortune.** "Wild Rift of Fortune" was rejected: Wild Rift is Riot's mobile game.
+- **Domain:** riftoffortune.dk at Simply (the owner is buying it).
+- **Owner's to-do, in order:**
+  1. Rename the GitHub repo to `rift-of-fortune`.
+  2. Update the local remote, then push (step 1 below).
+  3. Set up Vercel (step 3).
+  4. Set up Supabase (step 4).
+  5. Connect the domain (step 5).
+- **Next for Claude,** once it's live:
+  1. Add Open Graph link previews, which need the final URL.
+  2. Verify the Daily stats end to end.
+  3. Build Match vs Bots ([match-simulation.md](match-simulation.md)).
+- **Other ideas** are in [ideas.md](ideas.md). Decisions and their reasons are in [DECISIONS.md](../DECISIONS.md).
+- **Never change** the localStorage prefix or the Daily seed (`rift-of-fortune:`) after launch.
+
 ## 1. Name, domain and repo
 
 - **Name: Rift of Fortune** (decided). "LoL Rift Roulette" was dropped because many things on Google already use it.
