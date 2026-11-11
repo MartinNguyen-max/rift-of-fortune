@@ -13,6 +13,8 @@ import { CHAMPION_CLASSES, ROLES } from '../src/data/types.ts'
 /** Subset of Data Dragon's champion.json entry that we use. */
 export interface DDragonChampion {
   id: string
+  /** Numeric champion id, used as the key in Meraki's championrates.json. */
+  key: string
   name: string
   title: string
   tags: string[]
@@ -42,6 +44,33 @@ export interface MerakiChampion {
   positions: string[]
   attackType: string
   adaptiveType: string
+}
+
+/** Meraki Analytics' championrates.json entry: play rate per role. UTILITY is support. */
+export type MerakiRoleRates = Record<string, { playRate: number }>
+
+const RATE_ROLES: Record<string, Role> = {
+  TOP: 'TOP',
+  JUNGLE: 'JUNGLE',
+  MIDDLE: 'MIDDLE',
+  BOTTOM: 'BOTTOM',
+  UTILITY: 'SUPPORT',
+}
+
+/**
+ * Meraki's positions list every role a champion has ever been played in (e.g. Taric mid).
+ * Keeps only the roles that also have a play rate. Falls back to all positions when the
+ * rates are missing or rule out everything.
+ */
+export function filterByPlayRate(positions: Role[], rates: MerakiRoleRates | undefined): Role[] {
+  if (!rates) return positions
+  const played = new Set(
+    Object.entries(rates)
+      .filter(([, { playRate }]) => playRate > 0)
+      .map(([rateRole]) => RATE_ROLES[rateRole]),
+  )
+  const kept = positions.filter((position) => played.has(position))
+  return kept.length > 0 ? kept : positions
 }
 
 const SUMMONERS_RIFT_MAP_ID = '11'
@@ -145,11 +174,15 @@ export function guessPositions(classes: ChampionClass[], attackRange: number): R
   }
 }
 
-export function toChampion(champion: DDragonChampion, meraki: MerakiChampion | undefined): Champion {
+export function toChampion(
+  champion: DDragonChampion,
+  meraki: MerakiChampion | undefined,
+  rates?: MerakiRoleRates,
+): Champion {
   const classes = champion.tags.filter(isChampionClass)
   const fallbackDamage: DamageType = champion.info.magic > champion.info.attack ? 'AP' : 'AD'
   const fallbackAttack: AttackType = champion.stats.attackrange > 300 ? 'RANGED' : 'MELEE'
-  const positions = meraki?.positions.filter(isRole) ?? []
+  const positions = filterByPlayRate(meraki?.positions.filter(isRole) ?? [], rates)
 
   return {
     id: champion.id,

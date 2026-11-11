@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   dedupeByName,
+  filterByPlayRate,
   guessPositions,
   isFullItem,
   parseItemStats,
@@ -56,6 +57,7 @@ describe('isFullItem', () => {
 describe('toChampion', () => {
   const ddragon: DDragonChampion = {
     id: 'Ahri',
+    key: '103',
     name: 'Ahri',
     title: 'the Nine-Tailed Fox',
     tags: ['Mage', 'Assassin'],
@@ -81,6 +83,48 @@ describe('toChampion', () => {
   it('falls back to Data Dragon info when Meraki has no entry', () => {
     const champion = toChampion(ddragon, undefined)
     expect(champion).toMatchObject({ positions: ['MIDDLE'], damageType: 'AP', attackType: 'RANGED' })
+  })
+})
+
+const ddragonForRates: DDragonChampion = {
+  id: 'Taric',
+  key: '44',
+  name: 'Taric',
+  title: 'the Shield of Valoran',
+  tags: ['Support'],
+  info: { attack: 4, defense: 8, magic: 5, difficulty: 3 },
+  image: { full: 'Taric.png' },
+  stats: { attackrange: 150 },
+}
+
+describe('filterByPlayRate', () => {
+  const rates = {
+    TOP: { playRate: 0 },
+    JUNGLE: { playRate: 0 },
+    MIDDLE: { playRate: 0 },
+    BOTTOM: { playRate: 0 },
+    UTILITY: { playRate: 4.2 },
+  }
+
+  it('drops roles nobody actually plays (Taric mid)', () => {
+    expect(filterByPlayRate(['MIDDLE', 'SUPPORT'], rates)).toEqual(['SUPPORT'])
+  })
+
+  it('keeps all positions when there are no rates', () => {
+    expect(filterByPlayRate(['MIDDLE', 'SUPPORT'], undefined)).toEqual(['MIDDLE', 'SUPPORT'])
+  })
+
+  it('keeps all positions when the rates rule out every one of them', () => {
+    expect(filterByPlayRate(['TOP'], rates)).toEqual(['TOP'])
+  })
+
+  it('is used by toChampion', () => {
+    const champion = toChampion(
+      { ...ddragonForRates, tags: ['Support'] },
+      { positions: ['MIDDLE', 'SUPPORT'], attackType: 'MELEE', adaptiveType: 'MAGIC_DAMAGE' },
+      rates,
+    )
+    expect(champion.positions).toEqual(['SUPPORT'])
   })
 })
 
