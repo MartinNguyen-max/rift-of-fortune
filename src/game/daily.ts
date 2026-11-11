@@ -33,7 +33,7 @@ export function dailyNumber(date: Date): number {
 
 /** Everyone gets the same champions and items on the same day. */
 export function dailyRolls(data: { champions: readonly Champion[]; items: readonly Item[] }, date: Date): DailyRolls {
-  const random = seededRandom(seedFromString(`rift-roulette:${dateKey(date)}`))
+  const random = seededRandom(seedFromString(`rift-of-fortune:${dateKey(date)}`))
   return { champions: sample(data.champions, TEAM_SIZE, random), items: drawItems(data.items, random) }
 }
 
@@ -79,7 +79,7 @@ export function shareText(number: number, rating: TeamRating, url: string, stats
   const roles = rating.champions.map(({ role, score }) => `${SHORT_ROLE[role]} ${scoreEmoji(score)}`).join(' ')
   const share = stats ? beatenShare(stats) : null
   return [
-    `LoL Rift Roulette · Daily #${number}`,
+    `Rift of Fortune · Daily #${number}`,
     `${rankLabel(rating.rank)} · ${rating.score}/100`,
     roles,
     ...(share === null ? [] : [`Beat ${share}% of players today`]),

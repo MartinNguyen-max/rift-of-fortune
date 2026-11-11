@@ -132,7 +132,7 @@ export const COACH_LINES = {
   ],
   nobodyOnRole: () => [
     'Nobody is playing their own role. Bold, chaotic, beautiful.',
-    'Zero champions on their usual role. This is a Rift Roulette classic.',
+    'Zero champions on their usual role. This is a Rift of Fortune classic.',
   ],
   everyoneOnRole: () => [
     'Everyone is on their usual role. Suspiciously competent.',

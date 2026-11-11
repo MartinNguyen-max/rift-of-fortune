@@ -67,8 +67,8 @@ export function HomePage() {
       </ComingSoonCard>
 
       <ComingSoonCard title="Multiplayer" icon="🤝" delay={0.3}>
-        Draft against a friend, then watch both teams fight it out on the Rift. Settle who the real Rift Roulette
-        champion is.
+        Draft against a friend, then watch both teams fight it out on the Rift. Settle who really has fortune on
+        their side.
       </ComingSoonCard>
     </div>
   )
@@ -92,7 +92,7 @@ function ComingSoonCard({ title, icon, delay, children }: ComingSoonCardProps) {
       className="flex flex-col gap-2 rounded-xl border border-dashed border-gold/25 bg-panel/40 p-5"
     >
       <div className="flex items-center justify-between gap-3">
-        <h2 className="font-display text-xl font-black text-gold/70">
+        <h2 className="font-display text-lg font-black text-gold/70 sm:text-xl">
           <span aria-hidden="true" className="mr-2">
             {icon}
           </span>

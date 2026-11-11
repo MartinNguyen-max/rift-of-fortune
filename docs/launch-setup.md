@@ -2,12 +2,18 @@
 
 What the project owner needs to set up (accounts can't be created from code). Each step can be done separately; the game works after step 3 even without Supabase.
 
-## 1. Pick the name and domain (optional, can wait)
+## 1. Name, domain and repo
 
-- "riftroulette" is taken, so decide whether to keep "LoL Rift Roulette" or rename before buying a domain.
-- The site can launch on a free `*.vercel.app` address first, and a domain can be added later.
+- **Name: Rift of Fortune** (decided). "LoL Rift Roulette" was dropped because many things on Google already use it.
+- **Domain:** riftoffortune.dk (cheap at Simply; .gg was about 1,000 kr). A .com or .gg can be added later and pointed at the same site.
+- **Rename the GitHub repo** to `rift-of-fortune` in the repo's **Settings → General → Repository name**. GitHub redirects the old URL. Afterwards, update the local remote:
+
+  ```sh
+  git remote set-url origin https://github.com/<your-user>/rift-of-fortune.git
+  ```
+
+- Renaming the local folder (`lol-rift-roulette`) is optional. Do it while no editor or dev server is using it.
 - Avoid "League of Legends" or Riot logos in the domain (Riot's fan-project rules).
-- **If you rename:** the name appears in the page title, the header, the share text, the README and the footer. That's a quick change. Don't change the `rift-roulette:` localStorage prefix, or players lose their saved Daily.
 
 ## 2. Push the code to GitHub (1 min)
 
@@ -20,7 +26,7 @@ git push origin main
 ## 3. Vercel: hosting (5 min, free)
 
 1. Sign in at [vercel.com](https://vercel.com) with GitHub.
-2. **Add New → Project** and import `lol-rift-roulette`.
+2. **Add New → Project** and import `rift-of-fortune`.
 3. Vercel detects Vite automatically: build command `npm run build`, output folder `dist`. Leave both as they are.
 4. Click **Deploy**. The game is live at `https://<project>.vercel.app`.
 5. From now on, every push to `main` redeploys automatically, and pull requests get preview links.

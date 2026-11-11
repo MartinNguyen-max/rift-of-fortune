@@ -1,7 +1,7 @@
 CLAUDE.md
 Instructions for Claude Code when working in this repo. Read SPEC.md for the full game design.
 Project
-LoL Rift Roulette: a browser game where the player rolls random League of Legends champions, places them in roles on Summoner's Rift, assigns random items, and gets a team rating. We are building the MVP only. Do not build anything listed under Future Ideas in SPEC.md unless asked.
+Rift of Fortune: a browser game where the player rolls random League of Legends champions, places them in roles on Summoner's Rift, assigns random items, and gets a team rating. We are building the MVP only. Do not build anything listed under Future Ideas in SPEC.md unless asked.
 Tech Stack
 • TypeScript (strict mode), React, Vite
 • Tailwind CSS for styling

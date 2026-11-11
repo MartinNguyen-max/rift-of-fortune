@@ -2,7 +2,7 @@
  * Small wrappers around localStorage. Storage can be missing or blocked (private windows,
  * strict privacy settings), so every call is guarded and the game works without it.
  */
-const PREFIX = 'rift-roulette:'
+const PREFIX = 'rift-of-fortune:'
 
 export function readJson<T>(key: string): T | null {
   try {

@@ -123,6 +123,12 @@ A team of four off-role junglers plus Lee Sin ADC got Platinum. Causes: off-role
 - 7.5% was considered, but it would make Grandmaster and Master feel cheap.
 - `simulate.test.ts` now checks that Challenger stays between 3% and 8% of the sensible bot's games.
 
+## Name: Rift of Fortune
+
+- "LoL Rift Roulette" was renamed to **Rift of Fortune** (a nod to *Wheel of Fortune* and Miss Fortune), because many things on Google already use "Rift Roulette". It also keeps "LoL" out of the name: Riot's fan rules ask projects not to look official.
+- Renamed everywhere: page title, header, footer disclaimer, share text, README, SPEC, CLAUDE.md and the package name. The page description still says "League of Legends roulette game" so Google can find it.
+- The localStorage prefix and the Daily seed also changed (`rift-of-fortune:`). This was safe only because nothing was live yet. **From launch on, never change them:** players would lose saved Dailies, and the day's rolls would change mid-day.
+
 ---
 
 # Summary

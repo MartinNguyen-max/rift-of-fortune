@@ -1,4 +1,4 @@
-LoL Rift Roulette – MVP Spec
+Rift of Fortune (originally "LoL Rift Roulette") – MVP Spec
 A simple browser game based on League of Legends. The player builds a team from random champions and random items, and the game rates how good or bad the team is. This document covers the MVP only. Everything else is listed under Future Ideas and is out of scope for now.
 Goal of the MVP
 Find out whether the core loop is fun: roll champions, place them on the map, give them items, see a rating. If it's fun, keep building. If not, stop there.
