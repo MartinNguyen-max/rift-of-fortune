@@ -9,7 +9,7 @@ interface RiftMapProps {
 
 export function RiftMap({ renderSlot }: RiftMapProps) {
   return (
-    <div className="relative aspect-square w-full max-w-xl">
+    <div className="relative aspect-square w-full max-w-[min(36rem,calc(100svh-19rem))] lg:max-w-xl">
       <img
         src={summonersRiftMapUrl}
         alt="Summoner's Rift"

@@ -18,7 +18,7 @@ export function RolledChampionCard({ champion }: RolledChampionCardProps) {
       initial={{ scale: 0.6, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-      className="relative isolate flex w-full flex-col items-center gap-3 rounded-lg border border-gold/20 px-4 pt-6 pb-4"
+      className="relative isolate flex w-full flex-row items-center gap-3 rounded-lg border border-gold/20 p-3 lg:flex-col lg:px-4 lg:pt-6 lg:pb-4"
     >
       {/* Clipped background layer; the card itself must not clip, or the dragged icon gets cut off. */}
       <div className="absolute inset-0 -z-10 overflow-hidden rounded-lg">
@@ -31,16 +31,16 @@ export function RolledChampionCard({ champion }: RolledChampionCardProps) {
         {...listeners}
         {...attributes}
         aria-label={`Drag ${champion.name} onto a role`}
-        className={`relative z-10 size-28 cursor-grab touch-none overflow-hidden rounded-xl border-2 border-gold shadow-lg shadow-gold/30 active:cursor-grabbing ${
+        className={`relative z-10 size-16 shrink-0 cursor-grab lg:size-28 touch-none overflow-hidden rounded-xl border-2 border-gold shadow-lg shadow-gold/30 active:cursor-grabbing ${
           isDragging ? 'opacity-80' : ''
         }`}
       >
         <img src={championIconUrl(champion.image)} alt={champion.name} className="size-full object-cover" />
       </div>
-      <div className="text-center">
-        <p className="font-display text-2xl font-bold text-gold">{champion.name}</p>
+      <div className="min-w-0 text-left lg:text-center">
+        <p className="font-display text-xl font-bold text-gold lg:text-2xl">{champion.name}</p>
         <p className="text-sm text-gold-light/70 capitalize">{champion.title}</p>
-        <p className="mt-1 text-xs text-gold-light/60">
+        <p className="text-xs text-gold-light/60 lg:mt-1">
           {champion.classes.join(' · ')} · {champion.damageType}
         </p>
         <p className="text-xs text-gold-light/60">

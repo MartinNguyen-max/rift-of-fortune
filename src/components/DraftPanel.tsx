@@ -24,7 +24,7 @@ export function DraftPanel({
 }: DraftPanelProps) {
   if (teamComplete) {
     return (
-      <section className="flex flex-col items-center gap-6 text-center">
+      <section className="flex flex-col items-center gap-3 text-center lg:gap-6">
         <h2 className="text-sm font-semibold tracking-widest text-gold/80 uppercase">Team locked in</h2>
         <p className="text-gold-light/70">Five brave souls. Now let&apos;s see what the shop gives them.</p>
         <Button onClick={onStartItems}>Roll items</Button>
@@ -33,12 +33,12 @@ export function DraftPanel({
   }
 
   return (
-    <section className="flex flex-col items-center gap-6 text-center">
+    <section className="flex flex-col items-center gap-3 text-center lg:gap-6">
       <h2 className="text-sm font-semibold tracking-widest text-gold/80 uppercase">Pick {pickNumber} of 5</h2>
 
       {rolled === null && (
         <>
-          <p className="text-gold-light/70">Spin the roulette to get your next champion.</p>
+          <p className="hidden text-gold-light/70 lg:block">Spin the roulette to get your next champion.</p>
           <Button onClick={onRoll} disabled={!canRoll}>
             Roll champion
           </Button>
@@ -50,7 +50,10 @@ export function DraftPanel({
       {rolled?.revealed && (
         <>
           <RolledChampionCard champion={rolled.champion} />
-          <p className="text-sm text-gold-light/70">Drag onto an empty role, or click a glowing slot.</p>
+          <p className="text-sm text-gold-light/70">
+            <span className="lg:hidden">Tap a glowing slot.</span>
+            <span className="hidden lg:inline">Drag onto an empty role, or click a glowing slot.</span>
+          </p>
         </>
       )}
     </section>

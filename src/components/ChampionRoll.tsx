@@ -29,8 +29,8 @@ export function ChampionRoll({ champion, onRevealed }: ChampionRollProps) {
   }, [champion])
 
   return (
-    <div className="flex flex-col items-center gap-3">
-      <div className="relative size-28 overflow-hidden rounded-xl border-2 border-hextech shadow-lg shadow-hextech/30">
+    <div className="flex flex-col items-center gap-2 lg:gap-3">
+      <div className="relative size-20 overflow-hidden rounded-xl border-2 border-hextech lg:size-28 shadow-lg shadow-hextech/30">
         {frame && (
           <motion.img
             key={frame.id}

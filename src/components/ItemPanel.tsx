@@ -24,11 +24,15 @@ export function ItemPanel({ items, round, selectedItemId, roundComplete, onSelec
   const isLastRound = round >= ITEM_ROUNDS
 
   return (
-    <section className="flex flex-col items-center gap-5 text-center">
+    <section className="flex flex-col items-center gap-3 text-center lg:gap-5">
       <h2 className="text-sm font-semibold tracking-widest text-gold/80 uppercase">
         Gear up · Round {round} of {ITEM_ROUNDS}
       </h2>
-      <p className="text-sm text-gold-light/70">
+      <p className="text-xs text-gold-light/70 lg:hidden">
+        Tap a champion to give them the selected item (max {ITEMS_PER_CHAMPION} each). Tap an equipped item to take it
+        back.
+      </p>
+      <p className="hidden text-sm text-gold-light/70 lg:block">
         {isLastRound
           ? `Last ${ITEMS_PER_ROUND} items. Every champion ends with exactly ${ITEMS_PER_CHAMPION}.`
           : `Hand out these ${ITEMS_PER_ROUND} items, max ${ITEMS_PER_CHAMPION} per champion. They lock when you roll the next ${ITEMS_PER_ROUND}.`}{' '}
@@ -61,7 +65,7 @@ export function ItemPanel({ items, round, selectedItemId, roundComplete, onSelec
         )}
       </ul>
 
-      <p className="min-h-10 text-sm lg:hidden">
+      <p className="min-h-9 text-sm lg:hidden">
         {selectedItem ? (
           <>
             <span className="font-semibold text-gold-light">{selectedItem.name}</span>
