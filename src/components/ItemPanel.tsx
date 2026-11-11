@@ -1,29 +1,38 @@
 import { useDroppable } from '@dnd-kit/core'
 import type { Item } from '../data/types'
-import { ITEMS_PER_CHAMPION } from '../game/items'
+import { ITEM_ROUNDS, ITEMS_PER_CHAMPION, ITEMS_PER_ROUND } from '../game/items'
 import { Button } from './Button'
 import { ITEM_POOL_ID } from './dragIds'
 import { DraggableItem } from './DraggableItem'
 import { formatStats } from './formatStats'
 
 interface ItemPanelProps {
+  /** The current round's items that are not handed out yet. */
   items: Item[]
+  round: number
   selectedItemId: string | null
-  canFinish: boolean
+  /** True once every item of this round is handed out. */
+  roundComplete: boolean
   onSelect: (itemId: string) => void
-  onFinish: () => void
+  /** Rolls the next round, or rates the team after the last round. */
+  onContinue: () => void
 }
 
-export function ItemPanel({ items, selectedItemId, canFinish, onSelect, onFinish }: ItemPanelProps) {
+export function ItemPanel({ items, round, selectedItemId, roundComplete, onSelect, onContinue }: ItemPanelProps) {
   const { setNodeRef, isOver } = useDroppable({ id: ITEM_POOL_ID })
   const selectedItem = items.find((item) => item.id === selectedItemId)
+  const isLastRound = round >= ITEM_ROUNDS
 
   return (
     <section className="flex flex-col items-center gap-5 text-center">
-      <h2 className="text-sm font-semibold tracking-widest text-gold/80 uppercase">Gear up</h2>
+      <h2 className="text-sm font-semibold tracking-widest text-gold/80 uppercase">
+        Gear up · Round {round} of {ITEM_ROUNDS}
+      </h2>
       <p className="text-sm text-gold-light/70">
-        Give each champion exactly {ITEMS_PER_CHAMPION} items. Drag an item onto a champion, or tap an item and then
-        a champion. Tap an equipped item to take it back.
+        {isLastRound
+          ? `Last ${ITEMS_PER_ROUND} items. Every champion ends with exactly ${ITEMS_PER_CHAMPION}.`
+          : `Hand out these ${ITEMS_PER_ROUND} items, max ${ITEMS_PER_CHAMPION} per champion. They lock when you roll the next ${ITEMS_PER_ROUND}.`}{' '}
+        Drag an item onto a champion, or tap an item and then a champion. Tap an equipped item to take it back.
       </p>
 
       {/* A compact icon grid on small screens, a list with stats on large ones. */}
@@ -48,7 +57,7 @@ export function ItemPanel({ items, selectedItemId, canFinish, onSelect, onFinish
           </li>
         ))}
         {items.length === 0 && (
-          <li className="col-span-full m-auto text-sm text-gold-light/50">All items equipped!</li>
+          <li className="col-span-full m-auto text-sm text-gold-light/50">{isLastRound ? 'All items equipped!' : 'Round done! Roll the next items.'}</li>
         )}
       </ul>
 
@@ -64,8 +73,8 @@ export function ItemPanel({ items, selectedItemId, canFinish, onSelect, onFinish
         )}
       </p>
 
-      <Button onClick={onFinish} disabled={!canFinish}>
-        Rate my team
+      <Button onClick={onContinue} disabled={!roundComplete}>
+        {isLastRound ? 'Rate my team' : `Roll next ${ITEMS_PER_ROUND} items`}
       </Button>
     </section>
   )

@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { makeChampion, makeItem } from '../testUtils'
 import { CHAMPION_SCORE_WEIGHTS, ROLE_FIT_SCORE, TEAM_SCORE_WEIGHTS } from './config'
 import { LINES } from './feedback'
-import { gradeFor, rateChampion, rateTeam } from './rateTeam'
+import { rankFor } from './rank'
+import { rateChampion, rateTeam } from './rateTeam'
 import type { TeamMember } from './teamBalance'
 
 const rabadon = makeItem({ id: 'Rabadon', stats: { abilityPower: 130 } })
@@ -40,20 +41,6 @@ describe('rateChampion', () => {
   })
 })
 
-describe('gradeFor', () => {
-  it.each([
-    [100, 'S'],
-    [90, 'S'],
-    [85, 'A'],
-    [70, 'B'],
-    [55, 'C'],
-    [40, 'D'],
-    [0, 'F'],
-  ])('gives %i a grade of %s', (score, grade) => {
-    expect(gradeFor(score).grade).toBe(grade)
-  })
-})
-
 describe('rateTeam', () => {
   const dreamTeam: TeamMember[] = [
     { role: 'TOP', champion: garen, items: [thornmail, thornmail] },
@@ -69,7 +56,7 @@ describe('rateTeam', () => {
     expect(rating.score).toBe(
       Math.round(average * TEAM_SCORE_WEIGHTS.champions + rating.balance.score * TEAM_SCORE_WEIGHTS.balance),
     )
-    expect(rating.grade).toBe(gradeFor(rating.score).grade)
+    expect(rating.rank).toEqual(rankFor(rating.score))
   })
 
   it('rates an on-role, well-itemised, balanced team highly', () => {

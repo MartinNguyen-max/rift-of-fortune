@@ -1,5 +1,5 @@
-import { writeFile } from 'node:fs/promises'
-import type { GameData } from '../src/data/types.ts'
+import { mkdir, writeFile } from 'node:fs/promises'
+import { RANK_TIERS, type GameData } from '../src/data/types.ts'
 import {
   dedupeByName,
   isFullItem,
@@ -13,11 +13,27 @@ import {
 const DDRAGON = 'https://ddragon.leagueoflegends.com'
 const MERAKI_CHAMPIONS = 'https://cdn.merakianalytics.com/riot/lol/resources/latest/en-US/champions.json'
 const OUTPUT = new URL('../src/data/game-data.json', import.meta.url)
+/** Ranked emblems aren't on Data Dragon, so they come from CommunityDragon and are saved into the repo. */
+const RANK_EMBLEMS = 'https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-shared-components/global/default'
+const RANK_OUTPUT = new URL('../public/ranks/', import.meta.url)
 
 async function fetchJson<T>(url: string): Promise<T> {
   const response = await fetch(url)
   if (!response.ok) throw new Error(`GET ${url} failed: ${response.status}`)
   return (await response.json()) as T
+}
+
+async function downloadRankEmblems(): Promise<void> {
+  await mkdir(RANK_OUTPUT, { recursive: true })
+  await Promise.all(
+    RANK_TIERS.map(async (tier) => {
+      const file = `${tier.toLowerCase()}.png`
+      const response = await fetch(`${RANK_EMBLEMS}/${file}`)
+      if (!response.ok) throw new Error(`GET ${file} failed: ${response.status}`)
+      await writeFile(new URL(file, RANK_OUTPUT), Buffer.from(await response.arrayBuffer()))
+    }),
+  )
+  console.log(`Saved ${RANK_TIERS.length} rank emblems to public/ranks/`)
 }
 
 async function main(): Promise<void> {
@@ -49,6 +65,8 @@ async function main(): Promise<void> {
   const data: GameData = { patch, champions, items }
   await writeFile(OUTPUT, `${JSON.stringify(data, null, 2)}\n`)
   console.log(`Saved ${champions.length} champions and ${items.length} items to src/data/game-data.json`)
+
+  await downloadRankEmblems()
 }
 
 await main()

@@ -1,7 +1,8 @@
 import type { Champion, Item, Role } from '../../data/types'
-import { CHAMPION_SCORE_WEIGHTS, GRADES, TEAM_SCORE_WEIGHTS, type Grade } from './config'
+import { CHAMPION_SCORE_WEIGHTS, TEAM_SCORE_WEIGHTS } from './config'
 import { itemFitLine, roleFitLine } from './feedback'
 import { scoreItemFit } from './itemFit'
+import { rankFor, type Rank } from './rank'
 import { scoreRoleFit, type RoleFit } from './roleFit'
 import { scoreTeamBalance, type TeamBalance, type TeamMember } from './teamBalance'
 
@@ -22,8 +23,7 @@ export interface ChampionRating {
 
 export interface TeamRating {
   score: number
-  grade: Grade
-  summary: string
+  rank: Rank
   balance: TeamBalance
   champions: ChampionRating[]
 }
@@ -44,11 +44,6 @@ export function rateChampion({ role, champion, items }: TeamMember): ChampionRat
   return { role, champion, roleFit, items: itemRatings, itemFit, score, feedback }
 }
 
-export function gradeFor(score: number): (typeof GRADES)[number] {
-  const lowest = GRADES[GRADES.length - 1] as (typeof GRADES)[number]
-  return GRADES.find(({ min }) => score >= min) ?? lowest
-}
-
 export function rateTeam(members: TeamMember[]): TeamRating {
   const champions = members.map(rateChampion)
   const balance = scoreTeamBalance(members)
@@ -56,6 +51,5 @@ export function rateTeam(members: TeamMember[]): TeamRating {
     average(champions.map(({ score: championScore }) => championScore)) * TEAM_SCORE_WEIGHTS.champions +
       balance.score * TEAM_SCORE_WEIGHTS.balance,
   )
-  const { grade, summary } = gradeFor(score)
-  return { score, grade, summary, balance, champions }
+  return { score, rank: rankFor(score), balance, champions }
 }

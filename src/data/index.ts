@@ -15,3 +15,6 @@ export const championSplashUrl = (championId: string): string =>
 export const itemIconUrl = (image: string): string => `${CDN}/${gameData.patch}/img/item/${image}`
 
 export const summonersRiftMapUrl = `${CDN}/${gameData.patch}/img/map/map11.png`
+
+/** Ranked emblems are saved to public/ranks/ by `npm run data`. */
+export const rankEmblemUrl = (tier: string): string => `${import.meta.env.BASE_URL}ranks/${tier.toLowerCase()}.png`

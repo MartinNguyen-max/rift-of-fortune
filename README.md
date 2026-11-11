@@ -5,8 +5,8 @@ A browser game where you roll random League of Legends champions, place them in 
 ## How to Play
 
 1. **Roll** a random champion and drag it onto an empty role on the map (or click a glowing slot). Placed champions are locked. Repeat until all five roles are filled. Off-role picks are part of the fun.
-2. **Draw 10 random full items** and give each champion exactly 2. Drag items onto champions, or click an item and then a champion.
-3. **Rate your team.** You get a grade, a score per champion and some honest feedback.
+2. **Roll items in two rounds of 5.** Hand out each round by dragging items onto champions (or click an item and then a champion), max 2 per champion. Round 1 items lock when you roll round 2. In the end every champion has exactly 2.
+3. **Rate your team.** You get a ranked tier (Iron IV up to Challenger), a score per champion and some honest feedback.
 
 ## Scoring
 
@@ -39,11 +39,11 @@ npm run dev
 | `npm run build` | Type-check and build for production           |
 | `npm run test`  | Run the unit tests                            |
 | `npm run lint`  | Lint the code                                 |
-| `npm run data`  | Fetch the latest champion and item data       |
+| `npm run data`  | Fetch the latest champion, item and rank data |
 
 ## Data
 
-Champion and item data comes from Riot's [Data Dragon](https://developer.riotgames.com/docs/lol#data-dragon). Champion positions come from [Meraki Analytics](https://github.com/meraki-analytics/lolstaticdata). `npm run data` fetches the latest patch and saves trimmed JSON to `src/data/game-data.json`, so the game needs no live API calls for data. Images are loaded from Riot's Data Dragon CDN.
+Champion and item data comes from Riot's [Data Dragon](https://developer.riotgames.com/docs/lol#data-dragon). Champion positions come from [Meraki Analytics](https://github.com/meraki-analytics/lolstaticdata). `npm run data` fetches the latest patch and saves trimmed JSON to `src/data/game-data.json`, so the game needs no live API calls for data. Images are loaded from Riot's Data Dragon CDN. Ranked emblems are not on Data Dragon, so the script downloads them from [CommunityDragon](https://www.communitydragon.org/) into `public/ranks/`.
 
 ## Disclaimer
 

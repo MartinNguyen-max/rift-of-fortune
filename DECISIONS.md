@@ -79,6 +79,12 @@ All numbers live in `src/game/scoring/config.ts`. Every score is 0–100.
 - **The 10 items are still drawn up front.** The roll is only for show, so the game logic is unchanged. Items can't be assigned until the roll finishes. With "reduce motion" turned on, the roll skips the spins.
 - **ADC and Support sit closer together** (ADC 73/87, Support 87/72), so they read as one bot lane. Checked at 1400px and 390px wide with no overlap.
 
+## Item rounds and ranked tiers (after playtest feedback)
+
+- **Items come in 2 rounds of 5.** Roll 5 (one at a time), hand them out, press "Roll next 5 items", hand those out, then rate. The player chose: round 1 items can go to anyone (max 2 per champion) and **lock when round 2 starts**, so early choices matter like locked champion picks. All 10 are still drawn up front; the reducer tracks `itemRound` and `itemsRevealed` (the roll animation), and only current-round items can move.
+- **Ranked tiers replace S–F grades.** Iron to Challenger, with divisions IV–I for Iron–Diamond (the player chose divisions). Master, Grandmaster and Challenger have none. Cut-offs: Challenger 95, Grandmaster 90, Master 85, Diamond 78, Emerald 70, Platinum 62, Gold 54, Silver 45, Bronze 35, Iron 0. Each tier's range is split evenly into four divisions. All in `config.ts` (`RANK_THRESHOLDS`).
+- **Rank emblems come from CommunityDragon** (Data Dragon has none). `npm run data` saves them to `public/ranks/` (~1.5 MB, committed), so the game doesn't depend on a fan site at runtime. The tier list lives in `src/data/types.ts` so the script can import it under Node's stricter module rules. CommunityDragon is credited in the footer and README.
+
 ---
 
 # Summary
@@ -90,8 +96,8 @@ The full MVP loop from SPEC.md:
 1. **Map:** Summoner's Rift minimap with Top / Jungle / Mid / ADC / Support slots.
 2. **Roll:** a slot-machine style champion roll (Framer Motion) that lands on a random champion not already on the team.
 3. **Place:** drag the champion onto an empty slot (dnd-kit), or click a glowing slot. Placed champions are locked.
-4. **Items:** 10 random full items (from ~105 legendaries), exactly 2 per champion. Drag/drop or click-to-assign, and items can be moved or taken back.
-5. **Rating:** a team grade (S–F) and score, a team-balance checklist, and a score per champion with short funny feedback lines. Badges also appear on the map.
+4. **Items:** 10 random full items (from ~105 legendaries) in two rounds of 5, exactly 2 per champion in the end. Drag/drop or click-to-assign. Items can be moved or taken back until the next round locks them.
+5. **Rating:** a ranked tier (Iron IV to Challenger) with its emblem, a score, a team-balance checklist, and a score per champion with short funny feedback lines. Badges also appear on the map.
 6. **Play Again**, the Riot disclaimer footer, an updated README, and `npm run data` to refresh the data for a new patch.
 
 Game logic is pure and lives in `src/game/` (93 unit tests, covering every scoring rule). All scoring numbers are in `src/game/scoring/config.ts`.

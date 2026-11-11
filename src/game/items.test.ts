@@ -5,12 +5,23 @@ import {
   drawItems,
   ITEM_COUNT,
   itemsForRole,
+  itemsInRound,
+  ITEMS_PER_ROUND,
   unassignedItems,
   type ItemAssignments,
 } from './items'
 import { makeItem } from './testUtils'
 
 const pool = Array.from({ length: 30 }, (_, i) => makeItem({ id: String(i) }))
+
+describe('itemsInRound', () => {
+  it('splits the drawn items into rounds of five', () => {
+    const items = pool.slice(0, ITEM_COUNT)
+    expect(itemsInRound(items, 1).map((item) => item.id)).toEqual(['0', '1', '2', '3', '4'])
+    expect(itemsInRound(items, 2).map((item) => item.id)).toEqual(['5', '6', '7', '8', '9'])
+    expect(itemsInRound(items, 1)).toHaveLength(ITEMS_PER_ROUND)
+  })
+})
 
 describe('drawItems', () => {
   it('draws ten distinct items', () => {

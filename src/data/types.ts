@@ -4,6 +4,21 @@ export type Role = (typeof ROLES)[number]
 export const CHAMPION_CLASSES = ['Assassin', 'Fighter', 'Mage', 'Marksman', 'Support', 'Tank'] as const
 export type ChampionClass = (typeof CHAMPION_CLASSES)[number]
 
+/** Ranked tiers from lowest to highest. Their emblems live in public/ranks/. */
+export const RANK_TIERS = [
+  'Iron',
+  'Bronze',
+  'Silver',
+  'Gold',
+  'Platinum',
+  'Emerald',
+  'Diamond',
+  'Master',
+  'Grandmaster',
+  'Challenger',
+] as const
+export type RankTier = (typeof RANK_TIERS)[number]
+
 export type DamageType = 'AD' | 'AP'
 export type AttackType = 'MELEE' | 'RANGED'
 

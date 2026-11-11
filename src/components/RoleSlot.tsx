@@ -17,6 +17,8 @@ interface RoleSlotProps {
   highlighted: boolean
   onActivate?: () => void
   onItemClick?: (itemId: string) => void
+  /** Whether an equipped item can still be moved. Defaults to locked. */
+  isItemMovable?: (itemId: string) => boolean
   /** Champion score, shown as a badge once the team is rated. */
   score?: number
 }
@@ -29,6 +31,7 @@ export function RoleSlot({
   highlighted,
   onActivate,
   onItemClick,
+  isItemMovable = () => false,
   score,
 }: RoleSlotProps) {
   const { setNodeRef, isOver } = useDroppable({ id: role, disabled: !droppable })
@@ -79,7 +82,13 @@ export function RoleSlot({
           {Array.from({ length: ITEMS_PER_CHAMPION }, (_, index) => {
             const item = items[index]
             return item ? (
-              <DraggableItem key={item.id} item={item} size="small" onClick={() => onItemClick?.(item.id)} />
+              <DraggableItem
+                key={item.id}
+                item={item}
+                size="small"
+                locked={!isItemMovable(item.id)}
+                onClick={() => onItemClick?.(item.id)}
+              />
             ) : (
               <div key={index} className="size-5 rounded border border-dashed border-gold/40 bg-abyss/60 sm:size-7" />
             )

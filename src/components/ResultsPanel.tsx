@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
-import { championIconUrl, itemIconUrl } from '../data'
+import { championIconUrl, itemIconUrl, rankEmblemUrl } from '../data'
 import { ROLE_LABELS } from '../game/roles'
+import { rankLabel } from '../game/scoring/rank'
 import type { ChampionRating, TeamRating } from '../game/scoring/rateTeam'
 import { Button } from './Button'
 import { scoreBorderColor, scoreColor } from './scoreColor'
@@ -20,9 +21,14 @@ export function ResultsPanel({ rating, onPlayAgain }: ResultsPanelProps) {
         className="text-center"
       >
         <h2 className="text-sm font-semibold tracking-widest text-gold/80 uppercase">Team rating</h2>
-        <p className={`font-display text-7xl font-black ${scoreColor(rating.score)}`}>{rating.grade}</p>
+        <img
+          src={rankEmblemUrl(rating.rank.tier)}
+          alt=""
+          className="mx-auto -my-2 size-40 object-contain drop-shadow-[0_0_24px_rgb(200_170_110/0.25)]"
+        />
+        <p className={`font-display text-4xl font-black ${scoreColor(rating.score)}`}>{rankLabel(rating.rank)}</p>
         <p className="text-2xl font-bold text-gold-light">{rating.score} / 100</p>
-        <p className="mt-2 text-gold-light/80 italic">{rating.summary}</p>
+        <p className="mt-2 text-gold-light/80 italic">{rating.rank.summary}</p>
         <Button onClick={onPlayAgain} className="mt-4">
           Play again
         </Button>

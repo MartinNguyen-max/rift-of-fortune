@@ -1,5 +1,5 @@
 import type { Champion, Item, Role } from '../data/types'
-import { allItemsAssigned, canAssignItem, itemsForRole, type ItemAssignments } from './items'
+import { allItemsAssigned, canAssignItem, ITEM_ROUNDS, itemsForRole, itemsInRound, type ItemAssignments } from './items'
 import { ROLES } from './roles'
 import type { TeamMember } from './scoring/teamBalance'
 import { emptyTeam, isTeamComplete, type Team } from './team'
@@ -16,8 +16,13 @@ export interface GameState {
   phase: Phase
   team: Team
   rolled: RolledChampion | null
+  /** All items for the game, drawn up front and handed out round by round. */
   items: Item[]
   assignments: ItemAssignments
+  /** Current item round (1-based), or 0 before the item phase. */
+  itemRound: number
+  /** False while the current round's items are still rolling in. */
+  itemsRevealed: boolean
 }
 
 export type GameAction =
@@ -25,13 +30,23 @@ export type GameAction =
   | { type: 'reveal' }
   | { type: 'place'; role: Role }
   | { type: 'startItems'; items: Item[] }
+  | { type: 'revealItems' }
+  | { type: 'nextItemRound' }
   | { type: 'assignItem'; itemId: string; role: Role }
   | { type: 'unassignItem'; itemId: string }
   | { type: 'finish' }
   | { type: 'reset' }
 
 export function initialGameState(): GameState {
-  return { phase: 'draft', team: emptyTeam(), rolled: null, items: [], assignments: {} }
+  return {
+    phase: 'draft',
+    team: emptyTeam(),
+    rolled: null,
+    items: [],
+    assignments: {},
+    itemRound: 0,
+    itemsRevealed: false,
+  }
 }
 
 export function canRoll(state: GameState): boolean {
@@ -46,8 +61,31 @@ export function canStartItems(state: GameState): boolean {
   return state.phase === 'draft' && isTeamComplete(state.team)
 }
 
+/** The items rolled in the current round. */
+export function currentRoundItems(state: GameState): Item[] {
+  return itemsInRound(state.items, state.itemRound)
+}
+
+/** True while the player can hand out (or take back) items of the current round. */
+export function canHandOutItems(state: GameState): boolean {
+  return state.phase === 'items' && state.itemsRevealed
+}
+
+/** Items from earlier rounds are locked; only the current round's items can move. */
+export function isItemMovable(state: GameState, itemId: string): boolean {
+  return canHandOutItems(state) && currentRoundItems(state).some((item) => item.id === itemId)
+}
+
+function roundComplete(state: GameState): boolean {
+  return canHandOutItems(state) && allItemsAssigned(currentRoundItems(state), state.assignments)
+}
+
+export function canStartNextItemRound(state: GameState): boolean {
+  return state.itemRound < ITEM_ROUNDS && roundComplete(state)
+}
+
 export function canFinish(state: GameState): boolean {
-  return state.phase === 'items' && allItemsAssigned(state.items, state.assignments)
+  return state.itemRound === ITEM_ROUNDS && roundComplete(state)
 }
 
 /** The placed champions with their equipped items, in role order. */
@@ -56,10 +94,6 @@ export function getTeamMembers(state: GameState): TeamMember[] {
     const champion = state.team[role]
     return champion ? [{ role, champion, items: itemsForRole(state.items, state.assignments, role) }] : []
   })
-}
-
-function hasItem(state: GameState, itemId: string): boolean {
-  return state.items.some((item) => item.id === itemId)
 }
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
@@ -75,15 +109,22 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return { ...state, team: { ...state.team, [action.role]: state.rolled.champion }, rolled: null }
 
     case 'startItems':
-      return canStartItems(state) ? { ...state, phase: 'items', items: action.items, assignments: {} } : state
+      if (!canStartItems(state)) return state
+      return { ...state, phase: 'items', items: action.items, assignments: {}, itemRound: 1, itemsRevealed: false }
+
+    case 'revealItems':
+      return state.phase === 'items' ? { ...state, itemsRevealed: true } : state
+
+    case 'nextItemRound':
+      return canStartNextItemRound(state) ? { ...state, itemRound: state.itemRound + 1, itemsRevealed: false } : state
 
     case 'assignItem':
-      if (state.phase !== 'items' || !hasItem(state, action.itemId)) return state
+      if (!isItemMovable(state, action.itemId)) return state
       if (!canAssignItem(state.assignments, action.itemId, action.role)) return state
       return { ...state, assignments: { ...state.assignments, [action.itemId]: action.role } }
 
     case 'unassignItem': {
-      if (state.phase !== 'items') return state
+      if (!isItemMovable(state, action.itemId)) return state
       const assignments = Object.fromEntries(
         Object.entries(state.assignments).filter(([itemId]) => itemId !== action.itemId),
       )

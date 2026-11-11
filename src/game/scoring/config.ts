@@ -1,4 +1,4 @@
-import type { ChampionClass, Role } from '../../data/types'
+import type { ChampionClass, RankTier, Role } from '../../data/types'
 
 /**
  * All scoring numbers in one place so they are easy to tweak.
@@ -80,13 +80,24 @@ export const FRONTLINE_CLASSES: readonly ChampionClass[] = ['Tank']
 export const BRUISER_CLASSES: readonly ChampionClass[] = ['Fighter']
 export const CARRY_CLASSES: readonly ChampionClass[] = ['Marksman', 'Mage', 'Assassin']
 
-export const GRADES = [
-  { min: 90, grade: 'S', summary: 'Pro play material. Somebody call the scouts.' },
-  { min: 80, grade: 'A', summary: 'Solid team. Your LP is in safe hands.' },
-  { min: 65, grade: 'B', summary: 'Decent. Could win, could also int.' },
-  { min: 50, grade: 'C', summary: 'Coin flip. Buy wards and hope.' },
-  { min: 35, grade: 'D', summary: 'Rough. Mute all and pray.' },
-  { min: 0, grade: 'F', summary: 'This team is a crime. FF at 15.' },
-] as const
+/**
+ * Ranked tiers from best to worst, with the minimum team score for each.
+ * Tiers with divisions split their score range evenly into IV (lowest) to I (highest).
+ */
+export const RANK_THRESHOLDS = [
+  { tier: 'Challenger', min: 95, hasDivisions: false, summary: 'Pro play material. Somebody call the scouts.' },
+  { tier: 'Grandmaster', min: 90, hasDivisions: false, summary: 'One step from the top. The ladder fears you.' },
+  { tier: 'Master', min: 85, hasDivisions: false, summary: 'You actually know what you are doing.' },
+  { tier: 'Diamond', min: 78, hasDivisions: true, summary: 'Solid team. Your LP is in safe hands.' },
+  { tier: 'Emerald', min: 70, hasDivisions: true, summary: 'Decent. Could win, could also int.' },
+  { tier: 'Platinum', min: 62, hasDivisions: true, summary: 'Respectable, as long as nobody tilts.' },
+  { tier: 'Gold', min: 54, hasDivisions: true, summary: 'Coin flip. Buy wards and hope.' },
+  { tier: 'Silver', min: 45, hasDivisions: true, summary: "There's a game plan. Somewhere." },
+  { tier: 'Bronze', min: 35, hasDivisions: true, summary: 'Rough. Mute all and pray.' },
+  { tier: 'Iron', min: 0, hasDivisions: true, summary: 'This team is a crime. FF at 15.' },
+] as const satisfies readonly { tier: RankTier; min: number; hasDivisions: boolean; summary: string }[]
 
-export type Grade = (typeof GRADES)[number]['grade']
+/** Divisions from lowest to highest. */
+export const DIVISIONS = ['IV', 'III', 'II', 'I'] as const
+
+export type Division = (typeof DIVISIONS)[number]

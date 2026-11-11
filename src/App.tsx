@@ -22,12 +22,16 @@ import type { Role } from './data/types'
 import { rollChampion } from './game/draft'
 import {
   canFinish,
+  canHandOutItems,
   canPlace,
   canRoll,
   canStartItems,
+  canStartNextItemRound,
+  currentRoundItems,
   gameReducer,
   getTeamMembers,
   initialGameState,
+  isItemMovable,
 } from './game/gameState'
 import { canAssignItem, drawItems, itemsForRole, ITEMS_PER_CHAMPION, unassignedItems } from './game/items'
 import { isRole } from './game/roles'
@@ -37,20 +41,18 @@ import { emptyRoles } from './game/team'
 export default function App() {
   const [state, dispatch] = useReducer(gameReducer, undefined, initialGameState)
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
-  const [itemsRolled, setItemsRolled] = useState(false)
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor),
   )
 
   const reveal = useCallback(() => dispatch({ type: 'reveal' }), [])
-  const finishItemRoll = useCallback(() => setItemsRolled(true), [])
+  const revealItems = useCallback(() => dispatch({ type: 'revealItems' }), [])
   const roll = () => dispatch({ type: 'roll', champion: rollChampion(gameData.champions, state.team) })
   const place = (role: Role) => dispatch({ type: 'place', role })
   const startItems = () => {
     const items = drawItems(gameData.items)
     for (const item of items) new Image().src = itemIconUrl(item.image)
-    setItemsRolled(false)
     dispatch({ type: 'startItems', items })
   }
   const assignItem = (itemId: string, role: Role) => {
@@ -61,7 +63,11 @@ export default function App() {
   const playAgain = () => {
     dispatch({ type: 'reset' })
     setSelectedItemId(null)
-    setItemsRolled(false)
+  }
+  const continueItems = () => {
+    setSelectedItemId(null)
+    if (canFinish(state)) dispatch({ type: 'finish' })
+    else dispatch({ type: 'nextItemRound' })
   }
   const toggleSelected = (itemId: string) => setSelectedItemId((current) => (current === itemId ? null : itemId))
 
@@ -75,8 +81,8 @@ export default function App() {
     else if (over.id === ITEM_POOL_ID) unassignItem(itemId)
   }
 
-  /** Items can be assigned only once the item roll has finished. */
-  const isItemPhase = state.phase === 'items' && itemsRolled
+  /** Items can be handed out only once the round's roll has finished. */
+  const isItemPhase = canHandOutItems(state)
   const rating = state.phase === 'results' ? rateTeam(getTeamMembers(state)) : null
   const hasRoomForItem = (role: Role) => itemsForRole(state.items, state.assignments, role).length < ITEMS_PER_CHAMPION
 
@@ -104,6 +110,7 @@ export default function App() {
         highlighted={isItemPhase && assignable}
         onActivate={isItemPhase && assignable ? () => assignItem(selectedItemId, role) : undefined}
         onItemClick={isItemPhase ? unassignItem : undefined}
+        isItemMovable={(itemId) => isItemMovable(state, itemId)}
         score={rating?.champions.find((championRating) => championRating.role === role)?.score}
       />
     )
@@ -134,16 +141,22 @@ export default function App() {
                   onStartItems={startItems}
                 />
               )}
-              {state.phase === 'items' && !itemsRolled && (
-                <ItemRoll items={state.items} onDone={finishItemRoll} />
+              {state.phase === 'items' && !state.itemsRevealed && (
+                <ItemRoll
+                  key={state.itemRound}
+                  items={currentRoundItems(state)}
+                  round={state.itemRound}
+                  onDone={revealItems}
+                />
               )}
               {isItemPhase && (
                 <ItemPanel
-                  items={unassignedItems(state.items, state.assignments)}
+                  items={unassignedItems(currentRoundItems(state), state.assignments)}
+                  round={state.itemRound}
                   selectedItemId={selectedItemId}
-                  canFinish={canFinish(state)}
+                  roundComplete={canStartNextItemRound(state) || canFinish(state)}
                   onSelect={toggleSelected}
-                  onFinish={() => dispatch({ type: 'finish' })}
+                  onContinue={continueItems}
                 />
               )}
               {rating && <ResultsPanel rating={rating} onPlayAgain={playAgain} />}

@@ -2,9 +2,10 @@ import { motion, useReducedMotion } from 'framer-motion'
 import { useCallback, useEffect, useState } from 'react'
 import { gameData, itemIconUrl } from '../data'
 import type { Item } from '../data/types'
+import { ITEM_ROUNDS } from '../game/items'
 import { useSpin } from './useSpin'
 
-/** Fewer, faster frames than the champion roll, since there are 10 items. */
+/** Fewer, faster frames than the champion roll, since there are more items to roll. */
 const SPIN_FRAMES = 10
 const spinDelayMs = (frame: number) => 20 + frame * frame * 0.8
 /** Pause on each landed item before the next one starts spinning. */
@@ -14,11 +15,12 @@ const iconUrl = (item: Item) => itemIconUrl(item.image)
 
 interface ItemRollProps {
   items: Item[]
+  round: number
   onDone: () => void
 }
 
-/** Rolls the drawn items one at a time, each with its own short slot-machine spin. */
-export function ItemRoll({ items, onDone }: ItemRollProps) {
+/** Rolls a round's items one at a time, each with its own short slot-machine spin. */
+export function ItemRoll({ items, round, onDone }: ItemRollProps) {
   const [current, setCurrent] = useState(0)
   const [landed, setLanded] = useState(false)
   const reduceMotion = useReducedMotion() === true
@@ -43,7 +45,7 @@ export function ItemRoll({ items, onDone }: ItemRollProps) {
   return (
     <section className="flex flex-col items-center gap-5 text-center">
       <h2 className="text-sm font-semibold tracking-widest text-gold/80 uppercase">
-        Item {Math.min(current + 1, items.length)} of {items.length}
+        Round {round} of {ITEM_ROUNDS} · Item {Math.min(current + 1, items.length)} of {items.length}
       </h2>
       {item && <SpinningItem key={item.id} item={item} onLanded={markLanded} />}
       <ul className="grid w-full grid-cols-5 gap-2" aria-label="Rolled items">

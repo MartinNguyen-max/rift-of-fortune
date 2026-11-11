@@ -27,7 +27,7 @@ export function DraftPanel({
       <section className="flex flex-col items-center gap-6 text-center">
         <h2 className="text-sm font-semibold tracking-widest text-gold/80 uppercase">Team locked in</h2>
         <p className="text-gold-light/70">Five brave souls. Now let&apos;s see what the shop gives them.</p>
-        <Button onClick={onStartItems}>Draw 10 items</Button>
+        <Button onClick={onStartItems}>Roll items</Button>
       </section>
     )
   }

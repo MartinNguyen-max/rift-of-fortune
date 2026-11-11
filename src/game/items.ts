@@ -3,12 +3,20 @@ import { sample, type RandomFn } from './random'
 
 export const ITEM_COUNT = 10
 export const ITEMS_PER_CHAMPION = 2
+/** Items are rolled and handed out in rounds; earlier rounds lock when the next one starts. */
+export const ITEMS_PER_ROUND = 5
+export const ITEM_ROUNDS = ITEM_COUNT / ITEMS_PER_ROUND
 
 /** Maps item id to the role of the champion holding it. */
 export type ItemAssignments = Partial<Record<string, Role>>
 
 export function drawItems(pool: readonly Item[], random?: RandomFn): Item[] {
   return sample(pool, ITEM_COUNT, random)
+}
+
+/** The items rolled in a given round (1-based). */
+export function itemsInRound(items: readonly Item[], round: number): Item[] {
+  return items.slice((round - 1) * ITEMS_PER_ROUND, round * ITEMS_PER_ROUND)
 }
 
 export function itemsForRole(items: readonly Item[], assignments: ItemAssignments, role: Role): Item[] {

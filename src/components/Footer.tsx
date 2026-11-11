@@ -9,7 +9,7 @@ export function Footer() {
         associated properties are trademarks or registered trademarks of Riot Games, Inc.
       </p>
       <p className="mt-2">
-        Data from Riot Data Dragon (patch {gameData.patch}) and Meraki Analytics. A free fan project.
+        Data from Riot Data Dragon (patch {gameData.patch}), Meraki Analytics and CommunityDragon. A free fan project.
       </p>
     </footer>
   )
