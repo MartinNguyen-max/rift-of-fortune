@@ -5,11 +5,17 @@ import { ROLE_MAP_POSITIONS, ROLES } from '../game/roles'
 
 interface RiftMapProps {
   renderSlot: (role: Role) => ReactNode
+  /** Leaves extra room for the taller item panel on phones. */
+  compact?: boolean
 }
 
-export function RiftMap({ renderSlot }: RiftMapProps) {
+export function RiftMap({ renderSlot, compact = false }: RiftMapProps) {
   return (
-    <div className="relative aspect-square w-full max-w-[min(36rem,calc(100svh-19rem))] lg:max-w-xl">
+    <div
+      className={`relative aspect-square w-full lg:max-w-xl ${
+        compact ? 'max-w-[min(36rem,calc(100svh-23rem))]' : 'max-w-[min(36rem,calc(100svh-19rem))]'
+      }`}
+    >
       <img
         src={summonersRiftMapUrl}
         alt="Summoner's Rift"

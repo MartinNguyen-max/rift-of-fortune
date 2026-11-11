@@ -43,7 +43,7 @@ export function ItemRoll({ items, round, onDone }: ItemRollProps) {
   const revealedCount = landed ? current + 1 : current
 
   return (
-    <section className="flex flex-col items-center gap-5 text-center">
+    <section className="flex flex-col items-center gap-3 text-center lg:gap-5">
       <h2 className="text-sm font-semibold tracking-widest text-gold/80 uppercase">
         Round {round} of {ITEM_ROUNDS} · Item {Math.min(current + 1, items.length)} of {items.length}
       </h2>
@@ -91,7 +91,7 @@ function SpinningItem({ item, onLanded }: SpinningItemProps) {
   return (
     <div className="flex flex-col items-center gap-2">
       <motion.div
-        className="relative size-20 overflow-hidden rounded-xl border-2 border-hextech shadow-lg shadow-hextech/30"
+        className="relative size-14 overflow-hidden rounded-xl border-2 border-hextech lg:size-20 shadow-lg shadow-hextech/30"
         animate={landed ? { scale: [1, 1.15, 1] } : { scale: 1 }}
         transition={{ duration: 0.25 }}
       >

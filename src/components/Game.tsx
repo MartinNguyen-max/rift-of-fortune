@@ -142,7 +142,7 @@ export function Game({ title, initialState, nextChampion, drawItems, onStateChan
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
       <div className="flex w-full flex-col items-center gap-3 lg:gap-8 lg:flex-row lg:items-start lg:justify-center">
-        <RiftMap renderSlot={renderSlot} />
+        <RiftMap renderSlot={renderSlot} compact={state.phase === 'items'} />
         <div className="w-full max-w-md rounded-xl border border-gold/30 bg-panel/70 p-3 shadow-2xl shadow-black/50 backdrop-blur sm:p-5 lg:p-6">
           <p className="mb-1 text-center font-display text-sm font-bold tracking-wider text-gold lg:mb-3">{title}</p>
           <PhaseSteps current={state.phase} />
