@@ -71,7 +71,7 @@ All numbers live in `src/game/scoring/config.ts`. Every score is 0–100.
 - **Look:** Cinzel heading font from Google Fonts (a stylesheet link, not an npm dependency), a subtle hextech/gold background glow, a tagline, a Draft → Items → Rating stepper, splash art behind the revealed champion, a custom roulette-wheel favicon (replacing the Vite logo), and item borders in the results coloured by fit (green/gold/red).
 - **Feedback variety:** each situation has 2–3 lines. The line is picked by hashing champion + role/item, so the same team always gets the same text and tests stay deterministic, but the lines no longer repeat word for word.
 - **Performance:** item icons are preloaded when items are drawn, and the champion splash during the roll.
-- **Accessibility:** , and the roll skips the spin when the OS asks for reduced motion.
+- **Accessibility:** animations follow the OS "reduce motion" setting (`MotionConfig reducedMotion="user"`), and the roll skips the spin when the OS asks for reduced motion.
 
 ---
 
