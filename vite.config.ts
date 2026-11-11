@@ -1,0 +1,12 @@
+import tailwindcss from '@tailwindcss/vite'
+import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vitest/config'
+
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+  test: {
+    include: ['src/**/*.test.ts', 'scripts/**/*.test.ts'],
+    // The default "forks" pool fails to start on this Windows setup; see DECISIONS.md.
+    pool: 'vmThreads',
+  },
+})

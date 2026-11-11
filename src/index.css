@@ -1,0 +1,14 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-gold: #c8aa6e;
+  --color-gold-light: #f0e6d2;
+  --color-hextech: #0ac8b9;
+  --color-abyss: #010a13;
+  --color-panel: #0a1428;
+}
+
+body {
+  @apply bg-abyss text-gold-light antialiased;
+  font-family: system-ui, sans-serif;
+}
