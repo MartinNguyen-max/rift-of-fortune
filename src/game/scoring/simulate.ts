@@ -1,13 +1,13 @@
 import type { Champion, Item, Role } from '../../data/types'
 import { rollChampion } from '../draft'
 import { drawItems, ITEMS_PER_CHAMPION } from '../items'
-import { pickRandom, type RandomFn } from '../random'
+import { pickRandom, seededRandom, type RandomFn } from '../random'
 import { ROLES } from '../roles'
 import { scoreItemFit } from './itemFit'
 import { rateTeam } from './rateTeam'
 import { scoreRoleFit } from './roleFit'
-import type { TeamMember } from './teamBalance'
 import { emptyTeam, type Team } from '../team'
+import type { TeamMember } from './teamBalance'
 
 /**
  * Plays whole games without the UI, to calibrate the rank thresholds.
@@ -16,18 +16,6 @@ import { emptyTeam, type Team } from '../team'
  * - `random`: places champions and items at random.
  */
 export type Strategy = 'sensible' | 'random'
-
-/** Small seeded random generator (mulberry32), so simulations are reproducible. */
-export function seededRandom(seed: number): RandomFn {
-  let state = seed >>> 0
-  return () => {
-    state = (state + 0x6d2b79f5) >>> 0
-    let t = state
-    t = Math.imul(t ^ (t >>> 15), t | 1)
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
-  }
-}
 
 function bestBy<T>(options: T[], value: (option: T) => number, random: RandomFn): T {
   const best = Math.max(...options.map(value))

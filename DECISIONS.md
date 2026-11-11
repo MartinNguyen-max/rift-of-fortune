@@ -96,6 +96,17 @@ A team of four off-role junglers plus Lee Sin ADC got Platinum. Causes: off-role
 - **More feedback:** a Coach's notes block (MVP, liability, comp jokes like "4 junglers on one team. Who is taking Smite?"), a short verdict per champion ("Hard carrying." … "Inting."), 2 variants per balance line, and the penalty shown next to each failed check.
 - **Champion roll is faster:** 20 frames from 35ms (about 2.2s, was about 3.5s).
 
+## Homepage, Daily Rift and role data (after playtest feedback)
+
+- **Homepage with two modes.** Classic stays the main mode, unchanged apart from a "Now try this team in a real game. We dare you." line under the result. The Daily Rift is the new second mode. The shared game screen moved from `App.tsx` into `components/Game.tsx`, and the modes live in `src/pages/`. The map, panels and styling are unchanged.
+- **Navigation uses hash links** (`#/classic`, `#/daily`). There is no router dependency, and the links can be shared and work on any static host. The player chose this.
+- **The Daily is the same for everyone on a local calendar day** (like Wordle). The date is turned into a seed for the seeded random generator, which picks 5 champions in roll order and 10 items. Daily #1 is 2026-11-11.
+- **One try per day** (the player chose this). Progress is saved to localStorage after every move, so a refresh resumes the game instead of giving a second try. Clearing storage would allow another try, which is fine for a fan game.
+- **Spoiler-free sharing:** the rank, the score and one coloured square per role, with no champion names, so it doesn't spoil the day for friends.
+- **Real global stats via Supabase** (the player chose this over a no-server comparison). This is the project's first backend piece, so it is optional and the Daily works without it. It uses Supabase's REST API with plain `fetch` (no new npm dependency) and the publishable key. Row level security accepts only scores for around today's Daily and keeps individual rows private; players only get totals through the `daily_stats` function. The trade-off: scores are computed in the browser, so they can be faked. Setup lives in `supabase/daily-scores.sql` and the README.
+- **Role data:** Meraki's positions list every role a champion has ever been played in (e.g. Taric mid). They are now intersected with Meraki's role play rates (`championrates.json`). Total positions went from 244 to 193. A few champions lose a real second role (Pantheon, Seraphine and Swain are now Support only). Accepted, since the player said it doesn't need to be perfect. The rank calibration tests still pass.
+- **New folders:** `src/pages/` (one component per mode), `src/services/` (localStorage and Supabase; the only code with side effects outside React), `supabase/` (SQL). CLAUDE.md's project structure list doesn't mention these yet.
+
 ---
 
 # Summary

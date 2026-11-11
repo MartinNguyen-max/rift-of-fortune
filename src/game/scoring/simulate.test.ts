@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { gameData } from '../../data'
 import { rankFor } from './rank'
-import { percentile, seededRandom, simulateGame, simulateScores } from './simulate'
+import { seededRandom } from '../random'
+import { percentile, simulateGame, simulateScores } from './simulate'
 
 const GAMES = 2000
 

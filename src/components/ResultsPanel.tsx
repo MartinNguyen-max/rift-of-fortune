@@ -1,17 +1,18 @@
 import { motion } from 'framer-motion'
+import type { ReactNode } from 'react'
 import { championIconUrl, itemIconUrl, rankEmblemUrl } from '../data'
 import { ROLE_LABELS } from '../game/roles'
 import { rankLabel } from '../game/scoring/rank'
 import type { ChampionRating, TeamRating } from '../game/scoring/rateTeam'
-import { Button } from './Button'
 import { scoreBorderColor, scoreColor } from './scoreColor'
 
 interface ResultsPanelProps {
   rating: TeamRating
-  onPlayAgain: () => void
+  /** Mode-specific buttons under the rank, e.g. Play again or Share. */
+  actions: ReactNode
 }
 
-export function ResultsPanel({ rating, onPlayAgain }: ResultsPanelProps) {
+export function ResultsPanel({ rating, actions }: ResultsPanelProps) {
   return (
     <section className="flex flex-col gap-6">
       <motion.div
@@ -33,9 +34,7 @@ export function ResultsPanel({ rating, onPlayAgain }: ResultsPanelProps) {
           {rating.balance.penalty > 0 && <> − team balance {rating.balance.penalty}</>}
         </p>
         <p className="mt-2 text-gold-light/80 italic">{rating.rank.summary}</p>
-        <Button onClick={onPlayAgain} className="mt-4">
-          Play again
-        </Button>
+        <div className="mt-4 flex flex-col items-center gap-3">{actions}</div>
       </motion.div>
 
       {rating.coachNotes.length > 0 && (
