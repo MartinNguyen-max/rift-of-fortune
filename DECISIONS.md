@@ -64,3 +64,39 @@ All numbers live in `src/game/scoring/config.ts`. Every score is 0–100.
 - **The footer** shows Riot's full "Legal Jibber Jabber" disclaimer plus the data sources and patch number.
 - **README** now covers how to play, scoring, commands, data sources and the disclaimer.
 - **Playtested in headless Chrome** (Playwright driver kept outside the repo). It dragged champions into slots, click-assigned items, rated the team and played again, with no console errors. That run surfaced two layout fixes: score badges now sit on the portrait, and the ADC/Support slots moved apart so their items don't overlap.
+
+---
+
+# Summary
+
+## What was built
+
+The full MVP loop from SPEC.md:
+
+1. **Map:** Summoner's Rift minimap with Top / Jungle / Mid / ADC / Support slots.
+2. **Roll:** a slot-machine style champion roll (Framer Motion) that lands on a random champion not already on the team.
+3. **Place:** drag the champion onto an empty slot (dnd-kit), or click a glowing slot. Placed champions are locked.
+4. **Items:** 10 random full items (from ~105 legendaries), exactly 2 per champion. Drag/drop or click-to-assign, and items can be moved or taken back.
+5. **Rating:** a team grade (S–F) and score, a team-balance checklist, and a score per champion with short funny feedback lines. Badges also appear on the map.
+6. **Play Again**, the Riot disclaimer footer, an updated README, and `npm run data` to refresh the data for a new patch.
+
+Game logic is pure and lives in `src/game/` (93 unit tests, covering every scoring rule). All scoring numbers are in `src/game/scoring/config.ts`.
+
+## What to test
+
+- `npm install && npm run dev`, then play a few rounds.
+- **Does the score feel fair?** The main thing to tune. Try deliberate on-role + good-item teams (should be A/S) and chaos teams (should be D/F).
+- **Feedback lines:** are they funny, and do they repeat too much?
+- **Drag and drop on a touch device** (phone/tablet), and keyboard play (Tab + Space/Enter).
+- **Mobile layout:** the map and panel stack vertically, so check that slot labels and items stay readable on a small screen.
+- **Locke and Zaahen** have guessed positions (not in Meraki yet). Check they look sensible, and re-run `npm run data` later.
+
+## Suggested next steps
+
+1. **Tune scoring after playtesting.** Most likely candidates: the off-role penalty (15 may be too harsh), hybrid items, and enchanter items on mages.
+2. **More feedback variety:** several lines per situation, picked with an injected random function so tests stay deterministic.
+3. **Show *why* an item fits** (e.g. "AP item, AP champion ✓") in the results tooltip.
+4. **Use better position data** if a source with role popularity is found, to bring back main vs secondary role.
+5. **Share result** as an image or link (no backend needed).
+6. **Upgrade to TypeScript 7** once `typescript-eslint` supports it, and remove the Vitest `vmThreads` workaround if it works on another machine or in CI.
+7. Then look at the Future Ideas in SPEC.md (match vs bots first, since it reuses the team score).
