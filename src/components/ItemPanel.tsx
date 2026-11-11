@@ -32,7 +32,7 @@ export function ItemPanel({ items, round, selectedItemId, roundComplete, onSelec
         {isLastRound
           ? `Last ${ITEMS_PER_ROUND} items. Every champion ends with exactly ${ITEMS_PER_CHAMPION}.`
           : `Hand out these ${ITEMS_PER_ROUND} items, max ${ITEMS_PER_CHAMPION} per champion. They lock when you roll the next ${ITEMS_PER_ROUND}.`}{' '}
-        Drag an item onto a champion, or tap an item and then a champion. Tap an equipped item to take it back.
+        Tap a champion to give them the selected item, or drag an item onto one. Tap an equipped item to take it back.
       </p>
 
       {/* A compact icon grid on small screens, a list with stats on large ones. */}

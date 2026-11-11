@@ -65,7 +65,12 @@ export function Game({ title, initialState, nextChampion, drawItems, onStateChan
   const reveal = useCallback(() => dispatch({ type: 'reveal' }), [])
   const revealItems = useCallback(() => dispatch({ type: 'revealItems' }), [])
   const roll = () => dispatch({ type: 'roll', champion: nextChampion(state) })
-  const place = (role: Role) => dispatch({ type: 'place', role })
+  /** Places the champion, then rolls the next one so the player doesn't have to press Roll again. */
+  const place = (role: Role) => {
+    const placed = gameReducer(state, { type: 'place', role })
+    dispatch({ type: 'place', role })
+    if (canRoll(placed)) dispatch({ type: 'roll', champion: nextChampion(placed) })
+  }
   const startItems = () => {
     const items = drawItems()
     for (const item of items) new Image().src = itemIconUrl(item.image)
@@ -85,7 +90,6 @@ export function Game({ title, initialState, nextChampion, drawItems, onStateChan
     if (canFinish(state)) dispatch({ type: 'finish' })
     else dispatch({ type: 'nextItemRound' })
   }
-  const toggleSelected = (itemId: string) => setSelectedItemId((current) => (current === itemId ? null : itemId))
 
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
     if (!over) return
@@ -100,7 +104,10 @@ export function Game({ title, initialState, nextChampion, drawItems, onStateChan
   /** Items can be handed out only once the round's roll has finished. */
   const isItemPhase = canHandOutItems(state)
   const rating = state.phase === 'results' ? rateTeam(getTeamMembers(state)) : null
-  const hasRoomForItem = (role: Role) => itemsForRole(state.items, state.assignments, role).length < ITEMS_PER_CHAMPION
+  const poolItems = isItemPhase ? unassignedItems(currentRoundItems(state), state.assignments) : []
+  /** One item is always selected, so players can just tap champions (no dragging needed on phones). */
+  const activeItemId = poolItems.some((item) => item.id === selectedItemId) ? selectedItemId : (poolItems[0]?.id ?? null)
+  const hasRoomForItem =(role: Role) => itemsForRole(state.items, state.assignments, role).length < ITEMS_PER_CHAMPION
 
   const renderSlot = (role: Role) => {
     if (state.phase === 'draft') {
@@ -116,7 +123,7 @@ export function Game({ title, initialState, nextChampion, drawItems, onStateChan
       )
     }
 
-    const assignable = selectedItemId !== null && canAssignItem(state.assignments, selectedItemId, role)
+    const assignable = activeItemId !== null && canAssignItem(state.assignments, activeItemId, role)
     return (
       <RoleSlot
         role={role}
@@ -124,7 +131,7 @@ export function Game({ title, initialState, nextChampion, drawItems, onStateChan
         items={itemsForRole(state.items, state.assignments, role)}
         droppable={isItemPhase && hasRoomForItem(role)}
         highlighted={isItemPhase && assignable}
-        onActivate={isItemPhase && assignable ? () => assignItem(selectedItemId, role) : undefined}
+        onActivate={isItemPhase && assignable ? () => assignItem(activeItemId, role) : undefined}
         onItemClick={isItemPhase ? unassignItem : undefined}
         isItemMovable={(itemId) => isItemMovable(state, itemId)}
         score={rating?.champions.find((championRating) => championRating.role === role)?.score}
@@ -160,11 +167,11 @@ export function Game({ title, initialState, nextChampion, drawItems, onStateChan
           )}
           {isItemPhase && (
             <ItemPanel
-              items={unassignedItems(currentRoundItems(state), state.assignments)}
+              items={poolItems}
               round={state.itemRound}
-              selectedItemId={selectedItemId}
+              selectedItemId={activeItemId}
               roundComplete={canStartNextItemRound(state) || canFinish(state)}
-              onSelect={toggleSelected}
+              onSelect={setSelectedItemId}
               onContinue={continueItems}
             />
           )}
