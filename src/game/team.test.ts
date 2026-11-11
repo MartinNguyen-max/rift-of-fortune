@@ -1,17 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import type { Champion } from '../data/types'
 import { emptyRoles, emptyTeam, isTeamComplete } from './team'
+import { makeChampion } from './testUtils'
 
-const champion: Champion = {
-  id: 'Ahri',
-  name: 'Ahri',
-  title: '',
-  image: '',
-  classes: ['Mage'],
-  positions: ['MIDDLE'],
-  damageType: 'AP',
-  attackType: 'RANGED',
-}
+const champion = makeChampion()
 
 describe('team', () => {
   it('starts with all five roles empty', () => {

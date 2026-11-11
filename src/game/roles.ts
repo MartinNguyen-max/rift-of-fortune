@@ -18,3 +18,7 @@ export const ROLE_MAP_POSITIONS: Record<Role, { x: number; y: number }> = {
   BOTTOM: { x: 76, y: 87 },
   SUPPORT: { x: 89, y: 74 },
 }
+
+export function isRole(value: unknown): value is Role {
+  return typeof value === 'string' && (ROLES as readonly string[]).includes(value)
+}

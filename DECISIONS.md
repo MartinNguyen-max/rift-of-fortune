@@ -28,3 +28,11 @@ Decisions made while building the MVP autonomously, with the reasoning.
 - **Map background is Data Dragon's `map11.png` minimap.** Slots sit on top of it at fixed percentages, so the map scales with the screen.
 - **The team is drawn on the blue side** (bottom-left base), so Jungle sits in the blue jungle and ADC/Support share the bottom-right lane corner.
 - **Role labels:** Top, Jungle, Mid, ADC, Support. Internally they map to Meraki's `TOP/JUNGLE/MIDDLE/BOTTOM/SUPPORT`.
+
+## Step 4 – Roll and placement
+
+- **Game state is a pure reducer** (`src/game/gameState.ts`). Randomness happens outside it (`rollChampion` gets a random function), so the reducer and tests stay deterministic.
+- **Roll animation:** about 24 random champion icons flash by while the delay grows (slot-machine style), then it lands on the pre-chosen champion. Framer Motion adds the slide-in per frame and a spring "pop" on the reveal. Icons are preloaded right before the spin.
+- **Placement:** drag the champion with dnd-kit, or click a glowing empty slot. Click is the accessible fallback. Keyboard dragging also works via dnd-kit's `KeyboardSensor`. A placed slot can't be changed (locked).
+- **The player presses "Roll" for each pick** (no auto-roll), so every roll is a moment of anticipation.
+- **The champion card shows "Usually plays: …"** so the player can make an informed (or brave) placement.
