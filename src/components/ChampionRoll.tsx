@@ -1,11 +1,12 @@
-import { motion, useReducedMotion } from 'framer-motion'
-import { useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
+import { useEffect } from 'react'
 import { championIconUrl, championSplashUrl, gameData } from '../data'
 import type { Champion } from '../data/types'
-import { sample } from '../game/random'
+import { useSpin } from './useSpin'
 
 const SPIN_FRAMES = 24
 const spinDelayMs = (frame: number) => 40 + frame * frame * 0.6
+const iconUrl = (champion: Champion) => championIconUrl(champion.image)
 
 interface ChampionRollProps {
   champion: Champion
@@ -14,32 +15,18 @@ interface ChampionRollProps {
 
 /** Cycles through random champion icons, slowing down, then lands on `champion`. */
 export function ChampionRoll({ champion, onRevealed }: ChampionRollProps) {
-  const [frame, setFrame] = useState<Champion | null>(null)
-
-  const reduceMotion = useReducedMotion() === true
+  const { frame } = useSpin({
+    target: champion,
+    pool: gameData.champions,
+    spinFrames: SPIN_FRAMES,
+    delayMs: spinDelayMs,
+    imageUrl: iconUrl,
+    onLanded: onRevealed,
+  })
 
   useEffect(() => {
-    const spinFrames = reduceMotion ? 0 : SPIN_FRAMES
-    const frames = [...sample(gameData.champions, spinFrames), champion]
-    for (const { image } of frames) new Image().src = championIconUrl(image)
     new Image().src = championSplashUrl(champion.id)
-
-    let index = 0
-    let timer: ReturnType<typeof setTimeout>
-    const tick = () => {
-      const next = frames[index]
-      if (!next) return
-      setFrame(next)
-      if (index === frames.length - 1) {
-        onRevealed()
-        return
-      }
-      timer = setTimeout(tick, spinDelayMs(index))
-      index++
-    }
-    timer = setTimeout(tick, 0)
-    return () => clearTimeout(timer)
-  }, [champion, onRevealed, reduceMotion])
+  }, [champion])
 
   return (
     <div className="flex flex-col items-center gap-3">

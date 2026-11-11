@@ -13,6 +13,7 @@ import { DraftPanel } from './components/DraftPanel'
 import { Footer } from './components/Footer'
 import { PhaseSteps } from './components/PhaseSteps'
 import { ItemPanel } from './components/ItemPanel'
+import { ItemRoll } from './components/ItemRoll'
 import { ResultsPanel } from './components/ResultsPanel'
 import { RiftMap } from './components/RiftMap'
 import { RoleSlot } from './components/RoleSlot'
@@ -36,17 +37,20 @@ import { emptyRoles } from './game/team'
 export default function App() {
   const [state, dispatch] = useReducer(gameReducer, undefined, initialGameState)
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
+  const [itemsRolled, setItemsRolled] = useState(false)
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor),
   )
 
   const reveal = useCallback(() => dispatch({ type: 'reveal' }), [])
+  const finishItemRoll = useCallback(() => setItemsRolled(true), [])
   const roll = () => dispatch({ type: 'roll', champion: rollChampion(gameData.champions, state.team) })
   const place = (role: Role) => dispatch({ type: 'place', role })
   const startItems = () => {
     const items = drawItems(gameData.items)
     for (const item of items) new Image().src = itemIconUrl(item.image)
+    setItemsRolled(false)
     dispatch({ type: 'startItems', items })
   }
   const assignItem = (itemId: string, role: Role) => {
@@ -57,8 +61,9 @@ export default function App() {
   const playAgain = () => {
     dispatch({ type: 'reset' })
     setSelectedItemId(null)
+    setItemsRolled(false)
   }
-  const toggleSelected =(itemId: string) => setSelectedItemId((current) => (current === itemId ? null : itemId))
+  const toggleSelected = (itemId: string) => setSelectedItemId((current) => (current === itemId ? null : itemId))
 
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
     if (!over) return
@@ -70,7 +75,8 @@ export default function App() {
     else if (over.id === ITEM_POOL_ID) unassignItem(itemId)
   }
 
-  const isItemPhase = state.phase === 'items'
+  /** Items can be assigned only once the item roll has finished. */
+  const isItemPhase = state.phase === 'items' && itemsRolled
   const rating = state.phase === 'results' ? rateTeam(getTeamMembers(state)) : null
   const hasRoomForItem = (role: Role) => itemsForRole(state.items, state.assignments, role).length < ITEMS_PER_CHAMPION
 
@@ -127,6 +133,9 @@ export default function App() {
                   onRevealed={reveal}
                   onStartItems={startItems}
                 />
+              )}
+              {state.phase === 'items' && !itemsRolled && (
+                <ItemRoll items={state.items} onDone={finishItemRoll} />
               )}
               {isItemPhase && (
                 <ItemPanel

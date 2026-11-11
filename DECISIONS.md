@@ -73,6 +73,12 @@ All numbers live in `src/game/scoring/config.ts`. Every score is 0–100.
 - **Performance:** item icons are preloaded when items are drawn, and the champion splash during the roll.
 - **Accessibility:** animations follow the OS "reduce motion" setting (`MotionConfig reducedMotion="user"`), and the roll skips the spin when the OS asks for reduced motion.
 
+## Item roll and bot lane (after playtest feedback)
+
+- **Items roll one at a time**, using the same slot-machine spin as the champion roll. The player chose this over spinning all 10 at once. The spin lives in a shared `useSpin` hook, so the two rolls stay consistent. Item spins use fewer, faster frames and a short pause between items, about 6.5s for all 10.
+- **The 10 items are still drawn up front.** The roll is only for show, so the game logic is unchanged. Items can't be assigned until the roll finishes. With "reduce motion" turned on, the roll skips the spins.
+- **ADC and Support sit closer together** (ADC 73/87, Support 87/72), so they read as one bot lane. Checked at 1400px and 390px wide with no overlap.
+
 ---
 
 # Summary
