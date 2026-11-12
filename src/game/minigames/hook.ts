@@ -1,5 +1,6 @@
 import type { Champion, ChampionClass } from '../../data/types'
 import { sample, seededRandom, type RandomFn } from '../random'
+import { owedScores, settleScores, type MiniGameRules, type Variant } from './versus'
 
 /**
  * Rocket Grab Gold Rush, played like Gold Miner: the hook swings from Blitzcrank at the top of
@@ -7,11 +8,12 @@ import { sample, seededRandom, type RandomFn } from '../random'
  * The field is FIELD.width × FIELD.height units, y pointing down.
  */
 export const FIELD = { width: 100, height: 70 } as const
+
+/** Seconds for the whole game: shorter in Multiplayer. */
+export const HOOK_SECONDS: Record<Variant, number> = { solo: 25, live: 15 }
 export const HOOK_ORIGIN = { x: 50, y: 7 } as const
 
 export const HOOK = {
-  /** Seconds for the whole game. */
-  duration: 25,
   /** Rocket Grab cooldown after the hook is back, in seconds. */
   cooldown: 0.9,
   /** The swing goes from -maxAngle to +maxAngle degrees (0 is straight down). */
@@ -181,13 +183,13 @@ export const BOT_HOOK_ACCURACY = 0.6
  * per second of pulling, and lands the shot BOT_HOOK_ACCURACY of the time. A miss can still hit a
  * minion. Grabs that come back after the timer runs out don't count.
  */
-export function botGrabs(field: readonly HookTarget[], seed: number): BotGrab[] {
+export function botGrabs(field: readonly HookTarget[], seed: number, duration = HOOK_SECONDS.solo): BotGrab[] {
   const random = seededRandom(seed ^ 0x9e3779b9)
   const remaining = [...field]
   const grabs: BotGrab[] = []
   let time = 0
 
-  while (time < HOOK.duration) {
+  while (time < duration) {
     const champions = remaining.filter((target) => target.kind === 'champion')
     const aim = champions.toSorted((a, b) => b.value * b.pullSpeed - a.value * a.pullSpeed)[0]
     if (!aim) break
@@ -195,7 +197,7 @@ export function botGrabs(field: readonly HookTarget[], seed: number): BotGrab[] 
     const offset = random() < BOT_HOOK_ACCURACY ? 0 : (random() < 0.5 ? -1 : 1) * (5 + random() * 12)
     const shot = fireHook(remaining, angleTo(aim) + offset)
     time += shot.outTime + shot.backTime
-    if (time > HOOK.duration) break
+    if (time > duration) break
     if (shot.target) {
       grabs.push({ at: time, target: shot.target })
       remaining.splice(remaining.indexOf(shot.target), 1)
@@ -208,3 +210,18 @@ export function botGrabs(field: readonly HookTarget[], seed: number): BotGrab[] 
 /** The bot's gold at `seconds` into the game. */
 export const botGoldAt = (grabs: readonly BotGrab[], seconds: number): number =>
   hookGold(grabs.filter(({ at }) => at <= seconds).map(({ target }) => target))
+
+/** The rules, with the champion pool the field is built from. */
+export const hookRules = (pool: readonly Champion[]): MiniGameRules => ({
+  chances: 1,
+  liveSeconds: () => HOOK_SECONDS.live + 6,
+  owed: owedScores,
+  settle: (moves) => settleScores(moves),
+  fallback: () => 0,
+  botMove: (step, _moves, { seed, variant }) =>
+    step === 0
+      ? hookGold(botGrabs(hookField(seed, pool), seed, HOOK_SECONDS[variant]).map(({ target }) => target))
+      : undefined,
+  formatScore: (gold) => `${gold} gold`,
+  best: { of: (moves) => moves[0][0] ?? null, lowerIsBetter: false, format: (gold) => `${gold} gold` },
+})

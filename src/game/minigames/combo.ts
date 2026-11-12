@@ -1,4 +1,5 @@
 import { seededRandom } from '../random'
+import { owedScores, settleScores, stepSeed, type MiniGameRules } from './versus'
 
 export const COMBO_KEYS = ['Q', 'W', 'E', 'R'] as const
 export type ComboKey = (typeof COMBO_KEYS)[number]
@@ -10,6 +11,23 @@ export const COMBO_MAX_LENGTH = 20
 
 /** Seconds each key is shown: fast at first, faster as the spam grows. Udyr does not wait. */
 export const flashSeconds = (length: number): number => Math.max(0.32, 0.62 - 0.03 * (length - COMBO_START_LENGTH))
+
+/** The first key of a spam stays up longer, so nobody misses it while getting ready. */
+export const FIRST_KEY_FACTOR = 1.8
+
+/** Multiplayer: three rounds of new spam, 3, 4 and 5 keys long. A wrong key doesn't end it. */
+export const LIVE_COMBO_LENGTHS = [3, 4, 5] as const
+export const LIVE_COMBO_MAX = LIVE_COMBO_LENGTHS.reduce((total, length) => total + length, 0)
+
+/** The three spams of a Multiplayer game: each one new, nothing to do with the one before. */
+export function liveCombos(seed: number): ComboKey[][] {
+  return LIVE_COMBO_LENGTHS.map((length, round) => comboSpam(stepSeed(seed, round, 7)).slice(0, length))
+}
+
+/** Keys typed in the right spot. Multiplayer counts every right key, even after a mistake. */
+export function rightKeys(spam: readonly ComboKey[], typed: readonly ComboKey[]): number {
+  return typed.filter((key, index) => key === spam[index]).length
+}
 
 /** Seconds to type in a spam of this length. */
 export const inputSeconds = (length: number): number => 3 + length * 0.9
@@ -51,4 +69,21 @@ export function comboCheer(length: number): string {
   if (length <= 8) return 'Your keyboard is filing a complaint.'
   if (length <= 10) return 'Challenger Udyr spotted. Still no combo.'
   return 'This is not a combo. This is a lifestyle.'
+}
+
+export const COMBO_RULES: MiniGameRules = {
+  chances: 1,
+  liveSeconds: () =>
+    LIVE_COMBO_LENGTHS.reduce((total, length) => total + 1.5 + length * (flashSeconds(length) + 0.14) + inputSeconds(length) + 1.5, 0),
+  owed: owedScores,
+  settle: (moves) => settleScores(moves),
+  fallback: () => 0,
+  botMove: (step, _moves, { seed, variant }) => {
+    if (step !== 0) return undefined
+    if (variant === 'solo') return botComboBest(seed)
+    // A decent player: misses one or two keys in total.
+    return LIVE_COMBO_MAX - Math.floor(seededRandom(seed ^ 0x5bd1e995)() * 3)
+  },
+  formatScore: (keys, { variant }) => (variant === 'solo' ? `${keys} keys` : `${keys} / ${LIVE_COMBO_MAX} keys`),
+  best: { of: (moves) => moves[0][0] ?? null, lowerIsBetter: false, format: (keys) => `${keys} keys` },
 }

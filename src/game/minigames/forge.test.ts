@@ -10,8 +10,9 @@ import {
   forgeableItems,
   forgeOrders,
   missingParts,
+  ORDER_PARTS,
   POPULAR_ITEMS,
-  TRAY_SIZE,
+  TRAY_SIZES,
 } from './forge'
 
 const part = (id: string): ItemComponent => ({ id, name: id, image: '', gold: 500 })
@@ -37,14 +38,16 @@ describe('forgeableItems', () => {
 })
 
 describe('forgeOrders', () => {
-  it('builds 3 different items with every recipe part on a tray of 8', () => {
+  it('builds 3 different items with 2, 2 and 3 parts, every recipe part on the tray', () => {
     for (let seed = 0; seed < 30; seed++) {
-      const orders = forgeOrders(seed, gameData.items, gameData.components)
+      const orders = forgeOrders(seed, gameData.items, gameData.components, 'live')
       expect(orders).toHaveLength(FORGE_ITEM_COUNT)
       expect(new Set(orders.map((order) => order.item.id)).size).toBe(FORGE_ITEM_COUNT)
-      for (const order of orders) {
-        expect(order.tray).toHaveLength(TRAY_SIZE)
-        expect(new Set(order.tray.map((p) => p.id)).size).toBe(TRAY_SIZE)
+      expect(orders.map((order) => order.recipe.length)).toEqual([...ORDER_PARTS])
+      for (const [index, order] of orders.entries()) {
+        const size = TRAY_SIZES.live[index] ?? 0
+        expect(order.tray).toHaveLength(size)
+        expect(new Set(order.tray.map((p) => p.id)).size).toBe(size)
         for (const needed of order.recipe) expect(order.tray.map((p) => p.id)).toContain(needed.id)
       }
     }
@@ -78,7 +81,7 @@ describe('botForgeTimes', () => {
     const [first = 0, second = 0, last = 0] = times
     expect(first).toBeLessThan(second)
     expect(second).toBeLessThan(last)
-    expect(last).toBeGreaterThan(8)
+    expect(last).toBeGreaterThan(6)
     expect(last).toBeLessThan(35)
     expect(botItemsDone(times, 0)).toBe(0)
     expect(botItemsDone(times, last)).toBe(3)

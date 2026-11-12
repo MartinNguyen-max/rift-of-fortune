@@ -1,12 +1,16 @@
 import type { Item, ItemComponent } from '../../data/types'
 import { sample, seededRandom, type RandomFn } from '../random'
+import { owedScores, settleScores, type MiniGameRules, type Variant } from './versus'
 
-/** Items to build in one game. */
-export const FORGE_ITEM_COUNT = 3
-/** Parts on the anvil to choose from: the recipe plus decoys. */
-export const TRAY_SIZE = 8
+/** Items to build in one game: two easy ones with 2 parts, then one with 3. */
+export const ORDER_PARTS = [2, 2, 3] as const
+export const FORGE_ITEM_COUNT = ORDER_PARTS.length
+/** Parts on offer for each item: the recipe plus decoys. Multiplayer offers fewer, to keep it quick. */
+export const TRAY_SIZES: Record<Variant, readonly number[]> = { solo: [6, 6, 7], live: [4, 4, 6] }
 /** Seconds added to your time for each wrong part. */
 export const WRONG_PART_PENALTY = 2
+/** Multiplayer: the most a forge can take. Not done by then counts as this time. */
+export const FORGE_LIMIT_SECONDS = 40
 
 /** Items most players have bought, so everyone has a fair chance to know the recipe. */
 export const POPULAR_ITEMS = [
@@ -77,16 +81,33 @@ export function forgeableItems(items: readonly Item[], components: readonly Item
   return popular.length >= FORGE_ITEM_COUNT ? popular : buildable
 }
 
-/** The orders for one game: FORGE_ITEM_COUNT different items, the same for everyone with this seed. */
-export function forgeOrders(seed: number, items: readonly Item[], components: readonly ItemComponent[]): ForgeOrder[] {
+/**
+ * The orders for one game, the same for everyone with this seed: different items with 2, 2 and
+ * 3 parts (any size if the data has too few), each with its tray of parts.
+ */
+export function forgeOrders(
+  seed: number,
+  items: readonly Item[],
+  components: readonly ItemComponent[],
+  variant: Variant = 'solo',
+): ForgeOrder[] {
   const random = seededRandom(seed)
   const byId = new Map(components.map((component) => [component.id, component]))
-  return sample(forgeableItems(items, components), FORGE_ITEM_COUNT, random).map((item) => {
+  const pool = forgeableItems(items, components)
+  const chosen: Item[] = []
+  for (const parts of ORDER_PARTS) {
+    const fitting = pool.filter((item) => item.from.length === parts && !chosen.includes(item))
+    const options = fitting.length > 0 ? fitting : pool.filter((item) => !chosen.includes(item))
+    const [item] = sample(options, 1, random)
+    if (item) chosen.push(item)
+  }
+  return chosen.map((item, index) => {
     const recipe = item.from.flatMap((id) => byId.get(id) ?? [])
     const parts = [...new Map(recipe.map((part) => [part.id, part])).values()]
+    const traySize = TRAY_SIZES[variant][index] ?? 6
     const decoys = sample(
       components.filter((component) => !item.from.includes(component.id)),
-      TRAY_SIZE - parts.length,
+      Math.max(0, traySize - parts.length),
       random,
     )
     return { item, recipe, tray: shuffle([...parts, ...decoys], random) }
@@ -133,3 +154,16 @@ export function botForgeTimes(seed: number, orders: readonly ForgeOrder[]): numb
 /** Items the bot has built at `seconds`. */
 export const botItemsDone = (times: readonly number[], seconds: number): number =>
   times.filter((time) => time <= seconds).length
+
+/** The rules, with the items and parts the orders come from. Scores are times in ms: lower wins. */
+export const forgeRules = (items: readonly Item[], components: readonly ItemComponent[]): MiniGameRules => ({
+  chances: 1,
+  liveSeconds: () => FORGE_LIMIT_SECONDS + 6,
+  owed: owedScores,
+  settle: (moves) => settleScores(moves, true),
+  fallback: () => FORGE_LIMIT_SECONDS * 1000,
+  botMove: (step, _moves, { seed, variant }) =>
+    step === 0 ? Math.round((botForgeTimes(seed, forgeOrders(seed, items, components, variant)).at(-1) ?? 0) * 1000) : undefined,
+  formatScore: (ms) => (ms >= FORGE_LIMIT_SECONDS * 1000 ? 'Not finished' : `${(ms / 1000).toFixed(2)} s`),
+  best: { of: (moves) => moves[0][0] ?? null, lowerIsBetter: true, format: (ms) => `${(ms / 1000).toFixed(2)} s` },
+})

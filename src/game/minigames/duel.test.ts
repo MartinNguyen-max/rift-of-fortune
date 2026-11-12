@@ -1,63 +1,73 @@
 import { describe, expect, it } from 'vitest'
-import { BOT_REACTION, bestReactionMs, DRAW_DELAY, duelRoundResult, duelRounds, duelWinner, type DuelRound } from './duel'
+import {
+  BOT_REACTION,
+  bestReaction,
+  botShots,
+  DRAW_DELAY,
+  drawTimes,
+  DUEL_RULES,
+  duelResults,
+  duelRound,
+  NO_SHOT,
+} from './duel'
+import { soloSetup } from './versus'
 
-const round: DuelRound = { drawAt: 3, botShotAt: 3.3 }
-const earlyBot: DuelRound = { drawAt: 3, botShotAt: 2.5 }
-
-describe('duelRounds', () => {
-  it('is the same for the same seed and has enough rounds for a best of 3', () => {
-    expect(duelRounds(7)).toEqual(duelRounds(7))
-    expect(duelRounds(7)).toHaveLength(3)
+describe('drawTimes and botShots', () => {
+  it('are the same for the same seed, with 3 rounds', () => {
+    expect(drawTimes(7)).toEqual(drawTimes(7))
+    expect(drawTimes(7)).toHaveLength(3)
   })
 
-  it('draws within the delay range and the bot shoots in its reaction range or early', () => {
+  it('draws within the delay range; the bot shoots in its reaction range or early', () => {
     for (let seed = 0; seed < 200; seed++) {
-      for (const { drawAt, botShotAt } of duelRounds(seed)) {
-        expect(drawAt).toBeGreaterThanOrEqual(DRAW_DELAY.min)
-        expect(drawAt).toBeLessThanOrEqual(DRAW_DELAY.max)
-        const reaction = botShotAt - drawAt
-        expect(reaction < 0 || (reaction >= BOT_REACTION.min && reaction <= BOT_REACTION.max)).toBe(true)
-      }
+      const draws = drawTimes(seed)
+      botShots(seed).forEach((shot, round) => {
+        const drawAt = draws[round] ?? 0
+        expect(drawAt).toBeGreaterThanOrEqual(DRAW_DELAY.min * 1000)
+        expect(drawAt).toBeLessThanOrEqual(DRAW_DELAY.max * 1000)
+        const reaction = shot - drawAt
+        expect(reaction < 0 || (reaction >= BOT_REACTION.min * 1000 - 1 && reaction <= BOT_REACTION.max * 1000 + 1)).toBe(true)
+      })
     }
   })
 })
 
-describe('duelRoundResult', () => {
-  it('gives the round to the player who shoots before the bot, after DRAW', () => {
-    expect(duelRoundResult(round, 3.2)).toMatchObject({ winner: 'player', reason: 'faster' })
-    expect(duelRoundResult(round, 3.2).playerReaction).toBeCloseTo(0.2)
+describe('duelRound', () => {
+  it('gives the round to the first shot after DRAW', () => {
+    expect(duelRound(3000, [3200, 3300], 0)).toEqual({ winner: 0, reason: 'faster', reactions: [200, 300] })
+    expect(duelRound(3000, [3400, 3300], 0).winner).toBe(1)
   })
 
-  it('gives the round to the bot when the player is slower or never shoots', () => {
-    expect(duelRoundResult(round, 3.4)).toMatchObject({ winner: 'bot', reason: 'slower' })
-    expect(duelRoundResult(round, null)).toMatchObject({ winner: 'bot', reason: 'slower', playerReaction: null })
+  it('makes whoever shoots before DRAW lose, the first one if both did', () => {
+    expect(duelRound(3000, [2900, 3300], 0)).toMatchObject({ winner: 1, reason: 'early' })
+    expect(duelRound(3000, [3500, 2500], 0)).toMatchObject({ winner: 0, reason: 'early' })
+    expect(duelRound(3000, [2600, 2800], 0).winner).toBe(1)
   })
 
-  it('makes the player lose for shooting before DRAW', () => {
-    expect(duelRoundResult(round, 2.9)).toMatchObject({ winner: 'bot', reason: 'player-early' })
-  })
-
-  it('makes the bot lose for shooting before DRAW, unless the player jumped the gun first', () => {
-    expect(duelRoundResult(earlyBot, null)).toMatchObject({ winner: 'player', reason: 'bot-early' })
-    expect(duelRoundResult(earlyBot, 2.7)).toMatchObject({ winner: 'player', reason: 'bot-early' })
-    expect(duelRoundResult(earlyBot, 2.2)).toMatchObject({ winner: 'bot', reason: 'player-early' })
+  it('treats no shot as the slowest shot', () => {
+    expect(duelRound(3000, [NO_SHOT, 3300], 0).winner).toBe(1)
   })
 })
 
-describe('duelWinner', () => {
-  const win = duelRoundResult(round, 3.1)
-  const loss = duelRoundResult(round, null)
+describe('DUEL_RULES', () => {
+  const setup = soloSetup(1)
+  const draws = drawTimes(1)
+  const fast = draws.map((drawAt) => drawAt + 150)
+  const slow = draws.map((drawAt) => drawAt + 500)
 
   it('needs 2 round wins', () => {
-    expect(duelWinner([win])).toBeNull()
-    expect(duelWinner([win, loss])).toBeNull()
-    expect(duelWinner([win, loss, win])).toBe('player')
-    expect(duelWinner([loss, loss])).toBe('bot')
+    expect(DUEL_RULES.settle([[fast[0]], [slow[0]]], setup)).toBeNull()
+    expect(DUEL_RULES.settle([fast.slice(0, 2), slow.slice(0, 2)], setup)).toEqual({ winner: 0, scores: [2, 0] })
   })
 
-  it('reports the best reaction in milliseconds', () => {
-    expect(bestReactionMs([win, duelRoundResult(round, 3.25)], 'player')).toBe(100)
-    expect(bestReactionMs([loss], 'player')).toBeNull()
-    expect(bestReactionMs([loss], 'bot')).toBe(300)
+  it('owes the next round from both players until decided', () => {
+    expect(DUEL_RULES.owed([[fast[0]], []], setup)).toEqual([{ player: 1, step: 0 }])
+    expect(DUEL_RULES.owed([fast.slice(0, 2), slow.slice(0, 2)], setup)).toEqual([])
+  })
+
+  it('keeps the best reaction as the personal best', () => {
+    const results = duelResults([fast.slice(0, 2), slow.slice(0, 2)], 1)
+    expect(bestReaction(results, 0)).toBe(150)
+    expect(DUEL_RULES.best?.of([fast.slice(0, 2), slow.slice(0, 2)], setup)).toBe(150)
   })
 })

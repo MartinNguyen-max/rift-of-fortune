@@ -8,6 +8,7 @@ import {
   fireHook,
   FIELD,
   HOOK,
+  HOOK_SECONDS,
   HOOK_ORIGIN,
   hookField,
   hookGold,
@@ -118,7 +119,7 @@ describe('botGrabs', () => {
     for (let seed = 0; seed < 30; seed++) {
       const field = hookField(seed, pool)
       const grabs = botGrabs(field, seed)
-      expect(grabs.every(({ at }) => at <= HOOK.duration)).toBe(true)
+      expect(grabs.every(({ at }) => at <= HOOK_SECONDS.solo)).toBe(true)
       expect(new Set(grabs.map(({ target: t }) => t.id)).size).toBe(grabs.length)
     }
   })
@@ -128,6 +129,6 @@ describe('botGrabs', () => {
     const grabs = botGrabs(field, 1)
     expect(grabs.some(({ target: t }) => t.kind === 'champion')).toBe(true)
     expect(botGoldAt(grabs, 0)).toBe(0)
-    expect(botGoldAt(grabs, HOOK.duration)).toBe(hookGold(grabs.map(({ target: t }) => t)))
+    expect(botGoldAt(grabs, HOOK_SECONDS.solo)).toBe(hookGold(grabs.map(({ target: t }) => t)))
   })
 })
