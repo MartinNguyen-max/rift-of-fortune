@@ -26,23 +26,23 @@ export const SMITE_PROFILES: Record<SmiteTarget, SmiteProfile> = {
   baron: {
     maxHp: 12000,
     smiteDamage: 1200,
-    gap: { min: 0.18, max: 0.45 },
+    gap: { min: 0.22, max: 0.5 },
     drop: { min: 0.03, max: 0.08 },
-    windowGap: { min: 0.3, max: 0.65 },
+    windowGap: { min: 0.55, max: 1.05 },
     windowDrop: { min: 0.2, max: 0.45 },
   },
   elder: {
     maxHp: 15000,
     smiteDamage: 1200,
-    gap: { min: 0.15, max: 0.4 },
+    gap: { min: 0.2, max: 0.45 },
     drop: { min: 0.025, max: 0.07 },
-    windowGap: { min: 0.22, max: 0.5 },
+    windowGap: { min: 0.4, max: 0.8 },
     windowDrop: { min: 0.22, max: 0.5 },
   },
 }
 
 /** Seconds of full health before the first hit, so both players can get ready. */
-export const SMITE_LEAD_IN = 0.8
+export const SMITE_LEAD_IN = 1
 
 /** The score for smiting the moment the health enters smite range; a smite at 1 health is 100. */
 export const SMITE_SCORE = { inRange: 50, perfect: 100 } as const

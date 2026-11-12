@@ -157,7 +157,7 @@ describe('hostMessages: gank', () => {
 
   it('hides the jungler in a random bush when the ganker runs out of time or left', () => {
     expect(hostMessages(opened, context({ now: 1000 }))).toEqual([])
-    const timeUp = (TIMINGS.gankHide + TIMINGS.eventGrace) * 1000
+    const timeUp = (TIMINGS.intro + TIMINGS.gankHide + TIMINGS.eventGrace) * 1000
     expect(hostMessages(opened, context({ now: timeUp }))[0]).toMatchObject({ type: 'hide' })
     expect(hostMessages(opened, context({ online: [defender] }))[0]).toMatchObject({ type: 'hide' })
   })
@@ -177,7 +177,7 @@ describe('hostMessages: gank', () => {
   it('lets the gank land when the defender never guesses', () => {
     const round = play([startDraft, startMatch, arrived(0, HOST), { type: 'hide', round: ROUND, event: 0, bush: 'top' }])
     expect(hostMessages(round, context({ now: 1000 }))).toEqual([])
-    const timeUp = (TIMINGS.gankGuess + TIMINGS.eventGrace) * 1000
+    const timeUp = (TIMINGS.intro + TIMINGS.gankGuess + TIMINGS.eventGrace) * 1000
     expect(hostMessages(round, context({ now: timeUp }))[0]).toMatchObject({
       result: { winner: sideOf(round, ganker), guess: null },
     })

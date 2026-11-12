@@ -55,18 +55,20 @@ export function SmiteGame({ target, seed, onScore }: SmiteGameProps) {
   return (
     <div className="flex flex-col items-center gap-4">
       <div className="flex items-center gap-3">
-        <img src={mapIconUrl(target)} alt="" className="size-14 object-contain" />
-        <div>
-          <h2 className="font-display text-2xl font-black text-gold">Smite {NAMES[target]}</h2>
-          <p className="text-sm text-gold-light/70">
-            Smite deals {SMITE_PROFILES[target].smiteDamage.toLocaleString('en-US')}. The lower its health when you smite,
-            the more points. Don't let it die first!
-          </p>
-        </div>
+        <img src={mapIconUrl(target)} alt="" className="size-12 object-contain" />
+        <h2 className="font-display text-2xl font-black text-gold">{NAMES[target]}</h2>
       </div>
 
       <div className="w-full">
-        <div className="relative h-8 overflow-hidden rounded-md border-2 border-gold/60 bg-abyss">
+        <p
+          className={`mb-1 text-center font-display text-lg font-black uppercase ${
+            phase === 'duel' && inRange ? 'animate-pulse text-amber-300' : 'text-transparent'
+          }`}
+          aria-live="polite"
+        >
+          {phase === 'duel' && inRange ? 'In smite range!' : '.'}
+        </p>
+        <div className="relative h-10 overflow-hidden rounded-md border-2 border-gold/60 bg-abyss">
           <motion.div
             className={`absolute inset-y-0 left-0 ${inRange ? 'bg-amber-400' : 'bg-purple-600'}`}
             animate={{ width: `${hp * 100}%` }}
@@ -81,7 +83,10 @@ export function SmiteGame({ target, seed, onScore }: SmiteGameProps) {
             {formatHp(hp * maxHp)} / {formatHp(maxHp)}
           </span>
         </div>
-        <p className="mt-1 text-left text-[10px] tracking-widest text-gold/70 uppercase">← Smite range</p>
+        <p className="mt-1 flex justify-between text-xs text-gold/80">
+          <span>← Smite range ({formatHp(SMITE_PROFILES[target].smiteDamage)})</span>
+          <span>Lower = more points</span>
+        </p>
       </div>
 
       {phase === 'ready' && <GetReady onGo={start} />}

@@ -33,7 +33,8 @@ export function GankGame({ amGanker, hidden, hiddenAt, opponentName, onHide, onG
   const [answered, setAnswered] = useState(false)
   const myTurn = !answered && (amGanker || hidden)
   const limit = amGanker ? TIMINGS.gankHide : TIMINGS.gankGuess
-  const deadline = (amGanker ? startedAt : (hiddenAt ?? startedAt)) + limit * 1000
+  // The guesser's clock starts once the jungler hid, but never before their own intro ended.
+  const deadline = (amGanker ? startedAt : Math.max(hiddenAt ?? startedAt, startedAt)) + limit * 1000
   const remaining = useCountdown(deadline)
 
   const choose = (bush: Lane) => {
@@ -61,25 +62,21 @@ export function GankGame({ amGanker, hidden, hiddenAt, opponentName, onHide, onG
     return () => window.clearTimeout(id)
   }, [myTurn, deadline, amGanker, onHide, onGuess])
 
-  const title = amGanker ? 'You are ganking!' : 'Gank incoming!'
   const instruction = amGanker
     ? choice
-      ? `Hiding in the ${BUSH_NAMES[choice]} bush. Waiting for ${opponentName} to guess…`
-      : 'Pick a bush to hide in. If they guess it, your gank fails.'
+      ? `Hiding in ${BUSH_NAMES[choice]}. Waiting for ${opponentName}…`
+      : 'Pick ONE bush to hide in'
     : !hidden
-      ? `${opponentName}'s jungler is looking for a bush…`
+      ? 'The enemy is hiding…'
       : answered
-        ? 'Guess locked in…'
-        : 'Which bush is the jungler hiding in? Guess right and you win the fight!'
+        ? 'Guess locked in!'
+        : 'GUESS which bush they are in'
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <div className="text-center">
-        <h2 className="font-display text-2xl font-black text-gold">{title}</h2>
-        <p className="text-sm text-gold-light/80" aria-live="polite">
-          {instruction}
-        </p>
-      </div>
+      <h2 className="text-center font-display text-2xl font-black text-gold" aria-live="polite">
+        {instruction}
+      </h2>
       {myTurn && (
         <div className="h-1.5 w-full overflow-hidden rounded-full bg-abyss/80" role="timer" aria-label={`${Math.ceil(remaining)} seconds left`}>
           <div className="h-full bg-red-400 transition-[width] duration-200 ease-linear" style={{ width: `${(remaining / limit) * 100}%` }} />

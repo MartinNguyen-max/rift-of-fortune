@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { useEffect, useRef } from 'react'
 import { championIconUrl, endOfGameIconUrl, mapIconUrl } from '../../data'
 import { formatGameTime, type MatchLines } from '../../game/match/commentary'
 import { formatKda, type MatchSummary } from '../../game/match/summary'
@@ -25,11 +26,20 @@ interface LiveEndPanelProps {
   story: string
 }
 
+/** On phones the result is below the map: scroll to it once the ending has played. */
+const SCROLL_DELAY_MS = 1200
+
 const EVENT_ICONS = { gank: '🗡️', teamfight: '💥', baron: 'baron', elder: 'elder' } as const
 
 /** Victory or Defeat, how the mini-games went, and a rematch with new teams. */
 export function LiveEndPanel({ room, round, mySide, won, match, teams, summary, story }: LiveEndPanelProps) {
   const { me, opponent, setReady, leaveRound, wins } = room
+  const panel = useRef<HTMLElement>(null)
+  useEffect(() => {
+    if (!window.matchMedia('(max-width: 1023px)').matches) return
+    const id = window.setTimeout(() => panel.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), SCROLL_DELAY_MS)
+    return () => window.clearTimeout(id)
+  }, [])
   const opponentInfo = round.players.find(({ id }) => id !== me.id)
   const opponentHere = opponent !== null && opponent.id === opponentInfo?.id
   const last = match?.events[match.events.length - 1]
@@ -45,6 +55,7 @@ export function LiveEndPanel({ room, round, mySide, won, match, teams, summary, 
 
   return (
     <motion.section
+      ref={panel}
       initial={{ scale: 0.8, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ type: 'spring', stiffness: 200, damping: 14 }}

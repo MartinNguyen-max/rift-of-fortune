@@ -6,16 +6,22 @@ import type { EventResult, PlayerId, PlayerInfo, RoomMessage } from './protocol'
 import type { EncodedTeam } from './teamCode'
 import { ULT } from './ult'
 
+/** The "Get ready" screen before each mini-game, and the 3-2-1 after it, in seconds. */
+const INTRO_SECONDS = 5
+const COUNTDOWN_SECONDS = 4
+
 /** Seconds for each step. Players get a little extra time (`grace`) for slow connections. */
 export const TIMINGS = {
   draft: 90,
   draftGrace: 5,
-  versus: 10,
+  versus: 15,
+  /** The "Get ready" screen before each mini-game, with one line on what to do. */
+  intro: INTRO_SECONDS,
   /** Hiding and guessing in the gank. */
-  gankHide: 8,
-  gankGuess: 8,
-  /** The longest a smite duel or the ult bar can take, plus their countdowns. */
-  duel: Math.max(15, ULT.seconds + 6),
+  gankHide: 12,
+  gankGuess: 12,
+  /** The longest a smite duel or the ult bar can take, plus the intro and the 3-2-1. */
+  duel: INTRO_SECONDS + COUNTDOWN_SECONDS + Math.max(16, ULT.seconds),
   /** How long the host waits for a player who is still connected but hasn't answered. */
   eventGrace: 15,
 } as const
@@ -194,10 +200,10 @@ function gankMessages(round: RoundState, index: number, event: LiveEventState, c
   const defenderId = playerOn(round, ganker === 'blue' ? 'red' : 'blue')?.id ?? ''
 
   if (event.bush === null) {
-    if (waitingFor(gankerId, event.openedAt, TIMINGS.gankHide, context)) return []
+    if (waitingFor(gankerId, event.openedAt, TIMINGS.intro + TIMINGS.gankHide, context)) return []
     return [{ type: 'hide', round: round.id, event: index, bush: pickRandom(LANES, context.random) }]
   }
-  if (event.guess === undefined && waitingFor(defenderId, event.hiddenAt, TIMINGS.gankGuess, context)) return []
+  if (event.guess === undefined && waitingFor(defenderId, event.hiddenAt, TIMINGS.intro + TIMINGS.gankGuess, context)) return []
   const guess = event.guess ?? null
   const result: EventResult = { winner: gankWinner(ganker, event.bush, guess), scores: null, bush: event.bush, guess }
   return [{ type: 'eventResult', round: round.id, event: index, result }]

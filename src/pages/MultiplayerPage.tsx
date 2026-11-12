@@ -32,19 +32,18 @@ function StartScreen() {
   }
 
   return (
-    <div className="grid w-full max-w-3xl gap-6 md:grid-cols-2">
-      <section className="flex flex-col gap-3 rounded-xl border border-gold/30 bg-panel/70 p-6 shadow-2xl shadow-black/50 backdrop-blur">
+    <div className="grid w-full max-w-3xl grid-cols-1 gap-6 md:grid-cols-2">
+      <section className="flex min-w-0 flex-col gap-3 rounded-xl border border-gold/30 bg-panel/70 p-5 shadow-2xl shadow-black/50 backdrop-blur">
         <h2 className="font-display text-2xl font-black text-gold">Create game</h2>
         <p className="flex-1 text-sm text-gold-light/80">
-          Open a lobby and send the link (or the code) to a friend. You both draft at the same time, then fight it out
-          with four live mini-games: a gank, a teamfight, Baron and Elder.
+          Send a friend the link. Draft at the same time, then fight it out in four live mini-games.
         </p>
         <Button onClick={() => (window.location.hash = roomHref(createRoomCode()))}>Create game</Button>
       </section>
 
       <form
         onSubmit={join}
-        className="flex flex-col gap-3 rounded-xl border border-gold/30 bg-panel/70 p-6 shadow-2xl shadow-black/50 backdrop-blur"
+        className="flex min-w-0 flex-col gap-3 rounded-xl border border-gold/30 bg-panel/70 p-5 shadow-2xl shadow-black/50 backdrop-blur"
       >
         <h2 className="font-display text-2xl font-black text-gold">Join game</h2>
         <label htmlFor="room-code" className="text-sm text-gold-light/80">
@@ -62,7 +61,8 @@ function StartScreen() {
           autoCapitalize="characters"
           spellCheck={false}
           maxLength={200}
-          className="rounded-md border-2 border-gold/40 bg-abyss/70 px-4 py-2.5 text-center font-mono text-2xl tracking-[0.4em] text-gold-light uppercase outline-none placeholder:text-gold-light/20 focus:border-gold"
+          size={8}
+          className="w-full min-w-0 rounded-md border-2 border-gold/40 bg-abyss/70 px-4 py-2.5 text-center font-mono text-2xl tracking-[0.3em] text-gold-light uppercase outline-none placeholder:text-gold-light/20 focus:border-gold"
         />
         {error && (
           <p role="alert" className="text-sm text-red-400">

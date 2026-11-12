@@ -4,13 +4,14 @@ import type { Lane, Side } from '../../game/match/types'
 import { eventSeed, LIVE_EVENTS, liveScript } from '../../game/multiplayer/liveEvents'
 import type { PlayerId, RoomMessage } from '../../game/multiplayer/protocol'
 import { playerOn, type RoundState } from '../../game/multiplayer/session'
+import { EventIntro } from './EventIntro'
 import { EventReveal } from './EventReveal'
 import { GankGame } from './games/GankGame'
 import { SmiteGame } from './games/SmiteGame'
 import { UltGame } from './games/UltGame'
 
 /** How long the result stays up before the match goes on. */
-const REVEAL_MS = 3500
+const REVEAL_MS = 5000
 
 interface LiveEventStageProps {
   round: RoundState
@@ -33,6 +34,8 @@ export function LiveEventStage({ round, index, myId, mySide, send, onDone }: Liv
   const seed = round.match?.seed ?? 0
   const result = event?.result ?? null
   const [played, setPlayed] = useState(false)
+  const [introDone, setIntroDone] = useState(false)
+  const endIntro = useCallback(() => setIntroDone(true), [])
   const opponentName = playerOn(round, mySide === 'blue' ? 'red' : 'blue')?.name ?? 'Opponent'
   const ganker = liveScript(seed)[index]?.ganker ?? 'blue'
 
@@ -102,6 +105,8 @@ export function LiveEventStage({ round, index, myId, mySide, send, onDone }: Liv
         </p>
         {showResult && result ? (
           <EventReveal kind={kind} result={result} mySide={mySide} opponentName={opponentName} />
+        ) : !introDone ? (
+          <EventIntro kind={kind} amGanker={ganker === mySide} onDone={endIntro} />
         ) : (
           <>
             {game}

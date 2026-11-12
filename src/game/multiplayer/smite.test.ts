@@ -33,7 +33,7 @@ describe('smiteDuel', () => {
   it('lasts a few seconds', () => {
     for (const duel of duels) {
       expect(duel.deathAt).toBeGreaterThan(3)
-      expect(duel.deathAt).toBeLessThan(12)
+      expect(duel.deathAt).toBeLessThan(16)
     }
   })
 })

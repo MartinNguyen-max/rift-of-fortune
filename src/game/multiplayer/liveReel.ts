@@ -9,7 +9,7 @@ import { opponent, type ChampionRef, type LiveMatch, type MapSpot, type MatchEve
 export const LIVE_REEL = { moments: 3, finalMoments: 3 } as const
 
 /** Real seconds per moment. Fixed, so a reel that grows after each live event never shifts. */
-export const LIVE_BEATS = { leadIn: 1, small: 1.1, big: 1.8 } as const
+export const LIVE_BEATS = { leadIn: 1.5, small: 1.4, big: 2.4 } as const
 
 export interface LiveReel {
   events: MatchEvent[]

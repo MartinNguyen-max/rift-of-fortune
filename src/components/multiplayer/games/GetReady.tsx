@@ -12,7 +12,7 @@ export function GetReady({ onGo }: { onGo: () => void }) {
       onGo()
       return
     }
-    const id = window.setTimeout(() => setCount(count - 1), 800)
+    const id = window.setTimeout(() => setCount(count - 1), 1000)
     return () => window.clearTimeout(id)
   }, [count, onGo])
 
