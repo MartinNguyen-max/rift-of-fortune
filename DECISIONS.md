@@ -156,6 +156,25 @@ Built from [docs/match-simulation.md](docs/match-simulation.md). Decided with th
 - **No new dependencies.** The win-chance line is a plain SVG, and animations use Framer Motion.
 - The player's team is called "Your team". Lines are written so the name works at the start of a sentence, and `lowercaseYourMidSentence` handles the rest.
 
+## Multiplayer (1v1, real time)
+
+Designed with the owner on 2026-11-12. Replaces the earlier "async first" plan: the live mini-games need both players online.
+
+- **Joining:** Create game makes a lobby with a 5-character code (no 0/O or 1/I) at `#/play/CODE`. The friend opens the link, or presses Join game and pastes the code (a whole link works too). No random matchmaking. Each player gets a random team name. A third person sees "Lobby is full".
+- **Flow:** both press Ready → 90 s draft with the vs-bots rules (3 + 3 rerolls). Ready locks the team in; when time runs out, the rest is filled in at random (`completeTeam.ts`). Both champions can be on both teams. → 10 s versus screen with both maps, ranks and ratings (side by side, stacked on phones). There is no Start button. → the match → Rematch (new draft, same lobby, series score).
+- **Four live events in every match, in game order** (`liveEvents.ts`): gank at 7:00, teamfight at 16:00, Baron at 23:00, Elder at 31:00. The simulation pauses before each one (`simulateLiveMatch`) and replays the same match once its winner is known: nothing random happens before a pause, so both players always see the same events.
+  - **Gank:** one player (random from the seed) hides their jungler in the top, mid or bot bush (8 s). The other guesses (8 s). A right guess wins the fight for the guesser, otherwise the gank lands.
+  - **Teamfight ult:** a marker bounces faster and faster over a bar. Stop it in the gold zone: 60–100 inside, dead center 100, 6 s limit.
+  - **Smite Baron / Elder:** health drops in random hits that are the same for both players. Smiting in range scores 50–100 (lower health = more), too early or too late scores 0. Elder is faster with a smaller window. Each player scores on their own screen, so internet lag doesn't matter.
+  - A tie is a coin flip from the seed.
+- **How much the events matter** (`LIVE_EVENT_GOLD`, guarded by `liveMatch.test.ts`): between equal teams, 4–0 in events wins ~96%, 3–1 ~77%, 2–2 ~50%. A team rated 15+ points better wins ~93% of 2–2 splits and still ~50% when it loses all four. Live Baron and Elder can't be stolen and only push a little. The game can't end before the Elder event.
+- **Backend:** Supabase Realtime (owner's choice: already set up, free). Broadcast carries the messages and Presence shows who is connected. Nothing is stored. The first player in the lobby is the **host**: their browser starts rounds, waits for both answers and settles each event (`session.ts`, `hostMessages`). If the host leaves, the other player takes over. A player can cheat by editing their browser; that's accepted for a game between friends.
+- **Disconnects:** a player who leaves never holds the game up. Their draft is filled in at random and they score 0 in events (the host waits up to the time limit + 15 s for a slow player who is still connected). The other player sees "left the game" and the match plays on. **Surrender** (two taps) ends it right away.
+- **Each player sees their own team on blue**, bottom left: the red player's view is mirrored (`mirrorMatch`). Baron and Dragon stay where they are on the map.
+- **Emotes** (GG, EZ, WP, ?, FF, 💀, 😂, 🔥) fly across both screens. Spam is allowed (one per 0.18 s). The owner dropped chat.
+- **Highlight reel:** 3 moments between live events plus first blood, every live event and the ending, at a fixed pace, so the reel never shifts when it grows after an event. No Skip.
+- **New dependency:** `@supabase/supabase-js` (for Realtime; the Daily still uses plain `fetch`). The multiplayer page is lazy-loaded, so other modes don't download it.
+
 ---
 
 # Summary

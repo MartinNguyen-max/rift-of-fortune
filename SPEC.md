@@ -34,13 +34,13 @@ Legal
 A free fan project is allowed under Riot's "Legal Jibber Jabber" policy. Don't charge money for it, and include Riot's required disclaimer that the game isn't endorsed by Riot Games.
 Out of Scope for the MVP
 • Opponents, bots and simulated matches
-• Multiplayer
+• Multiplayer (now built as a 1v1 mode, see DECISIONS.md)
 • Campaign, packs, money, upgrades
 • Accounts, saving and leaderboards
 • AI features
 Future Ideas (later, not now)
 • Match vs bots: Each team gets a power score, the higher score wins with some randomness, and bot difficulty is level 1–3.
-• Real-time multiplayer: Create a room, share a link or room code, both players draft at the same time and see who wins. The server handles randomness and the match result to prevent cheating. Possible tools: Colyseus, PartyKit, Supabase Realtime.
+• ~~Real-time multiplayer~~: built (see "Multiplayer" in DECISIONS.md). It uses Supabase Realtime, and the first player in the lobby acts as referee instead of a server.
 • Async multiplayer: Fight other players' saved teams, so no real-time server is needed.
 • Single-player campaign (FIFA Ultimate Team style): Starter team, win matches to earn money, open packs (random or role-specific, e.g. top-only), swap champions, upgrade champions with duplicates, and a ladder of harder bot teams with a final boss.
 • Chemistry: Bonuses for real synergies and lore pairs (e.g. Xayah + Rakan).

@@ -5,6 +5,7 @@ What the project owner needs to set up (accounts can't be created from code). Ea
 ## Status (handoff for the next session)
 
 - **2026-11-12:** Vercel is live at `rift-of-fortune.vercel.app`, and Supabase is set up locally (`.env.local`). The domain riftoffortune.dk is not connected yet. **Match vs Bots is built** (`#/match`). See "Match vs Bots" in [DECISIONS.md](../DECISIONS.md).
+- **2026-11-12 (later):** **Multiplayer is built** (`#/play`), on Supabase Realtime. It needs the same two Supabase env variables on Vercel as the Daily. See "Multiplayer" in [DECISIONS.md](../DECISIONS.md).
 - **Built earlier:** Classic mode, Daily Rift, homepage, ranked scoring with a lane-swap table, and optional Supabase stats. Lint, build and all tests pass.
 - **Name decided: Rift of Fortune.** "Wild Rift of Fortune" was rejected: Wild Rift is Riot's mobile game.
 - **Domain:** riftoffortune.dk at Simply (the owner is buying it).
@@ -17,7 +18,8 @@ What the project owner needs to set up (accounts can't be created from code). Ea
 - **Next for Claude,** once it's live:
   1. Add Open Graph link previews, which need the final URL.
   2. Verify the Daily stats end to end.
-  3. ~~Build Match vs Bots~~ (done, reworked after the first playtest: 14 s highlight reel with 3 key moments, win-chance bar, K/D/A, fight scenes, worst-player roast). Next: playtest again, then Multiplayer (async first, no Skip, see [match-simulation.md](match-simulation.md)).
+  3. ~~Build Match vs Bots~~ (done, reworked after the first playtest).
+  4. ~~Build Multiplayer~~ (done 2026-11-12: 1v1 lobbies with link or code, 90 s draft, versus screen, four live mini-games, emotes, rematch). Next: the owner playtests it with a friend on two devices.
 - **Other ideas** are in [ideas.md](ideas.md). Decisions and their reasons are in [DECISIONS.md](../DECISIONS.md).
 - **Never change** the localStorage prefix or the Daily seed (`rift-of-fortune:`) after launch.
 
@@ -73,6 +75,8 @@ The publishable key is safe in the browser: row level security only allows inser
 **Note:** free Supabase projects **pause after about 1 week without activity.** While paused, the Daily shows "Couldn't load today's stats", and everything else works. Daily players keep it awake; otherwise, un-pause it from the dashboard.
 
 Never put the database password or the **secret** key (`sb_secret_...`) in the code or in Vercel env vars starting with `VITE_`.
+
+**Multiplayer** uses the same project and the same two env variables, through Supabase Realtime. Nothing to set up: it worked out of the box in testing. If lobbies ever stay on "Connecting…", check **Project Settings → Realtime** and make sure public channels are allowed (the game doesn't use private channels). Free plan limits: 200 players connected at once (about 100 games) and 2 million messages a month. One game sends roughly 100 messages, plus emotes. A paused project also stops multiplayer until it is restored.
 
 ## 5. Custom domain (optional, 10 min + DNS wait)
 

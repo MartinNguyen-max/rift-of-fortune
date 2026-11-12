@@ -8,7 +8,7 @@ Tech Stack
 • Framer Motion for animations (champion roll)
 • dnd-kit for drag and drop
 • Vitest for tests
-• Frontend only, no backend, no login, no sessions
+• No login and no accounts. The only backend is Supabase: REST for the Daily stats and Realtime (Broadcast + Presence) for multiplayer lobbies. The game must keep working without it (multiplayer just shows a notice)
 • Data: Riot Data Dragon (champions, items, images) and Meraki Analytics (champion positions), fetched by a script and saved as trimmed JSON in the repo
 Commands
 • npm run dev – start dev server
@@ -18,7 +18,9 @@ Commands
 • npm run data – fetch and trim latest champion/item data
 Project Structure
 • src/data/ – generated JSON and data types
-• src/game/ – pure game logic: draft rules, item pool, scoring (no React here)
+• src/game/ – pure game logic: draft rules, item pool, scoring, match simulation, multiplayer rules (no React here)
+• src/services/ – side effects: localStorage, Supabase (Daily stats, multiplayer Realtime)
+• src/pages/ – one component per game mode
 • src/components/ – UI components
 • scripts/ – data fetching script
 • Tests live next to the code they test (*.test.ts)

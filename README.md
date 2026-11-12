@@ -6,6 +6,7 @@ A browser game where you roll random League of Legends champions, place them in 
 
 - **Classic** (main mode): random champions and random items, play as often as you like. Then try your team in a real game, if you dare.
 - **Daily Rift**: the same champions and items for everyone each day, one try. Share a spoiler-free result (like Wordle) and see how many of today's players you beat.
+- **Multiplayer (1v1)**: create a lobby and send a friend the link or the 5-character code. Both draft at the same time (90 seconds), see each other's team, then the match plays with four live mini-games that swing it: guess the gank bush, land your ult in the teamfight, and smite Baron and Elder at the lowest health you dare. Spam GG and EZ, then rematch with new teams. Needs the Supabase settings below (Realtime is included in the free plan).
 - **Match vs Bots**: draft a team (with 3 champion and 3 item rerolls), then watch the highlights of a simulated match (about 14 seconds) against a level 1–3 bot, with a live win-chance bar, every champion's K/D/A, fight scenes for the big moments, two casters and an MVP.
 
 ## How to Play

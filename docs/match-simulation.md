@@ -1,6 +1,6 @@
 # Match Simulation: Design Doc
 
-Status: **Match vs Bots is built** (see "Match vs Bots" in DECISIONS.md). Multiplayer is still "Coming soon".
+Status: **Match vs Bots and Multiplayer are built** (see "Match vs Bots" and "Multiplayer" in DECISIONS.md). The multiplayer notes below are the original plan; the real-time version with live mini-games replaced the async idea.
 
 ## The idea
 
