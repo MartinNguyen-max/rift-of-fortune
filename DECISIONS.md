@@ -131,7 +131,7 @@ A team of four off-role junglers plus Lee Sin ADC got Platinum. Causes: off-role
 
 ## Match vs Bots
 
-Built from [docs/match-simulation.md](docs/match-simulation.md). Decided with the owner: watch only (no in-match choices), 1×/2×/Skip, no win streak yet.
+Built from [docs/match-simulation.md](docs/match-simulation.md). Decided with the owner: watch only (no in-match choices), one speed plus Skip, no win streak yet.
 
 - **Flow:** `#/match` drafts a team with the Classic rules. The rating screen then offers three bot levels instead of Play again. Then: versus screen → live match → end screen (Rematch / Fight the next level after a win / Share / Draft a new team).
 - **Engine (`src/game/match/`)** is pure and seeded. It returns the whole timeline up front, and the UI only plays it back. Commentary uses its own random stream, so editing lines never changes a match's result.
@@ -139,10 +139,13 @@ Built from [docs/match-simulation.md](docs/match-simulation.md). Decided with th
 - **Luck:** every contest is `30% × coin flip + 70% × strength chance`, so the underdog always has at least a 15% chance. Gold lead adds a snowball edge. Lucky wins while behind build a streak (comebacks), and kills on a leading team pay bounties.
 - **Steals** (dragon 5%, Baron 9%, Elder 8%) ignore strength, so a weak jungler can still steal Baron.
 - **Structures:** 3 lane towers before an inhibitor (from 20:00). The Nexus only falls after an ace, Baron or Elder push, once an inhibitor is down. From 42:00 every won fight can end the game, so matches always finish.
-- **Calibration** (guarded by `simulateMatch.test.ts`): equal teams ~50%, 10 points better ~65–70%, 30 points better ~91%. Average match ~32 game minutes, ~32 kills. At 20 game seconds per real second, that's about 90 seconds to watch at 1×.
+- **Calibration** (guarded by `simulateMatch.test.ts`): equal teams ~50%, 10 points better ~65–70%, 30 points better ~91%. Average match ~32 game minutes, ~32 kills, ~33 events.
 - **Bots** reuse the rank-calibration strategies: level 1 random (Iron/Bronze), level 2 sensible (Gold/Platinum), level 3 best of four sensible drafts (Emerald+). Bots never pick the player's champions.
-- **Casters:** Roary (hype) and Mortimer (dry analyst). On small kill events, the analyst sometimes roasts an off-role pick or a terrible item from the draft, once per champion and issue. Big moments always keep their own line.
-- **No new dependencies.** The gold graph is a plain SVG, and animations use Framer Motion.
+- **Casters:** Roary (hype) and Mortimer (dry analyst) only speak on big moments (first blood, big fights, steals, soul, Baron, Elder, the end), one short sentence each (max 64 characters, tested). Small events show as plain kill-feed rows. The analyst roasts at most 2 draft mistakes (off-role pick or terrible item) per match, on small kill events.
+- **Playback (owner's playtest feedback, 2026-11-12):** every match takes 20 real seconds, whatever its game length. Big moments get 3.5× the watch time of small events, so their fight scene can play: the champions involved, kills landing one by one with skulls, then a stamp (ACE!, BARON STOLEN!, VICTORY!). There is one speed. Skip is allowed against bots; **Multiplayer must not have Skip**, so both players see the whole match.
+- **Win chance** (`winChance.ts`): a logistic formula over the team rating difference, the gold lead as a share of team gold, and the tower, inhibitor and Baron differences. Its weights were fitted on 6,000 simulated matches. A test checks it stays honest: teams shown at 60–80% win 62–78% of the time. It replaced the gold graph.
+- **Champion scores:** each event records its kills (killer, victim, assists), so the K/D/A board updates live and the final stats are summed from the same records. At the end the MVP (winning team) gets 👑 and whoever died the most gets 💀.
+- **No new dependencies.** The win-chance line is a plain SVG, and animations use Framer Motion.
 - The player's team is called "Your team". Lines are written so the name works at the start of a sentence, and `lowercaseYourMidSentence` handles the rest.
 
 ---

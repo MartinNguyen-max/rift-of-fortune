@@ -17,13 +17,13 @@ After drafting a team (Classic rules), the player sends it into a **simulated ma
 2. **Luck matters, about 30%.** As a starting point, about **70% of the result comes from team strength and 30% from luck**. This needs tuning by simulation (see Balancing).
 3. **Luck can snowball.** A weak jungler can still steal Baron. Several lucky events in a row can flip a game, or even end it.
 4. **Lanes matter, not only the total.** A strong mid laner with a strong jungler can gank and swing the game, even when the team as a whole is weaker.
-5. **It stays short:** 1–2 minutes of watching, with a skip button.
+5. **It stays short:** 20 seconds of watching. Skip against bots only.
 
 ## What the player sees
 
-- **Live scoreboard:** kills, towers, dragons, gold difference and the game clock (game time runs fast, e.g. 30 game minutes in about 90 seconds).
+- **Live scoreboard:** kills, towers, dragons, gold difference and the game clock (every match plays in 20 real seconds).
 - **Play-by-play feed:** one event every few seconds, newest on top. Big moments (Baron steal, ace, Elder) get a bigger card, a small screen shake or flash, and a sound later.
-- **Gold graph or momentum bar** that swings with the events.
+- **Win-chance bar** that swings with the events (built; it replaced the gold graph).
 - **Map** (reuse `RiftMap`): small markers where an event happens, e.g. a skull on the dragon pit.
 - **End screen:** Victory or Defeat, the MVP, the "Moment of the match", and the funniest commentator line. Share button, like the Daily.
 
@@ -89,6 +89,7 @@ Ideas: show the bot's rank emblem before the match, and give bots names ("xX_Jun
 
 - **Async first (no live server):** player A drafts, a link carries the seed plus team A, player B drafts, and both watch the same seeded match. This works with today's setup.
 - **Real-time later:** both players draft at the same time and watch together. Supabase Realtime could work here, since Supabase is already set up for the Daily.
+- **No Skip:** both players watch the whole 20-second match (owner decision).
 - **Anti-cheat:** for ranked play, the server should run the simulation. For friendly matches, the shared seed is enough.
 
 ## Balancing
@@ -104,6 +105,6 @@ Tune by simulating thousands of matches, the same way the ranks were calibrated.
 ## Open questions
 
 - Should the player make decisions during the match (e.g. "Contest Baron? Yes or no"), or only watch? Watching is simpler; decisions add depth.
-- Exactly 1–2 minutes, or a speed setting (1×, 2×, skip)?
+- ~~Exactly 1–2 minutes, or a speed setting?~~ Decided: 20 seconds, one speed, Skip only against bots.
 - Do bot matches count toward a win streak or a personal record?
 - Does the Daily get a "Daily match" too (everyone fights the same bot)?

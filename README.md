@@ -6,7 +6,7 @@ A browser game where you roll random League of Legends champions, place them in 
 
 - **Classic** (main mode): random champions and random items, play as often as you like. Then try your team in a real game, if you dare.
 - **Daily Rift**: the same champions and items for everyone each day, one try. Share a spoiler-free result (like Wordle) and see how many of today's players you beat.
-- **Match vs Bots**: draft a team, then watch it play a simulated match against a level 1–3 bot, with a live scoreboard, play-by-play from two casters, steals, aces and an MVP.
+- **Match vs Bots**: draft a team, then watch it play a 20-second simulated match against a level 1–3 bot, with a live win-chance bar, every champion's K/D/A, fight scenes for the big moments, two casters and an MVP.
 
 ## How to Play
 
