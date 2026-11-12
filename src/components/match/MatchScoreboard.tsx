@@ -1,3 +1,4 @@
+import { mapIconUrl } from '../../data'
 import { formatGameTime } from '../../game/match/commentary'
 import type { MatchTeams, Scoreboard, Side } from '../../game/match/types'
 import { formatGold, SIDE_TEXT } from './matchStyles'
@@ -29,8 +30,14 @@ function TeamScore({ side, name, score }: { side: Side; name: string; score: Sco
       <span className={`max-w-full truncate text-xs font-semibold ${SIDE_TEXT[side]}`}>{name}</span>
       <span className={`font-display text-3xl leading-tight font-black tabular-nums ${SIDE_TEXT[side]}`}>{kills}</span>
       <span className={`flex gap-2 text-xs text-gold-light/80 tabular-nums ${alignRight ? 'flex-row-reverse' : ''}`}>
-        <span title="Towers">🗼{towers}</span>
-        <span title="Dragons">🐉{dragons}</span>
+        <span title="Towers" className="flex items-center gap-0.5">
+          <img src={mapIconUrl('tower')} alt="" className="size-4 object-contain" />
+          {towers}
+        </span>
+        <span title="Dragons" className="flex items-center gap-0.5">
+          <img src={mapIconUrl('dragon')} alt="" className="size-4 object-contain" />
+          {dragons}
+        </span>
         <span title="Gold">💰{formatGold(gold)}</span>
       </span>
     </div>

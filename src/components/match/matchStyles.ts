@@ -1,38 +1,50 @@
-import type { MapSpot, MatchEvent, Side } from '../../game/match/types'
+import type { MapIcon } from '../../data/types'
+import type { DragonKind, MapSpot, MatchEvent, Side } from '../../game/match/types'
 
 /** Blue is the player's team, red the bot. */
 export const SIDE_TEXT: Record<Side, string> = { blue: 'text-hextech', red: 'text-red-400' }
 export const SIDE_BORDER: Record<Side, string> = { blue: 'border-hextech/60', red: 'border-red-400/60' }
 export const SIDE_BG: Record<Side, string> = { blue: 'bg-hextech', red: 'bg-red-400' }
 
-export function eventIcon({ kind, tags }: Pick<MatchEvent, 'kind' | 'tags'>): string {
-  if (tags.includes('escape')) return '💨'
-  if (tags.includes('steal')) return '⚡'
+/** A real League minimap icon where one exists, otherwise an emoji. */
+export type EventIconSource = { icon: MapIcon } | { emoji: string }
+
+const DRAGON_ICONS: Record<DragonKind, MapIcon> = {
+  Infernal: 'infernal',
+  Mountain: 'mountain',
+  Ocean: 'ocean',
+  Cloud: 'cloud',
+  Hextech: 'hextech',
+  Chemtech: 'chemtech',
+}
+
+export function eventIcon({ kind, tags, dragon }: Pick<MatchEvent, 'kind' | 'tags' | 'dragon'>): EventIconSource {
+  if (tags.includes('escape')) return { emoji: '💨' }
   switch (kind) {
     case 'soloKill':
-      return '⚔️'
+      return { emoji: '⚔️' }
     case 'gank':
-      return '🗡️'
-    case 'grubs':
-      return '🐛'
-    case 'herald':
-      return '🦀'
-    case 'dragon':
-      return '🐉'
-    case 'tower':
-      return '🗼'
+      return { emoji: '🗡️' }
     case 'teamfight':
-      return '💥'
-    case 'baron':
-      return '👾'
-    case 'elder':
-      return '🐲'
-    case 'inhibitor':
-      return '💠'
-    case 'nexus':
-      return '💎'
+      return { emoji: '💥' }
     case 'surrender':
-      return '🏳️'
+      return { emoji: '🏳️' }
+    case 'grubs':
+      return { icon: 'grubs' }
+    case 'herald':
+      return { icon: 'herald' }
+    case 'dragon':
+      return { icon: dragon ? DRAGON_ICONS[dragon] : 'dragon' }
+    case 'elder':
+      return { icon: 'elder' }
+    case 'baron':
+      return { icon: 'baron' }
+    case 'tower':
+      return { icon: 'tower' }
+    case 'inhibitor':
+      return { icon: 'inhibitor' }
+    case 'nexus':
+      return { icon: 'nexus' }
   }
 }
 

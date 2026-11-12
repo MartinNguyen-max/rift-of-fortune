@@ -8,7 +8,7 @@ import { ROLE_LABELS } from '../../game/roles'
 import { Button } from '../Button'
 import { ShareButton } from '../ShareButton'
 import { routeHref } from '../useHashRoute'
-import { eventIcon } from './matchStyles'
+import { EventIcon } from './EventIcon'
 
 interface MatchEndPanelProps {
   match: MatchResult
@@ -77,7 +77,7 @@ export function MatchEndPanel({ match, teams, lines, summary, story, level, onRe
             Moment of the match · {formatGameTime(moment.time)}
           </p>
           <p className="text-sm text-gold-light/90">
-            <span aria-hidden="true">{eventIcon(moment)} </span>
+            <EventIcon event={moment} className="mr-1 size-5 align-text-bottom text-base" />
             {momentLine && !momentLine.callback ? momentLine.text : describeEvent(moment, teams)}
           </p>
         </div>

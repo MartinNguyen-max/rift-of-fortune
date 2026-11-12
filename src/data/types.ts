@@ -72,3 +72,22 @@ export interface GameData {
   champions: Champion[]
   items: Item[]
 }
+
+/** League minimap icons used in Match vs Bots. Saved to public/icons/ by `npm run data`. */
+export const MAP_ICONS = {
+  tower: 'icon_ui_tower_minimap',
+  inhibitor: 'icon_ui_inhibitor_minimap_v2',
+  nexus: 'icon_ui_nexus_minimap_v2',
+  baron: 'baron',
+  herald: 'riftherald',
+  grubs: 'grub',
+  dragon: 'dragon',
+  elder: 'dragon_elder',
+  infernal: 'dragon_infernal',
+  mountain: 'dragon_mountain',
+  ocean: 'dragon_ocean',
+  cloud: 'dragon_cloud',
+  hextech: 'dragon_hextech',
+  chemtech: 'dragon_chemtech',
+} as const
+export type MapIcon = keyof typeof MAP_ICONS

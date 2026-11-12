@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion'
 import { CASTER_NAMES, describeEvent, formatGameTime, type MatchLines } from '../../game/match/commentary'
 import type { MatchEvent, MatchTeams } from '../../game/match/types'
-import { eventIcon, SIDE_BORDER } from './matchStyles'
+import { EventIcon } from './EventIcon'
+import { SIDE_BORDER } from './matchStyles'
 
 interface EventFeedProps {
   events: readonly MatchEvent[]
@@ -38,9 +39,7 @@ export function EventFeed({ events, lines, teams, shown, limit }: EventFeedProps
           }`}
         >
           <p className="flex items-center gap-2 text-sm text-gold-light/90">
-            <span aria-hidden="true" className={event.big ? 'text-xl' : ''}>
-              {eventIcon(event)}
-            </span>
+            <EventIcon event={event} className={`shrink-0 ${event.big ? 'size-7 text-xl' : 'size-5 text-base'}`} />
             <span className={`min-w-0 flex-1 ${event.big ? 'font-bold text-gold' : line ? '' : 'truncate'}`}>
               {line && !line.callback ? line.text : describeEvent(event, teams)}
             </span>

@@ -3,7 +3,8 @@ import { championIconUrl } from '../../data'
 import { CASTER_NAMES, momentTitle, type CommentaryLine } from '../../game/match/commentary'
 import type { MatchEvent, MatchTeams, Side } from '../../game/match/types'
 import { ROLES } from '../../game/roles'
-import { eventIcon, SIDE_TEXT } from './matchStyles'
+import { EventIcon } from './EventIcon'
+import { SIDE_TEXT } from './matchStyles'
 
 interface FightSceneProps {
   event: MatchEvent
@@ -52,9 +53,7 @@ export function FightScene({ event, line, teams, progress }: FightSceneProps) {
           transition={{ duration: 0.6 }}
           className="flex flex-col items-center gap-1"
         >
-          <span className="text-5xl sm:text-6xl" aria-hidden="true">
-            {eventIcon(event)}
-          </span>
+          <EventIcon event={event} className="size-16 text-5xl drop-shadow-[0_0_12px_rgba(0,0,0,0.8)] sm:size-20 sm:text-6xl" />
           {!isEnd && <span className={`font-display text-lg font-bold ${SIDE_TEXT[event.side]}`}>{teams[event.side].name}</span>}
         </motion.div>
       )}

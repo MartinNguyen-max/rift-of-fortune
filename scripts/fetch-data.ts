@@ -1,5 +1,5 @@
 import { mkdir, writeFile } from 'node:fs/promises'
-import { RANK_TIERS, type GameData } from '../src/data/types.ts'
+import { MAP_ICONS, RANK_TIERS, type GameData } from '../src/data/types.ts'
 import {
   dedupeByName,
   isFullItem,
@@ -21,6 +21,9 @@ const OUTPUT = new URL('../src/data/game-data.json', import.meta.url)
 /** Ranked emblems aren't on Data Dragon, so they come from CommunityDragon and are saved into the repo. */
 const RANK_EMBLEMS = 'https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-shared-components/global/default'
 const RANK_OUTPUT = new URL('../public/ranks/', import.meta.url)
+/** Minimap icons (towers, Baron, dragons...) for Match vs Bots, also from CommunityDragon. */
+const MAP_ICON_SOURCE = 'https://raw.communitydragon.org/latest/game/assets/ux/minimap/icons'
+const MAP_ICON_OUTPUT = new URL('../public/icons/', import.meta.url)
 
 async function fetchJson<T>(url: string): Promise<T> {
   const response = await fetch(url)
@@ -45,6 +48,18 @@ async function downloadRankEmblems(): Promise<void> {
     }),
   )
   console.log(`Saved ${RANK_TIERS.length} rank emblems to public/ranks/`)
+}
+
+async function downloadMapIcons(): Promise<void> {
+  await mkdir(MAP_ICON_OUTPUT, { recursive: true })
+  await Promise.all(
+    Object.entries(MAP_ICONS).map(async ([name, file]) => {
+      const response = await fetch(`${MAP_ICON_SOURCE}/${file}.png`)
+      if (!response.ok) throw new Error(`GET ${file}.png failed: ${response.status}`)
+      await writeFile(new URL(`${name}.png`, MAP_ICON_OUTPUT), Buffer.from(await response.arrayBuffer()))
+    }),
+  )
+  console.log(`Saved ${Object.keys(MAP_ICONS).length} minimap icons to public/icons/`)
 }
 
 async function main(): Promise<void> {
@@ -81,6 +96,7 @@ async function main(): Promise<void> {
   console.log(`Saved ${champions.length} champions and ${items.length} items to src/data/game-data.json`)
 
   await downloadRankEmblems()
+  await downloadMapIcons()
 }
 
 await main()

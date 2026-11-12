@@ -2,7 +2,8 @@ import { AnimatePresence, motion } from 'framer-motion'
 import type { ReactNode } from 'react'
 import { summonersRiftMapUrl } from '../../data'
 import type { MatchEvent } from '../../game/match/types'
-import { eventIcon, SIDE_BG, SPOT_POSITIONS } from './matchStyles'
+import { EventIcon } from './EventIcon'
+import { SIDE_BG, SPOT_POSITIONS } from './matchStyles'
 
 /** How many recent events stay on the map, fading out. */
 const TRAIL = 3
@@ -33,7 +34,7 @@ export function MatchMap({ events, overlay }: { events: readonly MatchEvent[]; o
               <span
                 className={`relative flex size-8 items-center justify-center rounded-full border-2 border-abyss text-base shadow-lg ${SIDE_BG[event.side]}`}
               >
-                {eventIcon(event)}
+                <EventIcon event={event} className="size-5 text-sm" />
               </span>
             </motion.div>
           )

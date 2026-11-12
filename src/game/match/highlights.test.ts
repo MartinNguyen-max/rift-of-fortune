@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildHighlightReel, REEL } from './highlights'
+import { buildHighlightReel, leadChanges, REEL, reelLength } from './highlights'
 import { simulateMatch } from './simulateMatch'
 import { sampleTeams } from './testUtils'
 import { winChanceTimeline } from './winChance'
@@ -11,7 +11,7 @@ describe('buildHighlightReel', () => {
   it('shows a handful of moments in time order, ending with the end of the match', () => {
     for (const match of matches) {
       const { events, sources } = buildHighlightReel(match, teams)
-      expect(events).toHaveLength(Math.min(REEL.moments, match.events.length))
+      expect(events).toHaveLength(Math.min(reelLength(match, winChanceTimeline(match, teams)), match.events.length))
       expect(sources).toEqual([...sources].sort((a, b) => a - b))
       expect(sources.at(-1)).toBe(match.events.length - 1)
       for (const [index, event] of events.entries()) expect(event.time).toBe(match.events[sources[index] ?? -1]?.time)
@@ -49,5 +49,28 @@ describe('buildHighlightReel', () => {
     const before = JSON.stringify(match)
     buildHighlightReel(match, teams)
     expect(JSON.stringify(match)).toBe(before)
+  })
+})
+
+describe('leadChanges', () => {
+  it('counts how often the favourite switched sides, ignoring the final result', () => {
+    expect(leadChanges([0.6, 0.7, 0.4, 0.45, 0.55, 1])).toBe(2)
+    expect(leadChanges([0.6, 0.8, 0.9, 0])).toBe(0)
+  })
+})
+
+describe('reelLength', () => {
+  it('shows a stomp in few moments and a long back-and-forth game in more', () => {
+    const lengths = matches.map((match) => ({ match, length: reelLength(match, winChanceTimeline(match, teams)) }))
+    for (const { length } of lengths) {
+      expect(length).toBeGreaterThanOrEqual(REEL.minMoments)
+      expect(length).toBeLessThanOrEqual(REEL.minMoments + REEL.lengthBonus + REEL.leadChangeBonus)
+    }
+    const short = lengths.filter(({ match }) => match.duration < 25 * 60).map(({ length }) => length)
+    const long = lengths.filter(({ match }) => match.duration > 35 * 60).map(({ length }) => length)
+    const average = (values: number[]) => values.reduce((sum, value) => sum + value, 0) / values.length
+    expect(short.length).toBeGreaterThan(0)
+    expect(long.length).toBeGreaterThan(0)
+    expect(average(long)).toBeGreaterThan(average(short) + 2)
   })
 })
