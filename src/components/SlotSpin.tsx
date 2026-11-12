@@ -1,8 +1,8 @@
 import { useSpin } from './useSpin'
 
-/** A quick spin for rerolls: about half a second, much shorter than the main roll. */
-const SPIN_FRAMES = 8
-const spinDelayMs = (frame: number) => 25 + frame * frame * 1.5
+/** A quick spin for rerolls: about a quarter of a second, much shorter than the main roll. */
+const SPIN_FRAMES = 6
+const spinDelayMs = (frame: number) => 22 + frame * frame * 1.2
 
 interface SlotSpinProps<T> {
   target: T

@@ -76,9 +76,6 @@ export function Game({
 }: GameProps) {
   const [state, dispatch] = useReducer(gameReducer, initialState ?? initialGameState(rules))
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
-  /** The champion or item the player tapped to reroll, waiting for confirmation. */
-  const [rerollRole, setRerollRole] = useState<Role | null>(null)
-  const [rerollItemId, setRerollItemId] = useState<string | null>(null)
   /** What is playing the short reroll spin right now. */
   const [spinningRole, setSpinningRole] = useState<Role | null>(null)
   const [spinningItemId, setSpinningItemId] = useState<string | null>(null)
@@ -102,24 +99,20 @@ export function Game({
     dispatch({ type: 'place', role })
     if (canRoll(placed)) dispatch({ type: 'roll', champion: nextChampion(placed) })
   }
-  const confirmChampionReroll = () => {
-    if (rerollRole && rerollChampion && canRerollChampion(state, rerollRole)) {
-      dispatch({ type: 'rerollChampion', role: rerollRole, champion: rerollChampion(state) })
-      setSpinningRole(rerollRole)
-    }
-    setRerollRole(null)
+  /** One tap rerolls: no confirm step, so it stays fast. */
+  const rerollChampionIn = (role: Role) => {
+    if (!rerollChampion || !canRerollChampion(state, role) || spinningRole) return
+    dispatch({ type: 'rerollChampion', role, champion: rerollChampion(state) })
+    setSpinningRole(role)
   }
-  const confirmItemReroll = () => {
-    if (rerollItemId && rerollItem && canRerollItem(state, rerollItemId)) {
-      const item = rerollItem(state)
-      new Image().src = itemIconUrl(item.image)
-      dispatch({ type: 'rerollItem', itemId: rerollItemId, item })
-      setSpinningItemId(item.id)
-    }
-    setRerollItemId(null)
+  const rerollEquippedItem = (itemId: string) => {
+    if (!rerollItem || !canRerollItem(state, itemId) || spinningItemId) return
+    const item = rerollItem(state)
+    new Image().src = itemIconUrl(item.image)
+    dispatch({ type: 'rerollItem', itemId, item })
+    setSpinningItemId(item.id)
   }
   const startItems = () => {
-    setRerollRole(null)
     const items = drawItems()
     for (const item of items) new Image().src = itemIconUrl(item.image)
     dispatch({ type: 'startItems', items })
@@ -128,19 +121,13 @@ export function Game({
     dispatch({ type: 'assignItem', itemId, role })
     setSelectedItemId(null)
   }
-  const unassignItem = (itemId: string) => {
-    dispatch({ type: 'unassignItem', itemId })
-    setRerollItemId(null)
-  }
+  const unassignItem = (itemId: string) => dispatch({ type: 'unassignItem', itemId })
   const reset = () => {
     dispatch({ type: 'reset' })
     setSelectedItemId(null)
-    setRerollRole(null)
-    setRerollItemId(null)
   }
   const continueItems = () => {
     setSelectedItemId(null)
-    setRerollItemId(null)
     dispatch({ type: canFinish(state) ? 'finish' : 'nextItemRound' })
   }
 
@@ -173,27 +160,15 @@ export function Game({
           left: championRerollsLeft(state),
           total: championRerolls,
           hint: 'Tap any champion on the map to reroll them.',
-          selectedName: rerollRole ? (state.team[rerollRole]?.name ?? null) : null,
-          onConfirm: confirmChampionReroll,
-          onCancel: () => setRerollRole(null),
         }
       : undefined
 
-  const rerollItemName = state.items.find(({ id }) => id === rerollItemId)?.name ?? null
-  const rerollItemOwner = rerollItemId ? state.assignments[rerollItemId] : undefined
   const itemRerollBox: RerollBoxProps | undefined = itemRerollsOpen
     ? {
         label: 'Item rerolls',
         left: itemRerollsLeft(state),
         total: itemRerolls,
-        hint: 'Tap any item on the map to reroll it, or rate your team.',
-        selectedName: rerollItemName && rerollItemOwner ? `${rerollItemName} (${state.team[rerollItemOwner]?.name ?? ''})` : null,
-        onConfirm: confirmItemReroll,
-        onCancel: () => setRerollItemId(null),
-        secondary:
-          rerollItemId && isItemMovable(state, rerollItemId)
-            ? { label: 'Take it back', onClick: () => unassignItem(rerollItemId) }
-            : undefined,
+        hint: 'Tap any item on the map to reroll it.',
       }
     : undefined
 
@@ -201,7 +176,6 @@ export function Game({
     if (state.phase === 'draft') {
       const placeable = canPlace(state, role)
       const rerollable = rerollChampion !== undefined && canRerollChampion(state, role)
-      const toggleReroll = () => setRerollRole((current) => (current === role ? null : role))
       return (
         <RoleSlot
           role={role}
@@ -209,16 +183,15 @@ export function Game({
           droppable={placeable}
           highlighted={placeable}
           rerollable={rerollable}
-          selected={rerollable && rerollRole === role}
+
           spinning={spinningRole === role}
           onSpinDone={stopChampionSpin}
-          onActivate={placeable ? () => place(role) : rerollable ? toggleReroll : undefined}
+          onActivate={placeable ? () => place(role) : rerollable ? () => rerollChampionIn(role) : undefined}
         />
       )
     }
 
     const assignable = activeItemId !== null && canAssignItem(state.assignments, activeItemId, role)
-    const toggleItemReroll = (itemId: string) => setRerollItemId((current) => (current === itemId ? null : itemId))
     return (
       <RoleSlot
         role={role}
@@ -227,9 +200,8 @@ export function Game({
         droppable={isItemPhase && hasRoomForItem(role)}
         highlighted={isItemPhase && assignable}
         onActivate={isItemPhase && assignable ? () => assignItem(activeItemId, role) : undefined}
-        onItemClick={canPickItemReroll ? toggleItemReroll : isItemPhase ? unassignItem : undefined}
+        onItemClick={canPickItemReroll ? rerollEquippedItem : isItemPhase ? unassignItem : undefined}
         isItemMovable={(itemId) => isItemMovable(state, itemId) || canPickItemReroll}
-        selectedItemId={rerollItemId}
         spinningItemId={spinningItemId}
         onItemSpinDone={stopItemSpin}
         score={rating?.champions.find((championRating) => championRating.role === role)?.score}

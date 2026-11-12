@@ -26,11 +26,9 @@ interface RoleSlotProps {
   /** Plays the short reroll spin on the champion, then calls `onSpinDone`. */
   spinning?: boolean
   onSpinDone?: () => void
-  /** Item rerolls: the item picked for a reroll, and the one spinning into a new item. */
-  selectedItemId?: string | null
+  /** Item rerolls: the item spinning into a new one. */
   spinningItemId?: string | null
   onItemSpinDone?: () => void
-  selected?: boolean
   /** Champion score, shown as a badge once the team is rated. */
   score?: number
 }
@@ -52,10 +50,8 @@ export function RoleSlot({
   rerollable = false,
   spinning = false,
   onSpinDone,
-  selectedItemId = null,
   spinningItemId = null,
   onItemSpinDone,
-  selected = false,
 }: RoleSlotProps) {
   const { setNodeRef, isOver } = useDroppable({ id: role, disabled: !droppable })
   const label = ROLE_LABELS[role]
@@ -75,11 +71,10 @@ export function RoleSlot({
           onClick={onActivate}
           disabled={!onActivate}
           aria-label={champion ? (rerollable ? `Reroll ${champion.name} (${label})` : `${label}: ${champion.name}`) : `Place in ${label}`}
-          aria-pressed={rerollable ? selected : undefined}
           className={`flex size-11 items-center justify-center overflow-hidden rounded-full border-2 bg-panel/80 transition disabled:cursor-default sm:size-16 ${
             champion ? 'border-gold' : 'border-dashed border-gold/50'
           } ${highlighted ? 'animate-pulse border-hextech hover:scale-110' : ''} ${
-            selected ? 'scale-110 border-gold-light shadow-[0_0_18px_rgb(200_170_110/0.8)]' : rerollable ? 'hover:scale-105' : ''
+            rerollable ? 'hover:scale-105 hover:shadow-[0_0_14px_rgb(200_170_110/0.6)]' : ''
           } ${
             isOver ? 'scale-125 border-solid border-hextech bg-hextech/30' : ''
           }`}
@@ -113,7 +108,7 @@ export function RoleSlot({
           <span
             aria-hidden="true"
             className={`pointer-events-none absolute -right-1 -bottom-1 flex size-5 items-center justify-center rounded-full border border-gold bg-abyss text-xs text-gold sm:size-6 sm:text-sm ${
-              selected ? 'animate-spin [animation-duration:2s]' : ''
+              spinning ? 'animate-spin [animation-duration:0.4s]' : ''
             }`}
           >
             ↻
@@ -149,7 +144,6 @@ export function RoleSlot({
                 item={item}
                 size="small"
                 locked={!isItemMovable(item.id)}
-                selected={item.id === selectedItemId}
                 onClick={() => onItemClick?.(item.id)}
               />
             ) : (
