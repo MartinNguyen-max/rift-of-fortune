@@ -2,8 +2,7 @@ import { motion } from 'framer-motion'
 import type { ReactNode } from 'react'
 import { championIconUrl, itemIconUrl, rankEmblemUrl } from '../data'
 import { ROLE_LABELS } from '../game/roles'
-import { bestMissedSwap, type MissedSwap } from '../game/scoring/missedSwap'
-import { nextRank, rankLabel } from '../game/scoring/rank'
+import { rankLabel } from '../game/scoring/rank'
 import type { ChampionRating, TeamRating } from '../game/scoring/rateTeam'
 import { isOnRole } from '../game/scoring/roleFit'
 import { scoreBorderColor, scoreColor } from './scoreColor'
@@ -15,9 +14,6 @@ interface ResultsPanelProps {
 }
 
 export function ResultsPanel({ rating, actions }: ResultsPanelProps) {
-  const next = nextRank(rating.score)
-  const swap = bestMissedSwap(rating)
-
   return (
     <section className="flex flex-col gap-6">
       <motion.div
@@ -39,15 +35,8 @@ export function ResultsPanel({ rating, actions }: ResultsPanelProps) {
           {rating.balance.penalty > 0 && <> − team balance {rating.balance.penalty}</>}
         </p>
         <p className="mt-2 text-gold-light/80 italic">{rating.rank.summary}</p>
-        {next && (
-          <p className="mt-1 text-xs text-gold-light/60">
-            {next.points} {next.points === 1 ? 'point' : 'points'} to {rankLabel(next.rank)}
-          </p>
-        )}
         <div className="mt-4 flex flex-col items-center gap-3">{actions}</div>
       </motion.div>
-
-      {swap && <MissedSwapTip swap={swap} rating={rating} />}
 
       {rating.coachNotes.length > 0 && (
         <div className="rounded-lg border border-hextech/30 bg-hextech/5 p-3">
@@ -126,25 +115,5 @@ function ChampionResult({ rating }: { rating: ChampionRating }) {
         ))}
       </ul>
     </article>
-  )
-}
-
-function MissedSwapTip({ swap, rating }: { swap: MissedSwap; rating: TeamRating }) {
-  const name = (role: MissedSwap['first']['role']) =>
-    rating.champions.find((champion) => champion.role === role)?.champion.name ?? ROLE_LABELS[role]
-  return (
-    <div className="flex items-center gap-3 rounded-lg border border-gold/40 bg-gold/5 p-3">
-      <div className="flex shrink-0 items-center gap-1">
-        <img src={itemIconUrl(swap.first.item.image)} alt="" className="size-8 rounded border border-gold/50" />
-        <span className="text-gold" aria-hidden="true">
-          ⇄
-        </span>
-        <img src={itemIconUrl(swap.second.item.image)} alt="" className="size-8 rounded border border-gold/50" />
-      </div>
-      <p className="text-sm text-gold-light/90">
-        <span className="font-semibold text-gold">Missed swap:</span> {name(swap.first.role)}&apos;s {swap.first.item.name} for{' '}
-        {name(swap.second.role)}&apos;s {swap.second.item.name} was worth <span className="font-bold text-emerald-400">+{swap.gain}</span>.
-      </p>
-    </div>
   )
 }

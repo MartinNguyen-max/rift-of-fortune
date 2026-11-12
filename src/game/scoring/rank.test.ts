@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { RANK_TIERS } from '../../data/types'
 import { RANK_THRESHOLDS } from './config'
-import { nextRank, rankFor, rankLabel } from './rank'
+import { rankFor, rankLabel } from './rank'
 
 describe('rankFor', () => {
   it.each([
@@ -56,18 +56,5 @@ describe('rankFor', () => {
       expect(rank.tier).toBe(tier)
       expect(rank.summary.length).toBeGreaterThan(0)
     }
-  })
-})
-
-describe('nextRank', () => {
-  it('says how many points the next division needs', () => {
-    const next = nextRank(57)
-    expect(next && rankLabel(next.rank)).toBe('Platinum IV')
-    expect(next?.points).toBe(1)
-    expect(nextRank(42)?.points).toBe(2)
-  })
-
-  it('has nothing above Challenger', () => {
-    expect(nextRank(95)).toBeNull()
   })
 })

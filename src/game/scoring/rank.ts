@@ -26,13 +26,3 @@ export function rankFor(score: number): Rank {
 
 /** "Gold II", or just "Master" for tiers without divisions. */
 export const rankLabel = ({ tier, division }: Rank): string => (division ? `${tier} ${division}` : tier)
-
-/** The next rank up and how many points it needs, or null at Challenger. */
-export function nextRank(score: number): { rank: Rank; points: number } | null {
-  const current = rankLabel(rankFor(score))
-  for (let target = Math.floor(score) + 1; target <= MAX_SCORE; target++) {
-    const rank = rankFor(target)
-    if (rankLabel(rank) !== current) return { rank, points: target - score }
-  }
-  return null
-}
