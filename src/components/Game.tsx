@@ -11,27 +11,26 @@ import { itemIconUrl } from '../data'
 import type { Champion, Item, Role } from '../data/types'
 import {
   canFinish,
-  canRerollChampion,
-  championRerollsLeft,
-  itemRoundCount,
-  nextShopRollSize,
-  openItemSlots,
-  rulesOf,
   canHandOutItems,
   canPlace,
+  canRerollChampion,
+  canRerollItem,
   canRoll,
   canStartItems,
   canStartNextItemRound,
+  championRerollsLeft,
   currentRoundItems,
   gameReducer,
   getTeamMembers,
   initialGameState,
   isItemMovable,
+  itemRerollsLeft,
+  rulesOf,
   type GameState,
 } from '../game/gameState'
 import { canAssignItem, itemsForRole, ITEMS_PER_CHAMPION, unassignedItems } from '../game/items'
 import { isRole } from '../game/roles'
-import { SHOP_ROLL_SIZE, type GameRules } from '../game/rules'
+import type { GameRules } from '../game/rules'
 import { rateTeam, type TeamRating } from '../game/scoring/rateTeam'
 import { emptyRoles } from '../game/team'
 import { ITEM_POOL_ID, itemIdFromDragId, ROLLED_CHAMPION_ID } from './dragIds'
@@ -39,6 +38,7 @@ import { DraftPanel } from './DraftPanel'
 import { ItemPanel } from './ItemPanel'
 import { ItemRoll } from './ItemRoll'
 import { PhaseSteps } from './PhaseSteps'
+import type { RerollBoxProps } from './RerollBox'
 import { ResultsPanel } from './ResultsPanel'
 import { RiftMap } from './RiftMap'
 import { RoleSlot } from './RoleSlot'
@@ -51,12 +51,12 @@ interface GameProps {
   nextChampion: (state: GameState) => Champion
   /** The ten items for this game. */
   drawItems: () => Item[]
-  /** Match vs Bots: rerolls and shop rolls. Classic rules when left out. */
+  /** Match vs Bots: champion and item rerolls. Classic rules when left out. */
   rules?: GameRules
-  /** Shop rolls: `count` random items, none of them already rolled this game. */
-  rollItems?: (count: number, excludeIds: ReadonlySet<string>) => Item[]
-  /** A random champion to replace a placed one, not already on the team or waiting to be placed. */
+  /** A random champion to replace a placed one, not already on the team. */
   rerollChampion?: (state: GameState) => Champion
+  /** A random item to replace an equipped one, not already in the game. */
+  rerollItem?: (state: GameState) => Item
   onStateChange?: (state: GameState) => void
   /** Buttons and extras under the rank, e.g. Play again or Share. `reset` starts a new game. */
   resultActions: (rating: TeamRating, reset: () => void) => ReactNode
@@ -69,17 +69,19 @@ export function Game({
   nextChampion,
   drawItems,
   rules,
-  rollItems,
   rerollChampion,
+  rerollItem,
   onStateChange,
   resultActions,
 }: GameProps) {
   const [state, dispatch] = useReducer(gameReducer, initialState ?? initialGameState(rules))
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
-  /** The placed champion the player tapped to reroll, waiting for confirmation. */
+  /** The champion or item the player tapped to reroll, waiting for confirmation. */
   const [rerollRole, setRerollRole] = useState<Role | null>(null)
-  const isShop = rulesOf(state).itemRolls === 'pick' && rollItems !== undefined
-  const seenItemIds = () => new Set(state.items.map(({ id }) => id))
+  const [rerollItemId, setRerollItemId] = useState<string | null>(null)
+  /** What is playing the short reroll spin right now. */
+  const [spinningRole, setSpinningRole] = useState<Role | null>(null)
+  const [spinningItemId, setSpinningItemId] = useState<string | null>(null)
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor),
@@ -91,6 +93,8 @@ export function Game({
 
   const reveal = useCallback(() => dispatch({ type: 'reveal' }), [])
   const revealItems = useCallback(() => dispatch({ type: 'revealItems' }), [])
+  const stopChampionSpin = useCallback(() => setSpinningRole(null), [])
+  const stopItemSpin = useCallback(() => setSpinningItemId(null), [])
   const roll = () => dispatch({ type: 'roll', champion: nextChampion(state) })
   /** Places the champion, then rolls the next one so the player doesn't have to press Roll again. */
   const place = (role: Role) => {
@@ -98,15 +102,25 @@ export function Game({
     dispatch({ type: 'place', role })
     if (canRoll(placed)) dispatch({ type: 'roll', champion: nextChampion(placed) })
   }
-  const confirmReroll = () => {
+  const confirmChampionReroll = () => {
     if (rerollRole && rerollChampion && canRerollChampion(state, rerollRole)) {
       dispatch({ type: 'rerollChampion', role: rerollRole, champion: rerollChampion(state) })
+      setSpinningRole(rerollRole)
     }
     setRerollRole(null)
   }
+  const confirmItemReroll = () => {
+    if (rerollItemId && rerollItem && canRerollItem(state, rerollItemId)) {
+      const item = rerollItem(state)
+      new Image().src = itemIconUrl(item.image)
+      dispatch({ type: 'rerollItem', itemId: rerollItemId, item })
+      setSpinningItemId(item.id)
+    }
+    setRerollItemId(null)
+  }
   const startItems = () => {
     setRerollRole(null)
-    const items = isShop ? rollItems(SHOP_ROLL_SIZE, new Set()) : drawItems()
+    const items = drawItems()
     for (const item of items) new Image().src = itemIconUrl(item.image)
     dispatch({ type: 'startItems', items })
   }
@@ -114,19 +128,20 @@ export function Game({
     dispatch({ type: 'assignItem', itemId, role })
     setSelectedItemId(null)
   }
-  const unassignItem = (itemId: string) => dispatch({ type: 'unassignItem', itemId })
+  const unassignItem = (itemId: string) => {
+    dispatch({ type: 'unassignItem', itemId })
+    setRerollItemId(null)
+  }
   const reset = () => {
-    setRerollRole(null)
     dispatch({ type: 'reset' })
     setSelectedItemId(null)
+    setRerollRole(null)
+    setRerollItemId(null)
   }
   const continueItems = () => {
     setSelectedItemId(null)
-    if (canFinish(state)) return dispatch({ type: 'finish' })
-    if (!isShop) return dispatch({ type: 'nextItemRound' })
-    const items = rollItems(nextShopRollSize(state), seenItemIds())
-    for (const item of items) new Image().src = itemIconUrl(item.image)
-    dispatch({ type: 'nextItemRound', items })
+    setRerollItemId(null)
+    dispatch({ type: canFinish(state) ? 'finish' : 'nextItemRound' })
   }
 
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
@@ -145,7 +160,42 @@ export function Game({
   const poolItems = isItemPhase ? unassignedItems(currentRoundItems(state), state.assignments) : []
   /** One item is always selected, so players can just tap champions (no dragging needed on phones). */
   const activeItemId = poolItems.some((item) => item.id === selectedItemId) ? selectedItemId : (poolItems[0]?.id ?? null)
-  const hasRoomForItem =(role: Role) => itemsForRole(state.items, state.assignments, role).length < ITEMS_PER_CHAMPION
+  const hasRoomForItem = (role: Role) => itemsForRole(state.items, state.assignments, role).length < ITEMS_PER_CHAMPION
+  const { championRerolls, itemRerolls } = rulesOf(state)
+  /** Once every item is equipped, tapping one picks it for a reroll instead of taking it back. */
+  const itemRerollsOpen = rerollItem !== undefined && itemRerolls > 0 && canFinish(state)
+  const canPickItemReroll = itemRerollsOpen && itemRerollsLeft(state) > 0
+
+  const championRerollBox: RerollBoxProps | undefined =
+    rerollChampion && championRerolls > 0
+      ? {
+          label: 'Champion rerolls',
+          left: championRerollsLeft(state),
+          total: championRerolls,
+          hint: 'Tap any champion on the map to reroll them.',
+          selectedName: rerollRole ? (state.team[rerollRole]?.name ?? null) : null,
+          onConfirm: confirmChampionReroll,
+          onCancel: () => setRerollRole(null),
+        }
+      : undefined
+
+  const rerollItemName = state.items.find(({ id }) => id === rerollItemId)?.name ?? null
+  const rerollItemOwner = rerollItemId ? state.assignments[rerollItemId] : undefined
+  const itemRerollBox: RerollBoxProps | undefined = itemRerollsOpen
+    ? {
+        label: 'Item rerolls',
+        left: itemRerollsLeft(state),
+        total: itemRerolls,
+        hint: 'Tap any item on the map to reroll it, or rate your team.',
+        selectedName: rerollItemName && rerollItemOwner ? `${rerollItemName} (${state.team[rerollItemOwner]?.name ?? ''})` : null,
+        onConfirm: confirmItemReroll,
+        onCancel: () => setRerollItemId(null),
+        secondary:
+          rerollItemId && isItemMovable(state, rerollItemId)
+            ? { label: 'Take it back', onClick: () => unassignItem(rerollItemId) }
+            : undefined,
+      }
+    : undefined
 
   const renderSlot = (role: Role) => {
     if (state.phase === 'draft') {
@@ -160,12 +210,15 @@ export function Game({
           highlighted={placeable}
           rerollable={rerollable}
           selected={rerollable && rerollRole === role}
+          spinning={spinningRole === role}
+          onSpinDone={stopChampionSpin}
           onActivate={placeable ? () => place(role) : rerollable ? toggleReroll : undefined}
         />
       )
     }
 
     const assignable = activeItemId !== null && canAssignItem(state.assignments, activeItemId, role)
+    const toggleItemReroll = (itemId: string) => setRerollItemId((current) => (current === itemId ? null : itemId))
     return (
       <RoleSlot
         role={role}
@@ -174,8 +227,11 @@ export function Game({
         droppable={isItemPhase && hasRoomForItem(role)}
         highlighted={isItemPhase && assignable}
         onActivate={isItemPhase && assignable ? () => assignItem(activeItemId, role) : undefined}
-        onItemClick={isItemPhase ? unassignItem : undefined}
-        isItemMovable={(itemId) => isItemMovable(state, itemId)}
+        onItemClick={canPickItemReroll ? toggleItemReroll : isItemPhase ? unassignItem : undefined}
+        isItemMovable={(itemId) => isItemMovable(state, itemId) || canPickItemReroll}
+        selectedItemId={rerollItemId}
+        spinningItemId={spinningItemId}
+        onItemSpinDone={stopItemSpin}
         score={rating?.champions.find((championRating) => championRating.role === role)?.score}
       />
     )
@@ -197,18 +253,7 @@ export function Game({
               onRoll={roll}
               onRevealed={reveal}
               onStartItems={startItems}
-              rerolls={
-                rerollChampion && rulesOf(state).championRerolls > 0
-                  ? {
-                      left: championRerollsLeft(state),
-                      total: rulesOf(state).championRerolls,
-                      selectedName: rerollRole ? (state.team[rerollRole]?.name ?? null) : null,
-                      hasChampions: emptyRoles(state.team).length < 5,
-                      onConfirm: confirmReroll,
-                      onCancel: () => setRerollRole(null),
-                    }
-                  : undefined
-              }
+              rerolls={championRerollBox}
             />
           )}
           {state.phase === 'items' && !state.itemsRevealed && (
@@ -216,7 +261,6 @@ export function Game({
               key={state.itemRound}
               items={currentRoundItems(state)}
               round={state.itemRound}
-              totalRounds={itemRoundCount(state)}
               onDone={revealItems}
             />
           )}
@@ -228,17 +272,7 @@ export function Game({
               roundComplete={canStartNextItemRound(state) || canFinish(state)}
               onSelect={setSelectedItemId}
               onContinue={continueItems}
-              shop={
-                isShop
-                  ? {
-                      openSlots: openItemSlots(state),
-                      nextRollSize: nextShopRollSize(state),
-                      nextIsFinal: state.itemRound + 1 === itemRoundCount(state),
-                      canRollAgain: canStartNextItemRound(state),
-                      canFinish: canFinish(state),
-                    }
-                  : undefined
-              }
+              rerolls={itemRerollBox}
             />
           )}
           {rating && <ResultsPanel rating={rating} actions={resultActions(rating, reset)} />}

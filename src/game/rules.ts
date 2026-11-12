@@ -1,17 +1,13 @@
 /**
  * How a game mode plays the draft and the shop.
- * - Classic and the Daily: no rerolls, 10 items in two rounds of 5 that must all be used.
- * - Match vs Bots: rerolls for placed champions, and three shop rolls where the player keeps any
- *   items they like; the final roll brings exactly enough items to fill the empty slots.
+ * - Classic and the Daily: no rerolls.
+ * - Match vs Bots: once all five champions are placed, up to `championRerolls` of them can be swapped
+ *   for a random new one; once all ten items are equipped, up to `itemRerolls` items can be swapped.
  */
 export interface GameRules {
   championRerolls: number
-  itemRolls: 'fixed' | 'pick'
+  itemRerolls: number
 }
 
-export const CLASSIC_RULES: GameRules = { championRerolls: 0, itemRolls: 'fixed' }
-export const MATCH_RULES: GameRules = { championRerolls: 3, itemRolls: 'pick' }
-
-/** Shop rolls in 'pick' mode, and how many items each roll before the final one offers. */
-export const SHOP_ROLLS = 3
-export const SHOP_ROLL_SIZE = 5
+export const CLASSIC_RULES: GameRules = { championRerolls: 0, itemRerolls: 0 }
+export const MATCH_RULES: GameRules = { championRerolls: 3, itemRerolls: 3 }

@@ -1,10 +1,11 @@
 import { useDroppable } from '@dnd-kit/core'
 import { motion } from 'framer-motion'
-import { championIconUrl } from '../data'
+import { championIconUrl, gameData, itemIconUrl } from '../data'
 import type { Champion, Item, Role } from '../data/types'
 import { ITEMS_PER_CHAMPION } from '../game/items'
 import { ROLE_LABELS } from '../game/roles'
 import { DraggableItem } from './DraggableItem'
+import { SlotSpin } from './SlotSpin'
 import { scoreColor } from './scoreColor'
 
 interface RoleSlotProps {
@@ -22,10 +23,21 @@ interface RoleSlotProps {
   isItemMovable?: (itemId: string) => boolean
   /** Match vs Bots: the champion can be rerolled (shows a reroll badge), and is the one picked for it. */
   rerollable?: boolean
+  /** Plays the short reroll spin on the champion, then calls `onSpinDone`. */
+  spinning?: boolean
+  onSpinDone?: () => void
+  /** Item rerolls: the item picked for a reroll, and the one spinning into a new item. */
+  selectedItemId?: string | null
+  spinningItemId?: string | null
+  onItemSpinDone?: () => void
   selected?: boolean
   /** Champion score, shown as a badge once the team is rated. */
   score?: number
 }
+
+const championImage = (champion: Champion) => championIconUrl(champion.image)
+const itemImage = (item: Item) => itemIconUrl(item.image)
+const noop = () => {}
 
 export function RoleSlot({
   role,
@@ -38,6 +50,11 @@ export function RoleSlot({
   isItemMovable = () => false,
   score,
   rerollable = false,
+  spinning = false,
+  onSpinDone,
+  selectedItemId = null,
+  spinningItemId = null,
+  onItemSpinDone,
   selected = false,
 }: RoleSlotProps) {
   const { setNodeRef, isOver } = useDroppable({ id: role, disabled: !droppable })
@@ -68,15 +85,26 @@ export function RoleSlot({
           }`}
         >
           {champion ? (
-            <motion.img
-              key={champion.id}
-              src={championIconUrl(champion.image)}
-              alt=""
-              className="size-full object-cover"
-              initial={{ rotateY: 90, scale: 0.7 }}
-              animate={{ rotateY: 0, scale: 1 }}
-              transition={{ type: 'spring', stiffness: 260, damping: 16 }}
-            />
+            spinning ? (
+              <SlotSpin
+                key={champion.id}
+                target={champion}
+                pool={gameData.champions}
+                imageUrl={championImage}
+                onLanded={onSpinDone ?? noop}
+                className="size-full object-cover"
+              />
+            ) : (
+              <motion.img
+                key={champion.id}
+                src={championIconUrl(champion.image)}
+                alt=""
+                className="size-full object-cover"
+                initial={{ rotateY: 90, scale: 0.7 }}
+                animate={{ rotateY: 0, scale: 1 }}
+                transition={{ type: 'spring', stiffness: 260, damping: 16 }}
+              />
+            )
           ) : (
             <span className="text-xl text-gold/50">+</span>
           )}
@@ -108,12 +136,20 @@ export function RoleSlot({
         <div className="flex gap-1">
           {Array.from({ length: ITEMS_PER_CHAMPION }, (_, index) => {
             const item = items[index]
+            if (item && item.id === spinningItemId) {
+              return (
+                <div key={item.id} className="size-5 overflow-hidden rounded border-2 border-gold sm:size-7">
+                  <SlotSpin target={item} pool={gameData.items} imageUrl={itemImage} onLanded={onItemSpinDone ?? noop} className="size-full object-cover" />
+                </div>
+              )
+            }
             return item ? (
               <DraggableItem
                 key={item.id}
                 item={item}
                 size="small"
                 locked={!isItemMovable(item.id)}
+                selected={item.id === selectedItemId}
                 onClick={() => onItemClick?.(item.id)}
               />
             ) : (
