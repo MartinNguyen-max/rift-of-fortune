@@ -1,3 +1,4 @@
+import { gameData } from '../../data'
 import { describe, expect, it } from 'vitest'
 import type { Champion, Role } from '../../data/types'
 import { makeChampion, makeItem } from '../testUtils'
@@ -110,5 +111,16 @@ describe('verdictLine', () => {
 
   it('always gives the same verdict for the same champion and score', () => {
     expect(verdictLine('Garen', 50)).toBe(verdictLine('Garen', 50))
+  })
+})
+
+describe('itemFitLine with the build table', () => {
+  it('explains which kind of champion an item is for', () => {
+    const jinx = gameData.champions.find(({ id }) => id === 'Jinx')
+    const steraks = gameData.items.find(({ name }) => name === "Sterak's Gage")
+    if (!jinx || !steraks) throw new Error('Missing test data')
+    expect(itemFitLine(jinx, steraks, 30)).toBeOneOf(
+      LINES.wrongBuild("Sterak's Gage on Jinx", 'bruiser', 'Jinx', 'crit marksman'),
+    )
   })
 })

@@ -67,11 +67,20 @@ export const CLASS_TAG_AFFINITY: Record<ChampionClass, Record<Exclude<ItemTag, '
   Tank: { CRIT: 5, ATTACK_SPEED: 15, LETHALITY: 5, TANK: 100, ENCHANTER: 25 },
 }
 
+/**
+ * Item fit from the build table (builds.ts): an item the champion's main build profile buys, one
+ * their second profile buys, and the most any other item can score (it falls back to the stat fit).
+ */
+export const ITEM_BUILD_FIT = { main: 100, second: 85, offBuildCap: 35 } as const
+
+/** A champion's item score leans this much toward their worst item, so one troll item hurts. */
+export const WORST_ITEM_WEIGHT = 0.6
+
 /** Used for an item without any recognised stats. */
 export const NEUTRAL_ITEM_FIT = 50
 
 /** Item fit at or above this gets a compliment, at or below `bad` gets roasted. */
-export const ITEM_FIT_THRESHOLDS = { good: 75, bad: 30 } as const
+export const ITEM_FIT_THRESHOLDS = { good: 75, bad: 35 } as const
 
 export const CHAMPION_SCORE_WEIGHTS = { roleFit: 0.5, itemFit: 0.5 } as const
 
@@ -111,8 +120,8 @@ export const CARRY_CLASSES: readonly ChampionClass[] = ['Marksman', 'Mage', 'Ass
 
 /**
  * Ranked tiers from best to worst, with the minimum team score for each.
- * Calibrated with simulate.ts: a bot that always picks the best-fitting role and item has a
- * median score around Platinum and reaches Challenger in about 5% of games (real players: less).
+ * Calibrated with simulate.ts (see simulate.test.ts): a bot that always picks the best-fitting role and item
+ * has a median around Gold, reaches Diamond+ in about 7% of games and Challenger in about 0.5%.
  * Tiers with divisions split their score range evenly into IV (lowest) to I (highest).
  */
 export const RANK_THRESHOLDS = [

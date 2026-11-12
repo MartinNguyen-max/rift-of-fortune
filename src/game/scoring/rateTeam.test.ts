@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import type { Champion } from '../../data/types'
 import { makeChampion, makeItem } from '../testUtils'
-import { CHAMPION_SCORE_WEIGHTS, ROLE_FIT_SCORE } from './config'
+import { CHAMPION_SCORE_WEIGHTS, ROLE_FIT_SCORE, WORST_ITEM_WEIGHT } from './config'
 import { LINES, verdictLine } from './feedback'
 import { rankFor } from './rank'
-import { rateChampion, rateTeam } from './rateTeam'
+import { combineItemFits, rateChampion, rateTeam } from './rateTeam'
 import type { TeamMember } from './teamBalance'
 
 const rabadon = makeItem({ id: 'Rabadon', stats: { abilityPower: 130 } })
@@ -29,7 +29,7 @@ describe('rateChampion', () => {
     expect(rating.roleFit.score).toBe(ROLE_FIT_SCORE.mainRole)
     const fits = rating.items.map(({ fit }) => fit)
     expect(fits).toHaveLength(2)
-    expect(rating.itemFit).toBe(Math.round(fits.reduce((sum, fit) => sum + fit, 0) / fits.length))
+    expect(rating.itemFit).toBe(combineItemFits(fits))
     expect(rating.score).toBe(
       Math.round(rating.roleFit.score * CHAMPION_SCORE_WEIGHTS.roleFit + rating.itemFit * CHAMPION_SCORE_WEIGHTS.itemFit),
     )
@@ -107,5 +107,14 @@ describe('rateTeam', () => {
       { role: 'SUPPORT', champion: champion('Rammus', ['Tank']), items: [thornmail, thornmail] },
     ]
     expect(rateTeam(team).rank.tier).toBe('Iron')
+  })
+})
+
+describe('combineItemFits', () => {
+  it('leans toward the worst item, so one troll item hurts', () => {
+    expect(combineItemFits([100, 100])).toBe(100)
+    expect(combineItemFits([100, 10])).toBe(Math.round(10 * WORST_ITEM_WEIGHT + 100 * (1 - WORST_ITEM_WEIGHT)))
+    expect(combineItemFits([100, 10])).toBeLessThan(55)
+    expect(combineItemFits([])).toBe(0)
   })
 })

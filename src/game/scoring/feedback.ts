@@ -1,3 +1,4 @@
+import { BUILD_PROFILE_LABELS, buildProfiles, itemBuyers } from './builds'
 import type { Champion, ChampionClass, Item, Role } from '../../data/types'
 import { ROLE_LABELS } from '../roles'
 import { ITEM_FIT_THRESHOLDS } from './config'
@@ -41,6 +42,10 @@ export const LINES = {
     `${name} ${role}? Bold. Very bold.`,
     `${name} in ${role}. Nobody told them where to go.`,
     `${name} ${role}. This is how you get flamed in champ select.`,
+  ],
+  wrongBuild: (who: string, itemFor: string, name: string, builds: string) => [
+    `${who}: that's a ${itemFor} item. ${name} builds like a ${builds}.`,
+    `${who}? ${name} is a ${builds}, not a ${itemFor}.`,
   ],
   goodItem: (who: string) => [`${who}: great fit.`, `${who}: chef's kiss.`, `${who}: exactly what they wanted.`],
   critOnTank: (who: string, championClass: string) => [
@@ -215,6 +220,9 @@ function badItemLines(champion: Champion, item: Item): readonly string[] {
   if (tags.includes('ENCHANTER')) return LINES.enchanterOnCarry(who)
   if (tags.includes('AP') && champion.damageType === 'AD') return LINES.apOnAd(who)
   if (tags.includes('AD') && champion.damageType === 'AP') return LINES.adOnAp(who)
+  const buyers = itemBuyers(item.id)
+  const [profile] = buildProfiles(champion)
+  if (buyers?.[0] && profile) return LINES.wrongBuild(who, BUILD_PROFILE_LABELS[buyers[0]], champion.name, BUILD_PROFILE_LABELS[profile])
   if (tags.includes('TANK')) return LINES.tankOnCarry(who)
   return LINES.uselessItem(who)
 }

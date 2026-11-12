@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { makeChampion, makeItem } from '../testUtils'
-import { NEUTRAL_ITEM_FIT } from './config'
+import { gameData } from '../../data'
+import { ITEM_BUILD_FIT, NEUTRAL_ITEM_FIT } from './config'
 import { getItemTags, scoreItemFit, tagAffinity } from './itemFit'
 
 const infinityEdge = makeItem({ id: 'IE', stats: { attackDamage: 75, critChance: 25 } })
@@ -85,5 +86,40 @@ describe('scoreItemFit', () => {
 
   it('gives a neutral score to items without known stats', () => {
     expect(scoreItemFit(jinx, makeItem({ stats: {} }))).toBe(NEUTRAL_ITEM_FIT)
+  })
+})
+
+describe('scoreItemFit with the build table', () => {
+  const item = (name: string) => {
+    const found = gameData.items.find((entry) => entry.name === name)
+    if (!found) throw new Error(`No item ${name}`)
+    return found
+  }
+  const champion = (id: string) => {
+    const found = gameData.champions.find((entry) => entry.id === id)
+    if (!found) throw new Error(`No champion ${id}`)
+    return found
+  }
+
+  it('gives a perfect fit to items the champion really builds', () => {
+    expect(scoreItemFit(champion('Jinx'), item('Infinity Edge'))).toBe(ITEM_BUILD_FIT.main)
+    expect(scoreItemFit(champion('Darius'), item('Sterak\'s Gage'))).toBe(ITEM_BUILD_FIT.main)
+    expect(scoreItemFit(champion('Lux'), item('Luden\'s Echo'))).toBe(ITEM_BUILD_FIT.main)
+    expect(scoreItemFit(champion('Janna'), item('Moonstone Renewer'))).toBe(ITEM_BUILD_FIT.main)
+  })
+
+  it('gives a slightly lower fit to items of the champion\'s second profile', () => {
+    expect(scoreItemFit(champion('Ashe'), item('Guinsoo\'s Rageblade'))).toBe(ITEM_BUILD_FIT.second)
+  })
+
+  it('punishes items the champion would never build, even with the right damage type', () => {
+    expect(scoreItemFit(champion('Jinx'), item('Sterak\'s Gage'))).toBeLessThanOrEqual(ITEM_BUILD_FIT.offBuildCap)
+    expect(scoreItemFit(champion('Zed'), item('Infinity Edge'))).toBeLessThanOrEqual(ITEM_BUILD_FIT.offBuildCap)
+    expect(scoreItemFit(champion('Lux'), item('Nashor\'s Tooth'))).toBeLessThanOrEqual(ITEM_BUILD_FIT.offBuildCap)
+  })
+
+  it('punishes the wrong damage type the most', () => {
+    expect(scoreItemFit(champion('Jinx'), item('Rabadon\'s Deathcap'))).toBeLessThanOrEqual(15)
+    expect(scoreItemFit(champion('Lux'), item('Infinity Edge'))).toBeLessThanOrEqual(15)
   })
 })

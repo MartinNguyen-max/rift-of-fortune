@@ -1,6 +1,6 @@
 import type { Champion, Item, Role } from '../../data/types'
 import { coachNotes } from './coachNotes'
-import { CHAMPION_SCORE_WEIGHTS } from './config'
+import { CHAMPION_SCORE_WEIGHTS, WORST_ITEM_WEIGHT } from './config'
 import { itemFitLine, roleFitLine, verdictLine } from './feedback'
 import { scoreItemFit } from './itemFit'
 import { rankFor, type Rank } from './rank'
@@ -38,10 +38,18 @@ export interface TeamRating {
 const average = (values: number[]) =>
   values.length === 0 ? 0 : values.reduce((sum, value) => sum + value, 0) / values.length
 
+/** Leans toward the worst item: a perfect item and a troll item is a bad build, not an okay one. */
+export function combineItemFits(fits: number[]): number {
+  if (fits.length === 0) return 0
+  const worst = Math.min(...fits)
+  const best = Math.max(...fits)
+  return Math.round(worst * WORST_ITEM_WEIGHT + best * (1 - WORST_ITEM_WEIGHT))
+}
+
 export function rateChampion({ role, champion, items }: TeamMember): ChampionRating {
   const roleFit = scoreRoleFit(champion, role)
   const itemRatings = items.map((item) => ({ item, fit: scoreItemFit(champion, item) }))
-  const itemFit = Math.round(average(itemRatings.map(({ fit }) => fit)))
+  const itemFit = combineItemFits(itemRatings.map(({ fit }) => fit))
   const score = Math.round(roleFit.score * CHAMPION_SCORE_WEIGHTS.roleFit + itemFit * CHAMPION_SCORE_WEIGHTS.itemFit)
 
   const feedback = [
