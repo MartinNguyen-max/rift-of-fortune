@@ -42,11 +42,20 @@ export type MatchEventKind =
  * - `firstBlood`: the first kill of the game.
  * - `upset`: the side that was less likely to win this event won it.
  * - `steal`: an objective stolen by the losing side's jungler.
- * - `escape`: a gank where nobody died.
+ * - `escape`: a gank where nobody died. `counterGank`: a gank where the jungler died instead.
  * - `ace`: all five enemies died. `pentakill`: one champion got all five kills.
  * - `soul`: the fourth dragon. `firstTower`: the first tower of the game.
  */
-export type EventTag = 'firstBlood' | 'upset' | 'steal' | 'escape' | 'ace' | 'pentakill' | 'soul' | 'firstTower'
+export type EventTag =
+  | 'firstBlood'
+  | 'upset'
+  | 'steal'
+  | 'escape'
+  | 'counterGank'
+  | 'ace'
+  | 'pentakill'
+  | 'soul'
+  | 'firstTower'
 
 export const DRAGON_KINDS = ['Infernal', 'Mountain', 'Ocean', 'Cloud', 'Hextech', 'Chemtech'] as const
 export type DragonKind = (typeof DRAGON_KINDS)[number]

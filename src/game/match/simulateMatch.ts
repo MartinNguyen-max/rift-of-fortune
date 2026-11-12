@@ -323,7 +323,7 @@ class Simulation {
         side: defender,
         actor: defenderRef,
         target: jungler,
-        tags: this.tags({ firstBlood, upset }),
+        tags: this.tags({ firstBlood, upset, counterGank: true }),
         big: firstBlood,
         spot: lane,
       })
