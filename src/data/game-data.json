@@ -71,7 +71,8 @@
         "Assassin"
       ],
       "positions": [
-        "TOP"
+        "TOP",
+        "JUNGLE"
       ],
       "damageType": "AD",
       "attackType": "MELEE"
@@ -86,7 +87,8 @@
         "Support"
       ],
       "positions": [
-        "JUNGLE"
+        "JUNGLE",
+        "SUPPORT"
       ],
       "damageType": "AP",
       "attackType": "MELEE"
@@ -144,7 +146,8 @@
         "Support"
       ],
       "positions": [
-        "BOTTOM"
+        "BOTTOM",
+        "SUPPORT"
       ],
       "damageType": "AD",
       "attackType": "RANGED"
@@ -173,7 +176,8 @@
         "Assassin"
       ],
       "positions": [
-        "MIDDLE"
+        "MIDDLE",
+        "TOP"
       ],
       "damageType": "AP",
       "attackType": "RANGED"
@@ -247,7 +251,9 @@
         "Support"
       ],
       "positions": [
-        "SUPPORT"
+        "SUPPORT",
+        "JUNGLE",
+        "MIDDLE"
       ],
       "damageType": "AP",
       "attackType": "RANGED"
@@ -306,7 +312,8 @@
         "Assassin"
       ],
       "positions": [
-        "TOP"
+        "TOP",
+        "SUPPORT"
       ],
       "damageType": "AD",
       "attackType": "MELEE"
@@ -350,7 +357,8 @@
         "Mage"
       ],
       "positions": [
-        "MIDDLE"
+        "MIDDLE",
+        "BOTTOM"
       ],
       "damageType": "AD",
       "attackType": "RANGED"
@@ -396,7 +404,8 @@
         "Fighter"
       ],
       "positions": [
-        "TOP"
+        "TOP",
+        "JUNGLE"
       ],
       "damageType": "AD",
       "attackType": "MELEE"
@@ -531,7 +540,8 @@
         "Mage"
       ],
       "positions": [
-        "MIDDLE"
+        "MIDDLE",
+        "SUPPORT"
       ],
       "damageType": "AP",
       "attackType": "MELEE"
@@ -590,7 +600,9 @@
         "Mage"
       ],
       "positions": [
-        "TOP"
+        "TOP",
+        "JUNGLE",
+        "MIDDLE"
       ],
       "damageType": "AP",
       "attackType": "MELEE"
@@ -649,7 +661,9 @@
         "Support"
       ],
       "positions": [
-        "TOP"
+        "TOP",
+        "MIDDLE",
+        "SUPPORT"
       ],
       "damageType": "AP",
       "attackType": "RANGED"
@@ -664,7 +678,8 @@
         "Support"
       ],
       "positions": [
-        "MIDDLE"
+        "MIDDLE",
+        "SUPPORT"
       ],
       "damageType": "AP",
       "attackType": "RANGED"
@@ -770,7 +785,8 @@
         "Marksman"
       ],
       "positions": [
-        "TOP"
+        "TOP",
+        "MIDDLE"
       ],
       "damageType": "AD",
       "attackType": "RANGED"
@@ -858,7 +874,9 @@
         "Support"
       ],
       "positions": [
-        "SUPPORT"
+        "SUPPORT",
+        "MIDDLE",
+        "TOP"
       ],
       "damageType": "AP",
       "attackType": "RANGED"
@@ -1092,8 +1110,7 @@
         "Mage"
       ],
       "positions": [
-        "MIDDLE",
-        "JUNGLE"
+        "MIDDLE"
       ],
       "damageType": "AD",
       "attackType": "MELEE"
@@ -1154,7 +1171,9 @@
         "Mage"
       ],
       "positions": [
-        "TOP"
+        "TOP",
+        "MIDDLE",
+        "SUPPORT"
       ],
       "damageType": "AP",
       "attackType": "MELEE"
@@ -1183,7 +1202,9 @@
         "Support"
       ],
       "positions": [
-        "SUPPORT"
+        "SUPPORT",
+        "TOP",
+        "JUNGLE"
       ],
       "damageType": "AP",
       "attackType": "MELEE"
@@ -1274,7 +1295,8 @@
         "Mage"
       ],
       "positions": [
-        "SUPPORT"
+        "SUPPORT",
+        "MIDDLE"
       ],
       "damageType": "AP",
       "attackType": "RANGED"
@@ -1334,7 +1356,8 @@
         "Support"
       ],
       "positions": [
-        "SUPPORT"
+        "SUPPORT",
+        "MIDDLE"
       ],
       "damageType": "AP",
       "attackType": "RANGED"
@@ -1468,7 +1491,10 @@
         "Assassin"
       ],
       "positions": [
-        "SUPPORT"
+        "SUPPORT",
+        "TOP",
+        "JUNGLE",
+        "MIDDLE"
       ],
       "damageType": "AD",
       "attackType": "MELEE"
@@ -1631,7 +1657,8 @@
         "Fighter"
       ],
       "positions": [
-        "JUNGLE"
+        "JUNGLE",
+        "TOP"
       ],
       "damageType": "AD",
       "attackType": "MELEE"
@@ -1661,7 +1688,8 @@
         "Mage"
       ],
       "positions": [
-        "TOP"
+        "TOP",
+        "MIDDLE"
       ],
       "damageType": "AP",
       "attackType": "MELEE"
@@ -1719,7 +1747,8 @@
         "Marksman"
       ],
       "positions": [
-        "SUPPORT"
+        "SUPPORT",
+        "BOTTOM"
       ],
       "damageType": "AD",
       "attackType": "RANGED"
@@ -1734,7 +1763,8 @@
         "Mage"
       ],
       "positions": [
-        "SUPPORT"
+        "SUPPORT",
+        "BOTTOM"
       ],
       "damageType": "AP",
       "attackType": "RANGED"
@@ -1763,7 +1793,8 @@
         "Assassin"
       ],
       "positions": [
-        "JUNGLE"
+        "JUNGLE",
+        "SUPPORT"
       ],
       "damageType": "AD",
       "attackType": "MELEE"
@@ -1777,7 +1808,8 @@
         "Tank"
       ],
       "positions": [
-        "TOP"
+        "TOP",
+        "SUPPORT"
       ],
       "damageType": "AD",
       "attackType": "MELEE"
@@ -1851,7 +1883,8 @@
         "Fighter"
       ],
       "positions": [
-        "JUNGLE"
+        "JUNGLE",
+        "TOP"
       ],
       "damageType": "AD",
       "attackType": "MELEE"
@@ -1866,7 +1899,9 @@
         "Mage"
       ],
       "positions": [
-        "BOTTOM"
+        "BOTTOM",
+        "TOP",
+        "MIDDLE"
       ],
       "damageType": "AD",
       "attackType": "RANGED"
@@ -1911,7 +1946,9 @@
         "Support"
       ],
       "positions": [
-        "SUPPORT"
+        "SUPPORT",
+        "MIDDLE",
+        "BOTTOM"
       ],
       "damageType": "AP",
       "attackType": "RANGED"
@@ -1926,7 +1963,8 @@
         "Assassin"
       ],
       "positions": [
-        "MIDDLE"
+        "MIDDLE",
+        "TOP"
       ],
       "damageType": "AP",
       "attackType": "MELEE"
@@ -1971,7 +2009,8 @@
         "Support"
       ],
       "positions": [
-        "MIDDLE"
+        "MIDDLE",
+        "JUNGLE"
       ],
       "damageType": "AP",
       "attackType": "RANGED"
@@ -1985,7 +2024,8 @@
         "Assassin"
       ],
       "positions": [
-        "JUNGLE"
+        "JUNGLE",
+        "MIDDLE"
       ],
       "damageType": "AD",
       "attackType": "MELEE"
@@ -2000,7 +2040,8 @@
         "Tank"
       ],
       "positions": [
-        "SUPPORT"
+        "SUPPORT",
+        "MIDDLE"
       ],
       "damageType": "AD",
       "attackType": "MELEE"
@@ -2015,7 +2056,9 @@
         "Mage"
       ],
       "positions": [
-        "TOP"
+        "TOP",
+        "JUNGLE",
+        "SUPPORT"
       ],
       "damageType": "AP",
       "attackType": "RANGED"
@@ -2045,7 +2088,8 @@
         "Assassin"
       ],
       "positions": [
-        "BOTTOM"
+        "BOTTOM",
+        "MIDDLE"
       ],
       "damageType": "AD",
       "attackType": "RANGED"
@@ -2091,7 +2135,9 @@
         "Marksman"
       ],
       "positions": [
-        "MIDDLE"
+        "MIDDLE",
+        "BOTTOM",
+        "TOP"
       ],
       "damageType": "AP",
       "attackType": "RANGED"
@@ -2106,7 +2152,8 @@
         "Assassin"
       ],
       "positions": [
-        "BOTTOM"
+        "BOTTOM",
+        "SUPPORT"
       ],
       "damageType": "AD",
       "attackType": "RANGED"
@@ -2121,7 +2168,8 @@
         "Tank"
       ],
       "positions": [
-        "JUNGLE"
+        "JUNGLE",
+        "TOP"
       ],
       "damageType": "AD",
       "attackType": "MELEE"
@@ -2181,7 +2229,8 @@
         "Mage"
       ],
       "positions": [
-        "MIDDLE"
+        "MIDDLE",
+        "SUPPORT"
       ],
       "damageType": "AP",
       "attackType": "RANGED"
@@ -2196,7 +2245,8 @@
         "Support"
       ],
       "positions": [
-        "SUPPORT"
+        "SUPPORT",
+        "MIDDLE"
       ],
       "damageType": "AP",
       "attackType": "RANGED"
@@ -2301,7 +2351,8 @@
         "Tank"
       ],
       "positions": [
-        "JUNGLE"
+        "JUNGLE",
+        "TOP"
       ],
       "damageType": "AD",
       "attackType": "MELEE"
@@ -2316,7 +2367,8 @@
         "Tank"
       ],
       "positions": [
-        "JUNGLE"
+        "JUNGLE",
+        "TOP"
       ],
       "damageType": "AD",
       "attackType": "MELEE"
@@ -2377,7 +2429,8 @@
       ],
       "positions": [
         "MIDDLE",
-        "TOP"
+        "TOP",
+        "BOTTOM"
       ],
       "damageType": "AD",
       "attackType": "MELEE"
@@ -2452,7 +2505,9 @@
         "Fighter"
       ],
       "positions": [
-        "JUNGLE"
+        "JUNGLE",
+        "TOP",
+        "SUPPORT"
       ],
       "damageType": "AP",
       "attackType": "MELEE"
@@ -2495,7 +2550,8 @@
         "Mage"
       ],
       "positions": [
-        "BOTTOM"
+        "BOTTOM",
+        "MIDDLE"
       ],
       "damageType": "AP",
       "attackType": "RANGED"
@@ -2568,7 +2624,8 @@
         "Fighter"
       ],
       "positions": [
-        "TOP"
+        "TOP",
+        "JUNGLE"
       ],
       "damageType": "AD",
       "attackType": "MELEE"

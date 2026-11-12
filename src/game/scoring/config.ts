@@ -12,8 +12,8 @@ export const ROLE_FIT_SCORE = {
   secondaryRole: 85,
   /** An off-role pick that really shows up in ranked (offMeta.ts), e.g. Briar in bot lane. */
   offMeta: 60,
-  /** Minimum when off-role but the champion's class suits the role (e.g. a tank in top lane). */
-  classFit: 35,
+  /** Minimum when off-role but the champion's class suits the role (a mage in support, a fighter in the jungle). */
+  classFit: 50,
 } as const
 
 /**
@@ -38,7 +38,7 @@ export const ROLE_CLASSES: Record<Role, ChampionClass[]> = {
   JUNGLE: ['Fighter', 'Assassin', 'Tank'],
   MIDDLE: ['Mage', 'Assassin'],
   BOTTOM: ['Marksman'],
-  SUPPORT: ['Support', 'Tank'],
+  SUPPORT: ['Support', 'Tank', 'Mage'],
 }
 
 /** What an item is good for, derived from its stats. An item can have several tags. */

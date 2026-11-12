@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import {
   dedupeByName,
+  addWikiPositions,
   filterByPlayRate,
   guessPositions,
   isFullItem,
   parseItemStats,
+  parseWikiPositions,
   toChampion,
   type DDragonChampion,
   type DDragonItem,
@@ -152,5 +154,35 @@ describe('dedupeByName', () => {
       { ...item, id: '3003', name: 'Archangel' },
     ])
     expect(result.map((i) => i.id)).toEqual(['3003', '3050'])
+  })
+})
+
+describe('parseWikiPositions', () => {
+  const lua = `-- <pre>
+return {
+  ["Lux"] = {
+    ["apiname"]    = "Lux",
+    ["stats"] = {
+      ["hp_base"]  = 580,
+    },
+    ["client_positions"]   = {"Support","Middle"},
+    ["external_positions"] = {"Middle","Bottom"},
+  },
+  ["MonkeyKing"] = {
+    ["apiname"]    = "MonkeyKing",
+    ["client_positions"]   = {"Jungle"},
+    ["external_positions"] = {},
+  },
+}`
+
+  it('reads client and external positions, keyed by Data Dragon id', () => {
+    expect(parseWikiPositions(lua)).toEqual({ Lux: ['SUPPORT', 'MIDDLE', 'BOTTOM'], MonkeyKing: ['JUNGLE'] })
+  })
+})
+
+describe('addWikiPositions', () => {
+  it('adds new roles after the existing ones, keeping the main role first', () => {
+    expect(addWikiPositions(['MIDDLE'], ['SUPPORT', 'MIDDLE'])).toEqual(['MIDDLE', 'SUPPORT'])
+    expect(addWikiPositions(['TOP'], undefined)).toEqual(['TOP'])
   })
 })

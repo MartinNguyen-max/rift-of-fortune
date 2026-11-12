@@ -47,7 +47,12 @@ describe('scoreRoleFit', () => {
 
   it('uses the class fit as a minimum', () => {
     const rammus = makeChampion({ classes: ['Tank'], positions: ['JUNGLE'] })
-    expect(scoreRoleFit(rammus, 'SUPPORT')).toMatchObject({ kind: 'stretch', score: ROLE_FIT_SCORE.classFit })
+    expect(scoreRoleFit(rammus, 'SUPPORT')).toMatchObject({ kind: 'closeFit', score: ROLE_FIT_SCORE.classFit })
+  })
+
+  it('lets a mid lane mage play support', () => {
+    const syndra = makeChampion({ classes: ['Mage'], positions: ['MIDDLE'] })
+    expect(scoreRoleFit(syndra, 'SUPPORT')).toMatchObject({ kind: 'closeFit', score: ROLE_FIT_SCORE.classFit })
   })
 
   it('uses the best swap among all of the champion’s roles', () => {

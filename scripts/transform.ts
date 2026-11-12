@@ -73,6 +73,40 @@ export function filterByPlayRate(positions: Role[], rates: MerakiRoleRates | und
   return kept.length > 0 ? kept : positions
 }
 
+const WIKI_ROLES: Record<string, Role> = {
+  Top: 'TOP',
+  Jungle: 'JUNGLE',
+  Middle: 'MIDDLE',
+  Bottom: 'BOTTOM',
+  Support: 'SUPPORT',
+}
+
+/**
+ * Reads the roles each champion is played in from the League of Legends Wiki's champion data
+ * module (a Lua table): the roles Riot's client recommends (`client_positions`) and the roles
+ * stats sites show (`external_positions`). Keyed by Data Dragon id (`apiname`).
+ */
+export function parseWikiPositions(lua: string): Record<string, Role[]> {
+  const positions: Record<string, Role[]> = {}
+  const list = (block: string, key: string): Role[] => {
+    const match = block.match(new RegExp(String.raw`\["${key}"\]\s*=\s*\{([^}]*)\}`))
+    return [...(match?.[1] ?? '').matchAll(/"(\w+)"/g)].flatMap(([, name]) => {
+      const role = name ? WIKI_ROLES[name] : undefined
+      return role ? [role] : []
+    })
+  }
+  for (const block of lua.split(/\n {2}\["/).slice(1)) {
+    const id = block.match(/\["apiname"\]\s*=\s*"([^"]+)"/)?.[1]
+    if (id) positions[id] = [...new Set([...list(block, 'client_positions'), ...list(block, 'external_positions')])]
+  }
+  return positions
+}
+
+/** Adds the wiki's roles after the play-rate roles, so the main role stays first. */
+export function addWikiPositions(positions: Role[], wiki: Role[] | undefined): Role[] {
+  return [...positions, ...(wiki ?? []).filter((role) => !positions.includes(role))]
+}
+
 const SUMMONERS_RIFT_MAP_ID = '11'
 const MIN_FULL_ITEM_GOLD = 2000
 /** Ids at or above this are copies of items for other modes (Arena, Swiftplay, ...). */
@@ -178,6 +212,7 @@ export function toChampion(
   champion: DDragonChampion,
   meraki: MerakiChampion | undefined,
   rates?: MerakiRoleRates,
+  wikiPositions?: Role[],
 ): Champion {
   const classes = champion.tags.filter(isChampionClass)
   const fallbackDamage: DamageType = champion.info.magic > champion.info.attack ? 'AP' : 'AD'
@@ -190,7 +225,10 @@ export function toChampion(
     title: champion.title,
     image: champion.image.full,
     classes,
-    positions: positions.length > 0 ? positions : guessPositions(classes, champion.stats.attackrange),
+    positions: addWikiPositions(
+      positions.length > 0 ? positions : wikiPositions?.length ? wikiPositions : guessPositions(classes, champion.stats.attackrange),
+      wikiPositions,
+    ),
     damageType: meraki ? (meraki.adaptiveType === 'MAGIC_DAMAGE' ? 'AP' : 'AD') : fallbackDamage,
     attackType: meraki ? (meraki.attackType === 'RANGED' ? 'RANGED' : 'MELEE') : fallbackAttack,
   }
