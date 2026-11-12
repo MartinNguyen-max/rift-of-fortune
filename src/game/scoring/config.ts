@@ -10,6 +10,8 @@ export const ROLE_FIT_SCORE = {
   mainRole: 100,
   /** Another role the champion is regularly played in. */
   secondaryRole: 85,
+  /** An off-role pick that really shows up in ranked (offMeta.ts), e.g. Briar in bot lane. */
+  offMeta: 60,
   /** Minimum when off-role but the champion's class suits the role (e.g. a tank in top lane). */
   classFit: 35,
 } as const
@@ -71,10 +73,10 @@ export const CLASS_TAG_AFFINITY: Record<ChampionClass, Record<Exclude<ItemTag, '
  * Item fit from the build table (builds.ts): an item the champion's main build profile buys, one
  * their second profile buys, and the most any other item can score (it falls back to the stat fit).
  */
-export const ITEM_BUILD_FIT = { main: 100, second: 85, offBuildCap: 35 } as const
+export const ITEM_BUILD_FIT = { main: 100, second: 85, offBuildCap: 45 } as const
 
 /** A champion's item score leans this much toward their worst item, so one troll item hurts. */
-export const WORST_ITEM_WEIGHT = 0.6
+export const WORST_ITEM_WEIGHT = 0.5
 
 /** Used for an item without any recognised stats. */
 export const NEUTRAL_ITEM_FIT = 50
@@ -121,7 +123,7 @@ export const CARRY_CLASSES: readonly ChampionClass[] = ['Marksman', 'Mage', 'Ass
 /**
  * Ranked tiers from best to worst, with the minimum team score for each.
  * Calibrated with simulate.ts (see simulate.test.ts): a bot that always picks the best-fitting role and item
- * has a median around Gold, reaches Diamond+ in about 7% of games and Challenger in about 0.5%.
+ * has a median around Platinum, reaches Diamond+ in about 14% of games and Challenger in about 1%.
  * Tiers with divisions split their score range evenly into IV (lowest) to I (highest).
  */
 export const RANK_THRESHOLDS = [
@@ -129,11 +131,11 @@ export const RANK_THRESHOLDS = [
   { tier: 'Grandmaster', min: 85, hasDivisions: false, summary: 'One step from the top. The ladder fears you.' },
   { tier: 'Master', min: 82, hasDivisions: false, summary: 'You actually know what you are doing.' },
   { tier: 'Diamond', min: 77, hasDivisions: true, summary: 'Solid team. Your LP is in safe hands.' },
-  { tier: 'Emerald', min: 70, hasDivisions: true, summary: 'Decent. Could win, could also int.' },
-  { tier: 'Platinum', min: 62, hasDivisions: true, summary: 'Respectable, as long as nobody tilts.' },
-  { tier: 'Gold', min: 54, hasDivisions: true, summary: 'Coin flip. Buy wards and hope.' },
-  { tier: 'Silver', min: 45, hasDivisions: true, summary: "There's a game plan. Somewhere." },
-  { tier: 'Bronze', min: 30, hasDivisions: true, summary: 'Rough. Mute all and pray.' },
+  { tier: 'Emerald', min: 67, hasDivisions: true, summary: 'Decent. Could win, could also int.' },
+  { tier: 'Platinum', min: 58, hasDivisions: true, summary: 'Respectable, as long as nobody tilts.' },
+  { tier: 'Gold', min: 50, hasDivisions: true, summary: 'Coin flip. Buy wards and hope.' },
+  { tier: 'Silver', min: 42, hasDivisions: true, summary: "There's a game plan. Somewhere." },
+  { tier: 'Bronze', min: 28, hasDivisions: true, summary: 'Rough. Mute all and pray.' },
   { tier: 'Iron', min: 0, hasDivisions: true, summary: 'This team is a crime. FF at 15.' },
 ] as const satisfies readonly { tier: RankTier; min: number; hasDivisions: boolean; summary: string }[]
 

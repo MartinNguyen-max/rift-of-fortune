@@ -52,7 +52,7 @@ export function MatchView({ teams, level, seed, onRematch, onNewTeam }: MatchVie
   const lastBig = shownEvents.findLastIndex(({ big }) => big)
   const summary = ended ? summarizeMatch(reelMatch, lines) : null
   const worstRoast = summary && roastWorstPlayer(match, teams, summary.feeder)
-  const story = summary ? matchStory(match, teams, summary) : []
+  const story = summary ? matchStory(match, teams, summary) : ''
   const live = standouts(stats)
 
   const fightIndex = activeBigEvent(reel.events, timeline, elapsed)

@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import type { Role } from '../../data/types'
+import { gameData } from '../../data'
 import { ROLES } from '../roles'
 import { makeChampion } from '../testUtils'
 import { LANE_SWAP_SCORE, ROLE_FIT_BANDS, ROLE_FIT_SCORE } from './config'
+import { OFF_META_ROLES } from './offMeta'
 import { isOnRole, scoreRoleFit } from './roleFit'
 
 const ahri = makeChampion({ id: 'Ahri', classes: ['Mage', 'Assassin'], positions: ['MIDDLE'] })
@@ -69,5 +71,23 @@ describe('LANE_SWAP_SCORE', () => {
   it('makes jungle the hardest role to fake for supports and ADCs', () => {
     expect(LANE_SWAP_SCORE.SUPPORT.JUNGLE).toBeLessThan(ROLE_FIT_BANDS.stretch)
     expect(LANE_SWAP_SCORE.BOTTOM.JUNGLE).toBeLessThan(ROLE_FIT_BANDS.stretch)
+  })
+})
+
+describe('off-meta picks', () => {
+  const briar = gameData.champions.find(({ id }) => id === 'Briar')
+
+  it('treats off-role picks seen in real games as a reasonable swap, not a disaster', () => {
+    if (!briar) throw new Error('No Briar')
+    expect(scoreRoleFit(briar, 'BOTTOM')).toMatchObject({ kind: 'closeFit', score: ROLE_FIT_SCORE.offMeta })
+    expect(scoreRoleFit(briar, 'SUPPORT').score).toBeLessThan(ROLE_FIT_SCORE.offMeta)
+  })
+
+  it('only lists champions and roles that exist, and never their usual roles', () => {
+    for (const [id, roles] of Object.entries(OFF_META_ROLES)) {
+      const champion = gameData.champions.find((entry) => entry.id === id)
+      expect(champion, id).toBeDefined()
+      for (const role of roles) expect(champion?.positions, `${id} ${role}`).not.toContain(role)
+    }
   })
 })

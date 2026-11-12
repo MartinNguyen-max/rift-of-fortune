@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { ROLES } from '../roles'
 import { commentate } from './commentary'
 import { simulateMatch } from './simulateMatch'
-import { dramaScore, findMvp, matchShareText, matchStory, momentOfTheMatch, mostDeaths, standouts, summarizeMatch } from './summary'
+import { dramaScore, FEEDER_VERBS, findMvp, matchShareText, matchStory, momentOfTheMatch, mostDeaths, standouts, summarizeMatch } from './summary'
 import { winChanceTimeline } from './winChance'
 import { emptyStats } from './stats'
 import { makeEvent, sampleTeams } from './testUtils'
@@ -100,26 +100,23 @@ describe('matchStory', () => {
     return { match, story, before: winChanceTimeline(match, teams)[0] ?? 0.5 }
   })
 
-  it('tells who had the better team, the turning point and who carried', () => {
+  it('is short: two sentences about the turn and who carried', () => {
     for (const { story } of stories) {
-      expect(story.length).toBeGreaterThanOrEqual(2)
-      expect(story[0]).toMatch(/\d+%/)
-      expect(story.at(-1)).toContain('carried with')
-      for (const sentence of story) expect(sentence).not.toMatch(/undefined|\s{2}/)
+      expect(story.length).toBeLessThanOrEqual(170)
+      expect(story).toContain('carried')
+      expect(story).not.toMatch(/undefined|\s{2}/)
     }
   })
 
-  it('says the game turned when the underdog won', () => {
-    const upsets = stories.filter(({ match, before }) => (before >= 0.5 ? 'blue' : 'red') !== match.winner)
+  it('points at the turning point when the underdog won', () => {
+    const upsets = stories.filter(({ match, before }) => Math.abs(before - 0.5) >= 0.05 && (before >= 0.5 ? 'blue' : 'red') !== match.winner)
     expect(upsets.length).toBeGreaterThan(0)
-    for (const { story } of upsets) expect(story.join(' ')).toMatch(/turned|coin flip/)
+    for (const { story } of upsets) expect(story).toMatch(/Then .+\. Oops\./)
   })
 
-  it('names the favourite in the first sentence', () => {
-    for (const { story, before } of stories) {
-      if (Math.abs(before - 0.5) < 0.05) continue
-      expect(story[0]).toContain(before >= 0.5 ? 'Your team' : 'Team Bot')
-    }
+  it('names who fed, with their K/D/A', () => {
+    const withFeeder = stories.filter(({ story }) => FEEDER_VERBS.some((verb) => story.includes(verb)))
+    expect(withFeeder.length).toBeGreaterThan(stories.length / 2)
   })
 })
 

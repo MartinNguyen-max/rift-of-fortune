@@ -1,17 +1,20 @@
 import { GOLD } from './config'
 import type { MatchEvent, Scoreboard } from './types'
 
-/** Every match takes this many real seconds to watch, however long it ran in game time. */
-export const MATCH_SECONDS = 14
+/**
+ * Real seconds to watch a match: a quick stomp takes `min`, a long close game `max`, and an
+ * average match (~32 game minutes) about 12–13 seconds.
+ */
+export const WATCH_SECONDS = { min: 10, max: 15, shortGameMinutes: 20, longGameMinutes: 42 } as const
 
 /** Real seconds before the first event, so the screen can settle. */
 export const LEAD_IN = 1
 
 /** How much watch time each event gets, relative to each other. Big moments get time for the fight scene and the caster line. */
-export const BEATS = { small: 1, big: 3.2 } as const
+export const BEATS = { small: 1, big: 2 } as const
 
 /** The game clock stands still for this share of a big moment, so the player can take it in. */
-export const BIG_PAUSE = 0.75
+export const BIG_PAUSE = 0.6
 
 /** Game time shown when the clock starts, this long before the first event. */
 const CLOCK_LEAD_IN = 60
@@ -23,18 +26,26 @@ export interface Timeline {
   total: number
 }
 
-/** Spreads the events over MATCH_SECONDS, giving big moments more time than small ones. */
+/** How long to watch a match that lasted `gameSeconds`: longer games take a little longer. */
+export function watchSeconds(gameSeconds: number): number {
+  const { min, max, shortGameMinutes, longGameMinutes } = WATCH_SECONDS
+  const progress = (gameSeconds / 60 - shortGameMinutes) / (longGameMinutes - shortGameMinutes)
+  return min + Math.min(1, Math.max(0, progress)) * (max - min)
+}
+
+/** Spreads the events over the match's watch time, giving big moments more time than small ones. */
 export function buildTimeline(events: readonly MatchEvent[]): Timeline {
+  const total = watchSeconds(events.at(-1)?.time ?? 0)
   const beats = events.map(({ big }) => (big ? BEATS.big : BEATS.small))
   const totalBeats = beats.reduce((sum, beat) => sum + beat, 0)
-  const unit = totalBeats > 0 ? (MATCH_SECONDS - LEAD_IN) / totalBeats : 0
+  const unit = totalBeats > 0 ? (total - LEAD_IN) / totalBeats : 0
   let at = LEAD_IN
   const starts = beats.map((beat) => {
     const start = at
     at += beat * unit
     return start
   })
-  return { starts, total: MATCH_SECONDS }
+  return { starts, total }
 }
 
 /** How many events have appeared after `elapsed` real seconds. */

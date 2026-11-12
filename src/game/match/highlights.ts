@@ -2,7 +2,7 @@ import type { MatchEvent, MatchResult, MatchTeams } from './types'
 import { winChanceTimeline } from './winChance'
 
 /** How many moments the player watches, and how many of them are game-changing. */
-export const REEL = { moments: 7, keyMoments: 2 } as const
+export const REEL = { moments: 10, keyMoments: 2 } as const
 
 /**
  * The match as the player watches it: a handful of moments picked from the full simulation.

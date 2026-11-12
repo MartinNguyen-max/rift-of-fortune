@@ -1,5 +1,6 @@
 import type { Champion, Role } from '../../data/types'
 import { LANE_SWAP_SCORE, ROLE_CLASSES, ROLE_FIT_BANDS, ROLE_FIT_SCORE } from './config'
+import { OFF_META_ROLES } from './offMeta'
 
 /**
  * - `mainRole` / `secondaryRole`: the champion is played in this role.
@@ -28,6 +29,8 @@ export function scoreRoleFit(champion: Champion, role: Role): RoleFit {
   const [usualRole = null] = champion.positions
   if (usualRole === role) return { kind: 'mainRole', score: ROLE_FIT_SCORE.mainRole, usualRole }
   if (champion.positions.includes(role)) return { kind: 'secondaryRole', score: ROLE_FIT_SCORE.secondaryRole, usualRole }
+
+  if (OFF_META_ROLES[champion.id]?.includes(role)) return { kind: 'closeFit', score: ROLE_FIT_SCORE.offMeta, usualRole }
 
   // The best swap from any of the champion's roles, with the class fit as a minimum.
   const swap = Math.max(0, ...champion.positions.map((position) => LANE_SWAP_SCORE[position][role]))

@@ -15,9 +15,9 @@ interface FightSceneProps {
 }
 
 /** Kills land one by one in the first part of the scene, then the title stamps down and the caster speaks. */
-const KILLS_END = 0.4
-const TITLE_AT = 0.25
-const LINE_AT = 0.4
+const KILLS_END = 0.35
+const TITLE_AT = 0.15
+const LINE_AT = 0.3
 
 /** A big moment played out over the map: both teams, the kills landing one by one, then a big stamp. */
 export function FightScene({ event, line, teams, progress }: FightSceneProps) {

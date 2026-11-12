@@ -121,11 +121,14 @@ const COIN_FLIP_MARGIN = 0.05
 
 const percent = (chance: number) => Math.round(chance * 100)
 
+/** What the feeder did, picked per match. */
+export const FEEDER_VERBS = ['fed', 'donated gold', 'played for the other team', 'was a walking bounty'] as const
+
 /**
- * How the match went in a few sentences: who had the better team on paper, the turning point
- * (or how the favourite closed it out), and who carried and who fed.
+ * How the match went in two short sentences: who was favoured and what turned it (or didn't),
+ * then who carried and who fed.
  */
-export function matchStory(match: MatchResult, teams: MatchTeams, summary: MatchSummary): string[] {
+export function matchStory(match: MatchResult, teams: MatchTeams, summary: MatchSummary): string {
   const chances = winChanceTimeline(match, teams)
   const chanceFor = (side: Side, blueChance: number) => (side === 'blue' ? blueChance : 1 - blueChance)
   const winner = match.winner
@@ -133,47 +136,42 @@ export function matchStory(match: MatchResult, teams: MatchTeams, summary: Match
   const before = chances[0] ?? 0.5
   const favourite: Side = before >= 0.5 ? 'blue' : 'red'
 
-  const opening =
-    Math.abs(before - 0.5) < COIN_FLIP_MARGIN
-      ? `On paper it was a coin flip (${percent(Math.max(before, 1 - before))}% to ${percent(Math.min(before, 1 - before))}%).`
-      : `${teams[favourite].name} had the better team on paper (${percent(chanceFor(favourite, before))}% to win).`
-
   // The event that moved the win chance most toward the winner, not counting the ending itself.
-  const during = match.events.slice(0, -1)
   let turn = -1
   let turnSwing = 0
-  for (const index of during.keys()) {
+  for (const index of match.events.slice(0, -1).keys()) {
     const swing = chanceFor(winner, chances[index + 1] ?? 0) - chanceFor(winner, chances[index] ?? 0)
     if (swing > turnSwing) {
       turn = index
       turnSwing = swing
     }
   }
-  const loserPeak = Math.max(...chances.slice(0, -1).map((chance) => chanceFor(loser, chance)))
   const turning = match.events[turn]
-  const when = turning ? { time: formatGameTime(turning.time), what: describeEvent(turning, teams) } : null
-  const moment = when && `at ${when.time} ${when.what}`
+  const what = turning ? describeEvent(turning, teams) : null
+  const loserPeak = Math.max(...chances.slice(0, -1).map((chance) => chanceFor(loser, chance)))
 
-  const middle = !moment || !when
-    ? null
-    : favourite !== winner
-      ? `${teams[loser].name} was ${percent(loserPeak)}% to win, but ${moment} and the game turned.`
-      : loserPeak > 0.5
-        ? `${teams[loser].name} got ahead (${percent(loserPeak)}%), but ${moment} and swung it back.`
-        : `${teams[winner].name} never let go: the biggest moment came at ${when.time}, when ${when.what}.`
+  const opening = !what
+    ? `${teams[winner].name} won. Nobody saw anything.`
+    : Math.abs(before - 0.5) < COIN_FLIP_MARGIN
+      ? `A coin flip, until ${what}.`
+      : favourite !== winner
+        ? `${teams[loser].name} was ${percent(loserPeak)}% to win. Then ${what}. Oops.`
+        : loserPeak > 0.5
+          ? `${teams[loser].name} got to ${percent(loserPeak)}%, then ${what}. Never mind.`
+          : `${teams[winner].name} was the favourite (${percent(chanceFor(winner, before))}%) and played like it.`
 
   const name = ({ side, role }: { side: Side; role: Role }) =>
     teams[side].rating.champions.find((champion) => champion.role === role)?.champion.name ?? ''
   const feeder = summary.feeder
-  const carry = `${name(summary.mvp)} carried with ${formatKda(summary.mvp.kda)}`
+  const verb = FEEDER_VERBS[match.seed % FEEDER_VERBS.length] ?? FEEDER_VERBS[0]
+  const carry = `${name(summary.mvp)} ${formatKda(summary.mvp.kda)} carried`
   const closing =
     feeder && name(feeder) !== name(summary.mvp)
-      ? `${carry}, while ${name(feeder)} went ${formatKda(match.stats[feeder.side][feeder.role])}.`
+      ? `${carry}, ${name(feeder)} ${formatKda(match.stats[feeder.side][feeder.role])} ${verb}.`
       : `${carry}.`
 
-  return [opening, middle, closing].flatMap((sentence) => (sentence ? [lowercaseYourMidSentence(sentence)] : []))
+  return lowercaseYourMidSentence(`${opening} ${closing}`)
 }
-
 
 /** The best and the worst player so far, on either team, for the live scoreboard. */
 export function standouts(stats: ChampionStats): { best: ChampionRef | null; worst: ChampionRef | null } {

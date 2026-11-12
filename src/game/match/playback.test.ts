@@ -8,7 +8,8 @@ import {
   gameClock,
   LEAD_IN,
   liveScore,
-  MATCH_SECONDS,
+  watchSeconds,
+  WATCH_SECONDS,
 } from './playback'
 import { simulateMatch } from './simulateMatch'
 import { makeEvent, sampleTeams } from './testUtils'
@@ -22,15 +23,15 @@ const events = [
 const timeline = buildTimeline(events)
 
 describe('buildTimeline', () => {
-  it('fits every match into the same watch time', () => {
-    expect(timeline.total).toBe(MATCH_SECONDS)
+  it('fits every match into its watch time', () => {
+    expect(timeline.total).toBe(WATCH_SECONDS.min)
     const teams = sampleTeams()
     for (let seed = 0; seed < 20; seed++) {
       const match = simulateMatch(teams, seed)
       const { starts, total } = buildTimeline(match.events)
-      expect(total).toBe(MATCH_SECONDS)
+      expect(total).toBe(watchSeconds(match.duration))
       expect(starts).toHaveLength(match.events.length)
-      expect(starts.at(-1)).toBeLessThan(MATCH_SECONDS)
+      expect(starts.at(-1)).toBeLessThan(total)
     }
   })
 
@@ -45,7 +46,7 @@ describe('eventsShown', () => {
   it('counts the events that have appeared', () => {
     expect(eventsShown(timeline, 0)).toBe(0)
     expect(eventsShown(timeline, LEAD_IN)).toBe(1)
-    expect(eventsShown(timeline, MATCH_SECONDS)).toBe(4)
+    expect(eventsShown(timeline, timeline.total)).toBe(4)
   })
 })
 
@@ -55,8 +56,8 @@ describe('activeBigEvent', () => {
     expect(activeBigEvent(events, timeline, LEAD_IN + 0.01)).toBeNull()
     expect(activeBigEvent(events, timeline, bigStart + 0.01)).toBe(1)
     expect(activeBigEvent(events, timeline, nextStart + 0.01)).toBeNull()
-    expect(activeBigEvent(events, timeline, MATCH_SECONDS - 0.01)).toBe(3)
-    expect(activeBigEvent(events, timeline, MATCH_SECONDS)).toBeNull()
+    expect(activeBigEvent(events, timeline, timeline.total - 0.01)).toBe(3)
+    expect(activeBigEvent(events, timeline, timeline.total)).toBeNull()
   })
 })
 
@@ -66,12 +67,12 @@ describe('gameClock', () => {
     for (const [index, event] of events.entries()) {
       expect(gameClock(events, timeline, timeline.starts[index] ?? 0)).toBeCloseTo(event.time)
     }
-    expect(gameClock(events, timeline, MATCH_SECONDS + 5)).toBe(400)
+    expect(gameClock(events, timeline, timeline.total + 5)).toBe(400)
   })
 
   it('never runs backwards', () => {
     let last = 0
-    for (let elapsed = 0; elapsed <= MATCH_SECONDS; elapsed += 0.1) {
+    for (let elapsed = 0; elapsed <= timeline.total; elapsed += 0.1) {
       const clock = gameClock(events, timeline, elapsed)
       expect(clock).toBeGreaterThanOrEqual(last)
       last = clock
@@ -98,5 +99,21 @@ describe('gameClock on big moments', () => {
     expect(gameClock(events, timeline, bigStart + 0.01)).toBe(200)
     expect(gameClock(events, timeline, pauseEnd - 0.01)).toBe(200)
     expect(gameClock(events, timeline, (pauseEnd + nextStart) / 2)).toBeGreaterThan(200)
+  })
+})
+
+describe('watchSeconds', () => {
+  it('takes 10 seconds for a stomp and 15 for a long game', () => {
+    expect(watchSeconds(18 * 60)).toBe(WATCH_SECONDS.min)
+    expect(watchSeconds(50 * 60)).toBe(WATCH_SECONDS.max)
+    expect(watchSeconds(31 * 60)).toBeCloseTo(12.5)
+  })
+
+  it('makes an average match about 12 seconds', () => {
+    const teams = sampleTeams()
+    const lengths = Array.from({ length: 200 }, (_, seed) => watchSeconds(simulateMatch(teams, seed).duration))
+    const average = lengths.reduce((sum, value) => sum + value, 0) / lengths.length
+    expect(average).toBeGreaterThan(11)
+    expect(average).toBeLessThan(13.5)
   })
 })

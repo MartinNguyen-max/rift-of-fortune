@@ -39,10 +39,10 @@ describe('rank calibration', () => {
     expect(challenger).toBeLessThan(0.02)
   })
 
-  it('keeps Diamond or higher to about 1 in 10 games for a sensible player', () => {
+  it('keeps Diamond or higher to about 1 in 7 games for a sensible player', () => {
     const diamondPlus = share(sensible, (score) => ['Diamond', 'Master', 'Grandmaster', 'Challenger'].includes(rankFor(score).tier))
-    expect(diamondPlus).toBeGreaterThan(0.03)
-    expect(diamondPlus).toBeLessThan(0.12)
+    expect(diamondPlus).toBeLessThan(0.2)
+    expect(diamondPlus).toBeGreaterThan(0.08)
   })
 
   it('rewards knowing the game: a sensible player scores far above a random one', () => {
