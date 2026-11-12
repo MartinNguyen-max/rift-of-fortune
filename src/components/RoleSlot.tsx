@@ -29,6 +29,8 @@ interface RoleSlotProps {
   /** Item rerolls: the item spinning into a new one. */
   spinningItemId?: string | null
   onItemSpinDone?: () => void
+  /** The item reroll step: items are shown bigger. */
+  largeItems?: boolean
   /** Item rerolls are open: every item glows and a tap rerolls it. */
   itemsRerollable?: boolean
   /** Champion score, shown as a badge once the team is rated. */
@@ -55,6 +57,7 @@ export function RoleSlot({
   spinningItemId = null,
   onItemSpinDone,
   itemsRerollable = false,
+  largeItems = false,
 }: RoleSlotProps) {
   const { setNodeRef, isOver } = useDroppable({ id: role, disabled: !droppable })
   const label = ROLE_LABELS[role]
@@ -136,7 +139,7 @@ export function RoleSlot({
             const item = items[index]
             if (item && item.id === spinningItemId) {
               return (
-                <div key={item.id} className="size-7 overflow-hidden rounded border-2 border-gold sm:size-9">
+                <div key={item.id} className={`overflow-hidden rounded border-2 border-gold ${largeItems ? 'size-9 sm:size-11' : 'size-7 sm:size-9'}`}>
                   <SlotSpin target={item} pool={gameData.items} imageUrl={itemImage} onLanded={onItemSpinDone ?? noop} className="size-full object-cover" />
                 </div>
               )
@@ -145,13 +148,13 @@ export function RoleSlot({
               <DraggableItem
                 key={item.id}
                 item={item}
-                size="small"
+                size={largeItems ? 'medium' : 'small'}
                 locked={!isItemMovable(item.id)}
                 rerollable={itemsRerollable}
                 onClick={() => onItemClick?.(item.id)}
               />
             ) : (
-              <div key={index} className="size-7 rounded border border-dashed border-gold/40 bg-abyss/60 sm:size-9" />
+              <div key={index} className={`rounded border border-dashed border-gold/40 bg-abyss/60 ${largeItems ? 'size-9 sm:size-11' : 'size-7 sm:size-9'}`} />
             )
           })}
         </div>

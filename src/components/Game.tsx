@@ -201,10 +201,11 @@ export function Game({
         highlighted={isItemPhase && assignable}
         onActivate={isItemPhase && assignable ? () => assignItem(activeItemId, role) : undefined}
         onItemClick={canPickItemReroll ? rerollEquippedItem : isItemPhase ? unassignItem : undefined}
-        isItemMovable={(itemId) => isItemMovable(state, itemId) || canPickItemReroll}
+        isItemMovable={(itemId) => isItemMovable(state, itemId)}
         spinningItemId={spinningItemId}
         onItemSpinDone={stopItemSpin}
         itemsRerollable={canPickItemReroll}
+        largeItems={itemRerollsOpen}
         score={rating?.champions.find((championRating) => championRating.role === role)?.score}
       />
     )

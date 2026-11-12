@@ -90,8 +90,12 @@ export function canHandOutItems(state: GameState): boolean {
   return state.phase === 'items' && state.itemsRevealed
 }
 
-/** Items from earlier rounds are locked; only the current round's items can move. */
+/**
+ * Items from earlier rounds are locked; only the current round's items can move. With item
+ * rerolls, every item locks once all ten are placed: from then on they can only be rerolled.
+ */
 export function isItemMovable(state: GameState, itemId: string): boolean {
+  if (isRerollStage(state)) return false
   return canHandOutItems(state) && currentRoundItems(state).some((item) => item.id === itemId)
 }
 
@@ -105,6 +109,11 @@ export function canStartNextItemRound(state: GameState): boolean {
 
 export function canFinish(state: GameState): boolean {
   return state.itemRound === ITEM_ROUNDS && roundComplete(state)
+}
+
+/** The reroll step: all ten items are placed and the mode has item rerolls (even when they are used up). */
+export function isRerollStage(state: GameState): boolean {
+  return rulesOf(state).itemRerolls > 0 && canFinish(state)
 }
 
 /** Item rerolls open once all ten items are equipped, before the team is rated. */

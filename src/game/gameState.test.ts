@@ -4,6 +4,7 @@ import {
   canFinish,
   canRerollChampion,
   canRerollItem,
+  isRerollStage,
   championRerollsLeft,
   itemRerollsLeft,
   rulesOf,
@@ -218,5 +219,25 @@ describe('Match vs Bots rerolls', () => {
     const classic = gameReducer(rollAndReveal(initialGameState()), { type: 'place', role: 'TOP' })
     expect(canRerollChampion(classic, 'TOP')).toBe(false)
     expect(rulesOf(gameReducer(teamOf(5), { type: 'reset' }))).toEqual(MATCH_RULES)
+  })
+})
+
+describe('Match vs Bots: items lock for the reroll step', () => {
+  const roles: Role[] = ['TOP', 'JUNGLE', 'MIDDLE', 'BOTTOM', 'SUPPORT']
+  const items = Array.from({ length: 10 }, (_, i) => makeItem({ id: String(i) }))
+  const apply = (state: GameState, ...actions: GameAction[]) => actions.reduce(gameReducer, state)
+
+  it('locks every item once all ten are placed, so they can only be rerolled', () => {
+    let state = initialGameState(MATCH_RULES)
+    for (const role of roles) state = gameReducer(rollAndReveal(state, makeChampion({ id: role })), { type: 'place', role })
+    const handOut = (from: number) => roles.map((role, i): GameAction => ({ type: 'assignItem', itemId: String(from + i), role }))
+    state = apply(state, { type: 'startItems', items }, { type: 'revealItems' }, ...handOut(0), { type: 'nextItemRound' }, { type: 'revealItems' })
+    state = apply(state, ...handOut(5).slice(0, 4))
+    expect(isItemMovable(state, '5')).toBe(true)
+    state = apply(state, ...handOut(5).slice(4))
+    expect(isRerollStage(state)).toBe(true)
+    expect(isItemMovable(state, '9')).toBe(false)
+    expect(apply(state, { type: 'unassignItem', itemId: '9' }).assignments['9']).toBe('SUPPORT')
+    expect(canRerollItem(state, '9')).toBe(true)
   })
 })

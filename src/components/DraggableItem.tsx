@@ -6,9 +6,10 @@ import { formatStats } from './formatStats'
 
 interface DraggableItemProps {
   item: Item
-  size: 'small' | 'large'
+  /** 'medium' is the bigger map size used during item rerolls. */
+  size: 'small' | 'medium' | 'large'
   selected?: boolean
-  /** Locked items can't be dragged or clicked. */
+  /** Locked items can't be dragged or clicked (unless they can be rerolled, which only needs a tap). */
   locked?: boolean
   onClick?: () => void
   /** Tapping rerolls it: glows and shows a reroll badge. */
@@ -18,7 +19,7 @@ interface DraggableItemProps {
 export function DraggableItem({ item, size, selected = false, locked = false, onClick, rerollable = false }: DraggableItemProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: itemDragId(item.id),
-    disabled: locked,
+    disabled: locked || rerollable,
   })
   const style = transform ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` } : undefined
   const tooltip = [item.name, ...formatStats(item.stats)].join('\n')
@@ -30,15 +31,15 @@ export function DraggableItem({ item, size, selected = false, locked = false, on
       {...listeners}
       {...attributes}
       style={style}
-      onClick={locked ? undefined : onClick}
-      aria-disabled={locked}
+      onClick={locked && !rerollable ? undefined : onClick}
+      aria-disabled={locked && !rerollable}
       title={tooltip}
       aria-label={rerollable ? `Reroll ${item.name}` : item.name}
       aria-pressed={selected}
       className={`relative shrink-0 touch-none overflow-hidden rounded border-2 transition ${
-        locked ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'
+        rerollable ? 'cursor-pointer' : locked ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'
       } ${
-        size === 'large' ? 'size-12' : 'size-7 sm:size-9'
+        size === 'large' ? 'size-12' : size === 'medium' ? 'size-9 sm:size-11' : 'size-7 sm:size-9'
       } ${selected ? 'scale-110 border-hextech shadow-lg shadow-hextech/50' : rerollable ? 'animate-reroll-glow border-gold-light hover:scale-110' : 'border-gold/60'} ${
         isDragging ? 'z-50 opacity-80' : ''
       }`}
