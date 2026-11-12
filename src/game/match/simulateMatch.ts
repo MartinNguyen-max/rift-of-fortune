@@ -12,6 +12,7 @@ import {
   KILL_SPREAD,
   LANE_TOWERS,
   LANE_WEIGHT,
+  LOCK_IN,
   LUCK_SHARE,
   MATCH_TIMES,
   MAX_STREAK,
@@ -27,6 +28,7 @@ import {
   TOWERS_FOR_INHIBITOR,
 } from './config'
 import { emptyStats, statsAfter } from './stats'
+import { blueWinChance } from './winChance'
 import {
   DRAGON_KINDS,
   opponent,
@@ -121,9 +123,11 @@ class Simulation {
   private readonly power: Record<Side, number>
   private readonly lanes: Record<Side, Record<Role, number>>
   private readonly random: RandomFn
+  private readonly teams: MatchTeams
 
   constructor(teams: MatchTeams, random: RandomFn) {
     this.random = random
+    this.teams = teams
     this.power = { blue: teams.blue.rating.score, red: teams.red.rating.score }
     const laneScores = (side: Side) =>
       Object.fromEntries(
@@ -195,15 +199,28 @@ class Simulation {
     return (this.time < state.baronUntil ? BUFF_EDGE.baron : 0) + (this.time < state.elderUntil ? BUFF_EDGE.elder : 0)
   }
 
+  /**
+   * 1 while the game is open, falling to 0 as one team becomes a clear favourite (the same win
+   * chance the bar shows, from LOCK_IN.open to LOCK_IN.decided). Luck, comeback streaks and
+   * bounties shrink with it, so a decided game stays decided.
+   */
+  private closeness(): number {
+    const chance = blueWinChance(this.teams, this.scoreboard(), LOCK_IN.weights)
+    const favourite = Math.max(chance, 1 - chance)
+    return Math.min(1, Math.max(0, (LOCK_IN.decided - favourite) / (LOCK_IN.decided - LOCK_IN.open)))
+  }
+
   /** Blue's chance to win a contest between two strength values (0–100 scale). */
   private blueChance(blue: number, red: number, withBuffs: boolean): number {
     const { blue: blueState, red: redState } = this.sides
+    const closeness = this.closeness()
     const edge =
       (blue - red) / STRENGTH_SCALE +
       this.goldLead('blue') / GOLD_SCALE +
-      (blueState.streak - redState.streak) * STREAK_EDGE +
+      (blueState.streak - redState.streak) * STREAK_EDGE * closeness +
       (withBuffs ? this.buffEdge('blue') - this.buffEdge('red') : 0)
-    return LUCK_SHARE * 0.5 + (1 - LUCK_SHARE) * logistic(edge)
+    const luck = LUCK_SHARE * closeness
+    return luck * 0.5 + (1 - luck) * logistic(edge)
   }
 
   private contest(strength: (side: Side) => number, withBuffs = false): ContestResult {
@@ -239,7 +256,7 @@ class Simulation {
 
   private kill(killer: ChampionRef, victim: ChampionRef, assists: Role[] = []) {
     const killerSide = this.sides[killer.side]
-    const bounty = Math.min(BOUNTY.max, Math.max(0, this.goldLead(victim.side)) * BOUNTY.share)
+    const bounty = Math.min(BOUNTY.max, Math.max(0, this.goldLead(victim.side)) * BOUNTY.share) * this.closeness()
     killerSide.kills += 1
     killerSide.gold += GOLD.kill + bounty
     this.tally[killer.side][killer.role].kills += 1

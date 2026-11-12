@@ -100,3 +100,27 @@ describe('formatWinChance', () => {
     expect(formatWinChance(0)).toEqual({ blue: 0, red: 100 })
   })
 })
+
+describe('decided games stay decided', () => {
+  it('lets a team shown at 90%+ before the match lose only rarely', () => {
+    const random = seededRandom(21)
+    let favourites = 0
+    let upsets = 0
+    for (let pair = 0; pair < 150; pair++) {
+      const strategy = () => (random() < 0.5 ? 'sensible' : 'random')
+      const matchTeams: MatchTeams = {
+        blue: { name: 'Your team', rating: rateTeam(simulateGame(gameData, strategy(), random)) },
+        red: { name: 'Team Bot', rating: rateTeam(simulateGame(gameData, strategy(), random)) },
+      }
+      const before = blueWinChance(matchTeams, null)
+      if (Math.max(before, 1 - before) < 0.9) continue
+      for (let game = 0; game < 10; game++) {
+        const match = simulateMatch(matchTeams, Math.floor(random() * 1e9))
+        favourites += 1
+        if (match.winner !== (before >= 0.5 ? 'blue' : 'red')) upsets += 1
+      }
+    }
+    expect(favourites).toBeGreaterThan(200)
+    expect(upsets / favourites).toBeLessThan(0.04)
+  })
+})

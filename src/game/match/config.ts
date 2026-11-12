@@ -41,7 +41,7 @@ export const LUCK_SHARE = 0.3
 export const STRENGTH_SCALE = 21
 
 /** A gold lead of this size counts like one STRENGTH_SCALE of strength (snowball). */
-export const GOLD_SCALE = 9000
+export const GOLD_SCALE = 6500
 
 /** Each lucky win in a row adds this much edge to the losing team's next contests (comebacks). */
 export const STREAK_EDGE = 0.35
@@ -87,7 +87,7 @@ export const TOWERS_FOR_INHIBITOR = 3
 export const PUSH_KILL_MARGIN = 2
 
 /** Losing team surrenders at most once per check with this chance when far behind. */
-export const SURRENDER = { lead: 8000, chance: 0.3 } as const
+export const SURRENDER = { lead: 10000, chance: 0.3 } as const
 
 /** Chance that an ace turns into a pentakill for one champion. */
 export const PENTAKILL_CHANCE = 0.08
@@ -104,3 +104,18 @@ export const GANK_BONUS = 12
  * never which team wins.
  */
 export const KILL_SPREAD = { score: 12, fed: 0.6, feeding: 1.2 } as const
+
+/**
+ * Decided games stay decided: luck, comeback streaks and bounties are at full strength while the
+ * favourite's win chance is below `open`, and fade to nothing as it reaches `decided`.
+ * Close games stay swingy; a team shown at 85%+ almost always wins.
+ */
+export const LOCK_IN = {
+  open: 0.65,
+  decided: 0.95,
+  /**
+   * How the simulation judges who is winning, kept separate from the win-chance bar's fitted
+   * weights so refitting the bar never changes how matches play out.
+   */
+  weights: { rating: 0.035, goldShare: 0.58, tower: 0.2, inhibitor: 0.58, baron: 0.15 },
+} as const

@@ -2,23 +2,29 @@ import type { MatchResult, MatchTeams, Scoreboard } from './types'
 
 /**
  * How much each lead is worth in the win-chance formula (logistic weights).
- * Fitted on 6,000 simulated matches, so a team shown at 70% wins about 70% of the time.
+ * Fitted on 6,000 simulated matches (refit whenever the simulation changes), so a team shown at
+ * 70% wins about 70% of the time.
  */
 export const WIN_CHANCE_WEIGHTS = {
   /** Per point of team rating (0–100) above the enemy. */
-  rating: 0.056,
+  rating: 0.086,
   /** Per 10% gold lead, measured against the average team gold. */
-  goldShare: 0.52,
-  tower: 0.19,
-  inhibitor: 0.66,
-  baron: 0.17,
+  goldShare: 0.71,
+  tower: 0.24,
+  inhibitor: 0.79,
+  baron: 0.25,
 } as const
+
+export type WinChanceWeights = Record<keyof typeof WIN_CHANCE_WEIGHTS, number>
 
 const logistic = (value: number) => 1 / (1 + Math.exp(-value))
 
 /** Blue's chance to win, 0–1, from the team ratings and the score so far (null before the first event). */
-export function blueWinChance(teams: MatchTeams, score: Scoreboard | null): number {
-  const weights = WIN_CHANCE_WEIGHTS
+export function blueWinChance(
+  teams: MatchTeams,
+  score: Scoreboard | null,
+  weights: WinChanceWeights = WIN_CHANCE_WEIGHTS,
+): number {
   const rating = (teams.blue.rating.score - teams.red.rating.score) * weights.rating
   if (!score) return logistic(rating)
 
