@@ -4,8 +4,8 @@ import { championIconUrl, championSplashUrl, gameData } from '../data'
 import type { Champion } from '../data/types'
 import { useSpin } from './useSpin'
 
-const SPIN_FRAMES = 20
-const spinDelayMs = (frame: number) => 35 + frame * frame * 0.6
+const SPIN_FRAMES = 15
+const spinDelayMs = (frame: number) => 25 + frame * frame * 0.6
 const iconUrl = (champion: Champion) => championIconUrl(champion.image)
 
 interface ChampionRollProps {

@@ -6,10 +6,10 @@ import { ITEM_ROUNDS } from '../game/items'
 import { useSpin } from './useSpin'
 
 /** Fewer, faster frames than the champion roll, since there are more items to roll. */
-const SPIN_FRAMES = 10
-const spinDelayMs = (frame: number) => 20 + frame * frame * 0.8
+const SPIN_FRAMES = 7
+const spinDelayMs = (frame: number) => 18 + frame * frame * 0.8
 /** Pause on each landed item before the next one starts spinning. */
-const HOLD_MS = 220
+const HOLD_MS = 140
 const REDUCED_HOLD_MS = 60
 const iconUrl = (item: Item) => itemIconUrl(item.image)
 
