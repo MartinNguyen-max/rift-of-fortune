@@ -37,3 +37,14 @@ Ideas collected while building, so they're not lost. Nothing here is approved un
 
 - Meraki's role play-rate data is from an older patch, so a few champions are missing a real second role (e.g. Pantheon, Seraphine and Swain are Support only).
 - New champions missing from Meraki (currently Locke and Zaahen) get guessed positions.
+
+## Sound ideas (saved for later)
+
+League client sounds are available on CommunityDragon and can be added to `SOUND_FILES` in `src/data/types.ts`:
+
+- **Champion ban voice line** ("You dare ban me?") for the worst player in the end-screen roast.
+- **LP gain and loss ticks** while the win-chance bar swings.
+- **Timer tick** (normal and urgent) during the last seconds of the match.
+- **"Rare drop" celebration** for a Challenger result, and the per-tier **rank banner intro** sounds.
+- **Champion select music layers**: four intensity layers that build up during the draft, a ban-phase track and a final 60-second track.
+- Others: ban sounds, "your pick" alert, first pick, role assigned, splash forward/back, "find match" click, banner intro flare, promotion win/loss, honor received, "play again" alert, reward reveal, gold sparkle, summoner spell choose sounds, each champion's own sound effect.

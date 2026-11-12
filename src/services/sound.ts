@@ -8,11 +8,11 @@ export interface SoundSettings {
 }
 
 export const DEFAULT_SOUND_SETTINGS: SoundSettings = { effects: true, music: false }
-export const EFFECTS_VOLUME = 0.35
+export const EFFECTS_VOLUME = 0.15
 /** Music is a quiet background layer, far below the effects. */
-export const MUSIC_VOLUME = 0.06
-/** Champion voice lines, a little louder than the effects so they can be heard. */
-export const VOICE_VOLUME = 0.5
+export const MUSIC_VOLUME = 0.02
+/** Champion voice lines, a little louder than the effects so they can be heard. All sound stays very quiet. */
+export const VOICE_VOLUME = 0.2
 
 const STORAGE_KEY = 'sound'
 
@@ -104,4 +104,12 @@ export function prepareChampionVoice(championId: string): () => void {
       // Blocked or missing: the roll works fine without the voice.
     })
   }
+}
+
+/** Music stops as soon as the tab is hidden (phone locked, app switched) and comes back with it. */
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) musicPlayer?.pause()
+    else syncMusic()
+  })
 }
