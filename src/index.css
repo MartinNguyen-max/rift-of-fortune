@@ -7,6 +7,18 @@
   --color-abyss: #010a13;
   --color-panel: #0a1428;
   --font-display: 'Cinzel', Georgia, serif;
+  /* A soft gold glow that breathes, on anything that can be rerolled. */
+  --animate-reroll-glow: reroll-glow 1.6s ease-in-out infinite;
+
+  @keyframes reroll-glow {
+    0%,
+    100% {
+      box-shadow: 0 0 0 1px rgb(200 170 110 / 0.6), 0 0 6px 1px rgb(200 170 110 / 0.35);
+    }
+    50% {
+      box-shadow: 0 0 0 2px rgb(240 230 210 / 0.95), 0 0 16px 4px rgb(200 170 110 / 0.75);
+    }
+  }
 }
 
 body {

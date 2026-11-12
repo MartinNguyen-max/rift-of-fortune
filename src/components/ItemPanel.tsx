@@ -25,6 +25,7 @@ export function ItemPanel({ items, round, selectedItemId, roundComplete, onSelec
   const { setNodeRef, isOver } = useDroppable({ id: ITEM_POOL_ID })
   const selectedItem = items.find((item) => item.id === selectedItemId)
   const isLastRound = round >= ITEM_ROUNDS
+  const showRerolls = rerolls !== undefined && isLastRound && roundComplete
 
   return (
     <section className="flex flex-col items-center gap-3 text-center lg:gap-5">
@@ -38,7 +39,7 @@ export function ItemPanel({ items, round, selectedItemId, roundComplete, onSelec
           back.
         </p>
       )}
-      <p className="hidden text-sm text-gold-light/70 lg:block">
+      <p className={showRerolls ? 'hidden' : 'hidden text-sm text-gold-light/70 lg:block'}>
         {isLastRound
           ? `Last ${ITEMS_PER_ROUND} items. Every champion ends with exactly ${ITEMS_PER_CHAMPION}.`
           : `Hand out these ${ITEMS_PER_ROUND} items, max ${ITEMS_PER_CHAMPION} per champion. They lock when you roll the next ${ITEMS_PER_ROUND}.`}{' '}
@@ -78,7 +79,7 @@ export function ItemPanel({ items, round, selectedItemId, roundComplete, onSelec
         </p>
       )}
 
-      {rerolls && isLastRound && roundComplete && <RerollBox {...rerolls} />}
+      {showRerolls && <RerollBox {...rerolls} />}
 
       <Button onClick={onContinue} disabled={!roundComplete}>
         {isLastRound ? 'Rate my team' : `Roll next ${ITEMS_PER_ROUND} items`}

@@ -204,6 +204,7 @@ export function Game({
         isItemMovable={(itemId) => isItemMovable(state, itemId) || canPickItemReroll}
         spinningItemId={spinningItemId}
         onItemSpinDone={stopItemSpin}
+        itemsRerollable={canPickItemReroll}
         score={rating?.champions.find((championRating) => championRating.role === role)?.score}
       />
     )
