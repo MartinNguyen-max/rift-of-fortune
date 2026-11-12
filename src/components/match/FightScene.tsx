@@ -34,7 +34,7 @@ export function FightScene({ event, line, teams, progress }: FightSceneProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="absolute inset-0 flex flex-col items-center justify-center bg-abyss/85 p-2 backdrop-blur-[2px] sm:p-3"
+      className="absolute inset-0 z-10 flex flex-col items-center justify-center overflow-hidden rounded-xl border border-gold/40 bg-abyss/90 p-2 shadow-2xl shadow-black backdrop-blur-[2px] sm:p-3"
     >
       {event.kills.length > 0 ? (
         <div className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-2">
@@ -125,7 +125,12 @@ function TeamColumn({ side, event, teams, dead, scored }: TeamColumnProps) {
                 </motion.span>
               )}
             </motion.span>
-            {kills > 0 && <span className={`text-xs font-bold ${SIDE_TEXT[side]}`}>{'⚔'.repeat(Math.min(kills, 5))}</span>}
+            <span className={`flex min-w-0 flex-col leading-tight ${side === 'red' ? 'items-end' : 'items-start'}`}>
+              <span className={`max-w-[5.5rem] truncate text-[11px] font-semibold sm:max-w-[7rem] sm:text-xs ${isDead ? 'text-gold-light/40 line-through' : 'text-gold-light'}`}>
+                {champion.champion.name}
+              </span>
+              {kills > 0 && <span className={`text-[11px] font-bold ${SIDE_TEXT[side]}`}>{'⚔'.repeat(Math.min(kills, 5))}</span>}
+            </span>
           </li>
         )
       })}

@@ -1,5 +1,4 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import type { ReactNode } from 'react'
 import { summonersRiftMapUrl } from '../../data'
 import type { MatchEvent } from '../../game/match/types'
 import { EventIcon } from './EventIcon'
@@ -8,8 +7,8 @@ import { SIDE_BG, SPOT_POSITIONS } from './matchStyles'
 /** How many recent events stay on the map, fading out. */
 const TRAIL = 3
 
-/** The minimap with markers where the latest events happened. `overlay` covers it, e.g. with a fight scene. */
-export function MatchMap({ events, overlay }: { events: readonly MatchEvent[]; overlay?: ReactNode }) {
+/** The minimap with markers where the latest events happened. */
+export function MatchMap({ events }: { events: readonly MatchEvent[] }) {
   const recent = events.slice(-TRAIL)
 
   return (
@@ -40,7 +39,6 @@ export function MatchMap({ events, overlay }: { events: readonly MatchEvent[]; o
           )
         })}
       </AnimatePresence>
-      <AnimatePresence>{overlay}</AnimatePresence>
     </div>
   )
 }

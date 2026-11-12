@@ -15,8 +15,8 @@ export const ROLE_MAP_POSITIONS: Record<Role, { x: number; y: number }> = {
   TOP: { x: 14, y: 16 },
   JUNGLE: { x: 25, y: 62 },
   MIDDLE: { x: 50, y: 50 },
-  BOTTOM: { x: 73, y: 87 },
-  SUPPORT: { x: 87, y: 72 },
+  BOTTOM: { x: 68, y: 87 },
+  SUPPORT: { x: 88, y: 64 },
 }
 
 export function isRole(value: unknown): value is Role {

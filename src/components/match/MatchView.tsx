@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useMemo, useState } from 'react'
 import { BOT_PROFILES, type BotLevel } from '../../game/match/bots'
 import { CASTER_NAMES, commentate, roastWorstPlayer } from '../../game/match/commentary'
@@ -75,8 +75,12 @@ export function MatchView({ teams, level, seed, onRematch, onNewTeam }: MatchVie
           <MatchScoreboard teams={teams} score={score} clock={clock} />
           <WinChanceBar history={history} />
         </motion.div>
-        <div className="mx-auto w-full max-w-[17rem] sm:max-w-sm lg:max-w-none">
-          <MatchMap events={shownEvents} overlay={fight} />
+        {/* The fight scene covers the full width, wider than the small phone map, so it is easier to follow. */}
+        <div className="relative w-full">
+          <div className="mx-auto w-full max-w-[17rem] sm:max-w-sm lg:max-w-none">
+            <MatchMap events={shownEvents} />
+          </div>
+          <AnimatePresence>{fight}</AnimatePresence>
         </div>
         {!ended && (
           <button
