@@ -65,11 +65,20 @@ export interface SideScore {
   towers: number
   dragons: number
   barons: number
+  inhibitors: number
   /** Total team gold, rounded to the nearest 100. */
   gold: number
 }
 
 export type Scoreboard = Record<Side, SideScore>
+
+/** One champion killing another, in the order they happened. */
+export interface Kill {
+  killer: ChampionRef
+  victim: ChampionRef
+  /** Roles on the killer's side that helped. */
+  assists: Role[]
+}
 
 export interface MatchEvent {
   /** Game time in seconds. */
@@ -83,6 +92,8 @@ export interface MatchEvent {
   target: ChampionRef | null
   /** Kills per side in a teamfight. */
   fightKills: Record<Side, number> | null
+  /** Every kill in this event, for the live K/D/A and the fight scene. */
+  kills: Kill[]
   dragon: DragonKind | null
   tags: EventTag[]
   /** Big moments get a bigger card in the feed. */

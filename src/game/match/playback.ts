@@ -1,38 +1,76 @@
 import { GOLD } from './config'
 import type { MatchEvent, Scoreboard } from './types'
 
-/** At 1× speed, 30 game minutes take 90 seconds to watch. */
-export const GAME_SECONDS_PER_SECOND = 20
+/** Every match takes this many real seconds to watch, however long it ran in game time. */
+export const MATCH_SECONDS = 20
 
-export const SPEEDS = [1, 2] as const
-export type Speed = (typeof SPEEDS)[number]
+/** Real seconds before the first event, so the screen can settle. */
+export const LEAD_IN = 1
 
-/** Starts the clock a couple of real seconds before the first event, not at 0:00. */
-export const LEAD_IN = 2 * GAME_SECONDS_PER_SECOND
+/** How much watch time each event gets, relative to each other. Big moments get time for the fight scene. */
+export const BEATS = { small: 1, big: 3.5 } as const
 
-export function startTime(events: readonly MatchEvent[]): number {
-  return Math.max(0, (events[0]?.time ?? 0) - LEAD_IN)
+/** Game time shown when the clock starts, this long before the first event. */
+const CLOCK_LEAD_IN = 60
+
+export interface Timeline {
+  /** Real seconds after the start when each event appears. */
+  starts: number[]
+  /** Real seconds until the match is over. */
+  total: number
 }
 
-/** How many events have happened by `clock`. Events are in time order. */
-export function eventsShown(events: readonly MatchEvent[], clock: number): number {
-  const index = events.findIndex(({ time }) => time > clock)
-  return index === -1 ? events.length : index
+/** Spreads the events over MATCH_SECONDS, giving big moments more time than small ones. */
+export function buildTimeline(events: readonly MatchEvent[]): Timeline {
+  const beats = events.map(({ big }) => (big ? BEATS.big : BEATS.small))
+  const totalBeats = beats.reduce((sum, beat) => sum + beat, 0)
+  const unit = totalBeats > 0 ? (MATCH_SECONDS - LEAD_IN) / totalBeats : 0
+  let at = LEAD_IN
+  const starts = beats.map((beat) => {
+    const start = at
+    at += beat * unit
+    return start
+  })
+  return { starts, total: MATCH_SECONDS }
 }
 
-/** Real seconds left to watch at `speed`. */
-export function secondsLeft(duration: number, clock: number, speed: Speed): number {
-  return Math.max(0, duration - clock) / (GAME_SECONDS_PER_SECOND * speed)
+/** How many events have appeared after `elapsed` real seconds. */
+export function eventsShown(timeline: Timeline, elapsed: number): number {
+  const index = timeline.starts.findIndex((start) => start > elapsed)
+  return index === -1 ? timeline.starts.length : index
 }
 
-/** The scoreboard at `clock`: the last event's score, with passive gold added since then. */
-export function liveScore(events: readonly MatchEvent[], clock: number): Scoreboard {
-  const last = events[eventsShown(events, clock) - 1]
+/** The big event whose fight scene is playing at `elapsed`, or null. */
+export function activeBigEvent(events: readonly MatchEvent[], timeline: Timeline, elapsed: number): number | null {
+  const index = eventsShown(timeline, elapsed) - 1
+  const event = events[index]
+  if (!event?.big) return null
+  const end = timeline.starts[index + 1] ?? timeline.total
+  return elapsed < end ? index : null
+}
+
+/** The game clock at `elapsed`, moving smoothly from one event's time to the next. */
+export function gameClock(events: readonly MatchEvent[], timeline: Timeline, elapsed: number): number {
+  const first = events[0]
+  if (!first) return 0
+  const points = [
+    { at: 0, time: Math.max(0, first.time - CLOCK_LEAD_IN) },
+    ...events.map(({ time }, index) => ({ at: timeline.starts[index] ?? 0, time })),
+  ]
+  const next = points.findIndex(({ at }) => at > elapsed)
+  if (next === -1) return points[points.length - 1]?.time ?? 0
+  const from = points[next - 1] ?? points[0]
+  const to = points[next] ?? from
+  if (!from || !to || to.at === from.at) return to?.time ?? 0
+  return from.time + ((elapsed - from.at) / (to.at - from.at)) * (to.time - from.time)
+}
+
+/** The scoreboard at `clock`: the last shown event's score, with passive gold added since then. */
+export function liveScore(events: readonly MatchEvent[], shown: number, clock: number): Scoreboard {
+  const last = events[shown - 1]
   const since = last ? clock - last.time : clock
-  const base = last?.score ?? {
-    blue: { kills: 0, towers: 0, dragons: 0, barons: 0, gold: GOLD.start },
-    red: { kills: 0, towers: 0, dragons: 0, barons: 0, gold: GOLD.start },
-  }
+  const start = { kills: 0, towers: 0, dragons: 0, barons: 0, inhibitors: 0, gold: GOLD.start }
+  const base = last?.score ?? { blue: start, red: start }
   const passive = Math.round((GOLD.perMinute * Math.max(0, since)) / 60 / 100) * 100
   return {
     blue: { ...base.blue, gold: base.blue.gold + passive },

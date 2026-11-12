@@ -25,13 +25,14 @@ import {
   SURRENDER,
   TOWERS_FOR_INHIBITOR,
 } from './config'
+import { statsAfter } from './stats'
 import {
   DRAGON_KINDS,
   opponent,
   type ChampionRef,
-  type ChampionStats,
   type DragonKind,
   type EventTag,
+  type Kill,
   type MapSpot,
   type MatchEvent,
   type MatchResult,
@@ -79,11 +80,6 @@ const newSideState = (): SideState => ({
 const logistic = (value: number) => 1 / (1 + Math.exp(-value))
 const average = (values: number[]) => values.reduce((sum, value) => sum + value, 0) / values.length
 
-function emptyStats(): ChampionStats {
-  const forSide = () =>
-    Object.fromEntries(ROLES.map((role) => [role, { kills: 0, deaths: 0, assists: 0 }])) as ChampionStats[Side]
-  return { blue: forSide(), red: forSide() }
-}
 
 function weightedPick<T>(options: readonly T[], weight: (option: T) => number, random: RandomFn): T {
   const weights = options.map((option) => Math.max(0.0001, weight(option)))
@@ -109,7 +105,8 @@ class Simulation {
   private time = 0
   private winner: Side | null = null
   private readonly events: MatchEvent[] = []
-  private readonly stats = emptyStats()
+  /** Kills since the last event, attached to the next one. */
+  private pendingKills: Kill[] = []
   private readonly sides: Record<Side, SideState> = { blue: newSideState(), red: newSideState() }
   private readonly spawns: Record<Objective, number> = {
     dragon: MATCH_TIMES.dragonSpawn,
@@ -143,7 +140,8 @@ class Simulation {
       this.time += this.between(this.time < MATCH_TIMES.laningEnd ? MATCH_TIMES.laningGap : MATCH_TIMES.lateGap)
     }
     const last = this.events[this.events.length - 1]
-    return { seed, winner: this.winner, duration: last?.time ?? this.time, events: this.events, stats: this.stats }
+    const stats = statsAfter(this.events)
+    return { seed, winner: this.winner, duration: last?.time ?? this.time, events: this.events, stats }
   }
 
   // ── Turn order ──────────────────────────────────────────────
@@ -241,9 +239,7 @@ class Simulation {
     const bounty = Math.min(BOUNTY.max, Math.max(0, this.goldLead(victim.side)) * BOUNTY.share)
     killerSide.kills += 1
     killerSide.gold += GOLD.kill + bounty
-    this.stats[killer.side][killer.role].kills += 1
-    this.stats[victim.side][victim.role].deaths += 1
-    for (const role of assists) this.stats[killer.side][role].assists += 1
+    this.pendingKills.push({ killer, victim, assists })
   }
 
   /** Carries with good scores get more kills. */
@@ -521,8 +517,8 @@ class Simulation {
   private scoreboard(): Scoreboard {
     const passive = GOLD.start + (GOLD.perMinute * this.time) / 60
     const sideScore = (side: Side) => {
-      const { kills, towers, dragons, barons, gold } = this.sides[side]
-      return { kills, towers, dragons, barons, gold: Math.round((passive + gold) / 100) * 100 }
+      const { kills, towers, dragons, barons, inhibitors, gold } = this.sides[side]
+      return { kills, towers, dragons, barons, inhibitors, gold: Math.round((passive + gold) / 100) * 100 }
     }
     return { blue: sideScore('blue'), red: sideScore('red') }
   }
@@ -536,9 +532,11 @@ class Simulation {
       fightKills: null,
       dragon: null,
       ...event,
+      kills: this.pendingKills,
       time: this.time,
       score: this.scoreboard(),
     })
+    this.pendingKills = []
   }
 }
 

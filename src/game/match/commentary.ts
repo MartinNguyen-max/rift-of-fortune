@@ -19,6 +19,9 @@ export interface CommentaryLine {
   callback: boolean
 }
 
+/** One entry per match event: a caster line, or null when the event only shows in the kill feed. */
+export type MatchLines = readonly (CommentaryLine | null)[]
+
 export interface LineContext {
   /** The team that won or benefited from the event. */
   team: string
@@ -37,20 +40,11 @@ export interface LineContext {
 
 type Lines = (context: LineContext) => string[]
 
+/** The big moments that get a caster line. Everything else only shows in the kill feed. */
 export type LineKey =
   | 'firstBlood'
-  | 'soloKill'
-  | 'soloKillUpset'
-  | 'gank'
-  | 'counterGank'
-  | 'gankEscape'
-  | 'grubs'
-  | 'herald'
-  | 'dragon'
   | 'dragonSteal'
   | 'soul'
-  | 'tower'
-  | 'firstTower'
   | 'teamfight'
   | 'teamfightUpset'
   | 'ace'
@@ -59,261 +53,107 @@ export type LineKey =
   | 'baronSteal'
   | 'elder'
   | 'elderSteal'
-  | 'inhibitor'
   | 'nexus'
   | 'surrender'
 
-/** Every line, per event and caster. Exported so tests can check that each one fills in. */
+/** Every line, per big moment and caster. One short sentence each, so they can be read at full speed. */
 export const MATCH_LINES: Record<LineKey, Record<Caster, Lines>> = {
   firstBlood: {
     hype: ({ actor, target, team }) => [
-      `FIRST BLOOD! ${actor} takes down ${target} and the crowd goes wild!`,
-      `AND THERE IT IS! First blood to ${actor}! ${target} is already typing in chat!`,
-      `FIRST BLOOD for ${team}! The Rift has tasted blood and it wants more!`,
+      `FIRST BLOOD! ${actor} takes down ${target}!`,
+      `First blood to ${actor}! The Rift wants more!`,
+      `FIRST BLOOD for ${team}!`,
     ],
     analyst: ({ actor, target }) => [
-      `First blood to ${actor}. ${target} will be explaining this in the post-game lobby.`,
-      `${actor} gets first blood on ${target}. Nobody is surprised, least of all ${actor}.`,
-      `First blood. ${target} walked forward without vision, which is a choice.`,
-    ],
-  },
-  soloKill: {
-    hype: ({ actor, target, lane }) => [
-      `${actor} SOLO KILLS ${target} in ${lane}! What a play!`,
-      `OUTPLAYED! ${actor} takes ${target} one on one!`,
-      `${actor} just deleted ${target} in ${lane}! Somebody check on them!`,
-      `${actor} wins the trade, the duel and the lane! ${target} is down!`,
-    ],
-    analyst: ({ actor, target, lane }) => [
-      `${actor} kills ${target} in ${lane}. That matchup was not close.`,
-      `${target} dies to ${actor}. The jungler will be blamed anyway.`,
-      `Solo kill for ${actor}. ${target} pressed every button, just not in the right order.`,
-      `${target} goes down to ${actor}. Respect the cooldowns, people.`,
-      `${actor} takes ${target} one on one. ${target} has opened the replay and closed it again.`,
-    ],
-  },
-  soloKillUpset: {
-    hype: ({ actor, target }) => [
-      `WHAT?! ${actor} beats ${target}! That should NOT have happened!`,
-      `THE UNDERDOG BITES BACK! ${actor} takes down ${target}!`,
-    ],
-    analyst: ({ actor, target }) => [
-      `${actor} beat ${target}. On paper that was impossible. Paper has been wrong before.`,
-      `That's an upset. ${target} is watching the replay as we speak.`,
-    ],
-  },
-  gank: {
-    hype: ({ actor, target, team }) => [
-      `GANK! ${team} collapses on ${target} and it's a kill for ${actor}!`,
-      `The jungler shows up and ${target} is DONE! ${actor} gets the kill!`,
-      `Out of the fog! ${target} never saw it coming! Kill for ${actor}!`,
-    ],
-    analyst: ({ actor, target, lane }) => [
-      `The jungler shows up in ${lane}. ${target} did not ward. Nobody is surprised.`,
-      `Textbook gank. ${target} is pinging the map now, a little late.`,
-      `${actor} gets the kill on ${target}. Two against one tends to work.`,
-      `${target} was pushing with no wards and no plan. ${actor} found both problems.`,
-    ],
-  },
-  counterGank: {
-    hype: ({ actor, target }) => [
-      `COUNTER! ${actor} turns the gank around and kills ${target}!`,
-      `${target} came for a kill and LEFT IN A BOX! ${actor} with the outplay!`,
-    ],
-    analyst: ({ actor, target, lane }) => [
-      `${target} tried to gank ${lane}. ${actor} disagreed.`,
-      `A gank that ends with the jungler dead. Bold strategy from ${target}.`,
-    ],
-  },
-  gankEscape: {
-    hype: ({ actor, target }) => [
-      `FLASH! ${actor} dodges the gank by a pixel!`,
-      `${actor} escapes with a sliver of health! ${target} leaves empty-handed!`,
-    ],
-    analyst: ({ actor, target, lane }) => [
-      `${target} ganks ${lane}, burns everything, gets nothing. Efficient.`,
-      `${actor} walks away from ${target}'s gank. That's a wasted trip through the river.`,
-    ],
-  },
-  grubs: {
-    hype: ({ team }) => [
-      `${team} takes the Void Grubs! Those towers are getting NERVOUS!`,
-      `Grubs to ${team}! Little bugs, BIG problems!`,
-    ],
-    analyst: ({ team, enemy }) => [
-      `Void Grubs to ${team}. Small bugs, big tower damage.`,
-      `${team} secures the grubs. Someone on ${enemy} forgot they existed.`,
-    ],
-  },
-  herald: {
-    hype: ({ team }) => [`${team} grabs the Rift Herald and they are CHARGING a tower!`],
-    analyst: ({ team }) => [
-      `Rift Herald to ${team}. A crab with a battering ram. The tower plates are crying.`,
-      `${team} takes Herald. The nearest tower has about ten seconds left to live.`,
-    ],
-  },
-  dragon: {
-    hype: ({ team, dragon }) => [
-      `${team} secures the ${dragon} Drake!`,
-      `${dragon} Drake down! ${team} is stacking up!`,
-      `The ${dragon} Drake falls! Another stack for ${team}!`,
-    ],
-    analyst: ({ team, enemy, dragon }) => [
-      `${dragon} Drake to ${team}. ${enemy} decided it wasn't worth it. It was.`,
-      `${team} takes the ${dragon} Drake while ${enemy} was looking elsewhere.`,
-      `${team} takes the ${dragon} Drake. ${enemy} has agreed to let them, by not showing up.`,
+      `First blood to ${actor}. ${target} walked in without vision.`,
+      `${target} gives up first blood. A bold start.`,
+      `First blood. ${target} will explain it in the lobby.`,
     ],
   },
   dragonSteal: {
-    hype: ({ actor, enemy, dragon }) => [
-      `STOLEN! ${actor} SMITES the ${dragon} Drake away from ${enemy}!`,
-      `NO WAY! ${actor} steals the dragon! ${enemy} did all the work!`,
-    ],
-    analyst: ({ actor, enemy }) => [
-      `${enemy} did all the work, ${actor} pressed Smite. That's how dragons work now.`,
-      `${actor} steals the dragon. ${enemy}'s jungler is reconsidering their career.`,
-    ],
+    hype: ({ actor, dragon }) => [`STOLEN! ${actor} smites the ${dragon} Drake away!`, `NO WAY! ${actor} steals the dragon!`],
+    analyst: ({ actor, enemy }) => [`${enemy} did the work. ${actor} pressed Smite.`, `${actor} steals it. ${enemy} is rethinking life.`],
   },
   soul: {
-    hype: ({ team, dragon }) => [
-      `DRAGON SOUL! ${team} has the ${dragon} Soul and the Elder Dragon is coming!`,
-      `That's FOUR dragons! ${team} claims the ${dragon} Soul!`,
-    ],
-    analyst: ({ team, enemy }) => [
-      `Four dragons and a soul for ${team}. ${enemy} may want to look at the dragon pit sometime.`,
-    ],
-  },
-  tower: {
-    hype: ({ team, lane }) => [
-      `Tower down in ${lane}! ${team} is pushing in!`,
-      `${team} cracks open the ${lane} tower!`,
-      `CRUMBLE! Another ${lane} tower falls to ${team}!`,
-    ],
-    analyst: ({ team, enemy, lane }) => [
-      `${team} takes a tower in ${lane}. The map gets a little bigger for them.`,
-      `Another tower for ${team}. ${enemy} is running out of turrets.`,
-      `The ${lane} tower is down. ${enemy} was not there, which is a recurring theme.`,
-      `${team} takes the ${lane} tower. Nobody on ${enemy} wanted to defend it, apparently.`,
-    ],
-  },
-  firstTower: {
-    hype: ({ team, lane }) => [`FIRST TOWER! ${team} takes the first turret in ${lane}!`],
-    analyst: ({ team, enemy }) => [
-      `First tower of the game to ${team}. Worth some gold and a lot of bragging.`,
-      `${team} takes first tower. ${enemy} now has one less thing to hide behind.`,
-    ],
+    hype: ({ team, dragon }) => [`DRAGON SOUL! ${team} claims the ${dragon} Soul!`, `FOUR DRAGONS! The ${dragon} Soul goes to ${team}!`],
+    analyst: ({ team, enemy, dragon }) => [`${dragon} Soul to ${team}. ${enemy} forgot dragons exist.`],
   },
   teamfight: {
     hype: ({ team, actor, kills }) => [
-      `TEAMFIGHT! ${team} wins it ${kills}! ${actor} leading the charge!`,
-      `What a fight! ${team} comes out on top ${kills}!`,
-      `Spells everywhere! When the dust settles, ${team} wins it ${kills}!`,
-      `${actor} dives in and ${team} cleans up! ${kills}!`,
+      `TEAMFIGHT! ${team} wins it ${kills}!`,
+      `What a fight! ${team} takes it ${kills}!`,
+      `${actor} dives in! ${team} wins ${kills}!`,
     ],
     analyst: ({ team, enemy, actor, kills }) => [
-      `${team} wins the fight ${kills}. ${actor} did the heavy lifting.`,
-      `${kills} for ${team}. ${enemy} engaged on a plan that was mostly hope.`,
-      `${team} takes the fight ${kills}. ${enemy} forgot that fights need a frontline and a backline.`,
-      `A ${kills} fight for ${team}. ${actor} was everywhere. ${enemy} was mostly in the fountain.`,
-      `${team} wins it ${kills}. ${enemy} pinged "on my way" and meant it, sadly.`,
+      `${team} wins ${kills}. ${actor} did the heavy lifting.`,
+      `${kills} for ${team}. ${enemy}'s plan was mostly hope.`,
+      `${team} wins ${kills}. ${enemy} spent it in the fountain.`,
     ],
   },
   teamfightUpset: {
-    hype: ({ team, kills }) => [
-      `THE UNDERDOGS WIN THE FIGHT! ${team} takes it ${kills}!`,
-      `HOW DID THEY WIN THAT?! ${team} goes ${kills}!`,
-    ],
-    analyst: ({ team, kills }) => [
-      `${team} wins a fight they had no business winning. ${kills}. I'm rewriting my notes.`,
-    ],
+    hype: ({ team, kills }) => [`UNDERDOGS! ${team} wins it ${kills}!`, `HOW DID THEY WIN THAT?! ${kills} for ${team}!`],
+    analyst: ({ team, kills }) => [`${team} wins a fight they shouldn't have. ${kills}.`],
   },
   ace: {
-    hype: ({ team, enemy, actor }) => [
-      `ACE! ACE! ${team} wipes out all five! ${actor} is UNSTOPPABLE!`,
-      `IT'S AN ACE! ${enemy} is all grey screens!`,
-    ],
-    analyst: ({ enemy }) => [
-      `That's an ace, and judging by the items, it was deserved.`,
-      `All five of ${enemy} are dead. Good time to read a book during the death timer.`,
-    ],
+    hype: ({ team, enemy }) => [`ACE! ${team} wipes out all five!`, `IT'S AN ACE! ${enemy} is all grey screens!`],
+    analyst: ({ enemy }) => [`All five of ${enemy} are dead. Time to read a book.`, `An ace. Judging by the items, deserved.`],
   },
   pentakill: {
-    hype: ({ actor }) => [
-      `PENTAKILL! PENTAKILL! ${actor} KILLS ALL FIVE! I CAN'T BELIEVE IT!`,
-      `${actor} GETS THE PENTA! SOMEBODY CLIP THAT!`,
-    ],
-    analyst: ({ actor }) => [`${actor} kills all five. I've run out of dry remarks. That was good.`],
+    hype: ({ actor }) => [`PENTAKILL! ${actor} KILLS ALL FIVE!`, `${actor} GETS THE PENTA! CLIP IT!`],
+    analyst: ({ actor }) => [`${actor} kills all five. I have no dry remark for that.`],
   },
   baron: {
-    hype: ({ team }) => [`BARON NASHOR goes down! ${team} has the purple buff!`, `${team} takes BARON! Here comes the push!`],
-    analyst: ({ team, enemy }) => [
-      `Baron to ${team}. ${enemy} is now defending their base, emotionally and literally.`,
-      `${team} takes Baron. ${enemy} was busy doing something less important. Everything is less important.`,
-    ],
+    hype: ({ team }) => [`BARON goes down! ${team} has the purple buff!`, `${team} takes BARON! Here comes the push!`],
+    analyst: ({ team, enemy }) => [`Baron to ${team}. ${enemy} is defending, emotionally too.`],
   },
   baronSteal: {
-    hype: ({ actor, enemy }) => [
-      `THE SMITE! ${actor} STEALS BARON! I NEED TO SIT DOWN!`,
-      `BARON STOLEN! ${actor} out of nowhere! ${enemy} is in shock!`,
-    ],
-    analyst: ({ actor, enemy }) => [`${enemy} spent a minute on Baron. ${actor} spent one Smite. Efficient.`],
+    hype: ({ actor, enemy }) => [`${actor} STEALS BARON! I NEED TO SIT DOWN!`, `BARON STOLEN! ${enemy} is in shock!`],
+    analyst: ({ actor, enemy }) => [`${enemy} spent a minute on Baron. ${actor} spent one Smite.`],
   },
   elder: {
-    hype: ({ team }) => [`ELDER DRAGON to ${team}! Anyone they touch is getting EXECUTED!`],
-    analyst: ({ team }) => [`Elder Dragon to ${team}. Health bars are now more of a suggestion.`],
+    hype: ({ team }) => [`ELDER DRAGON to ${team}! Executions incoming!`],
+    analyst: ({ team }) => [`Elder to ${team}. Health bars are now a suggestion.`],
   },
   elderSteal: {
-    hype: ({ actor }) => [`${actor} STEALS THE ELDER DRAGON! THIS GAME IS NOT OVER!`],
-    analyst: ({ actor }) => [`${actor} steals Elder. I had already written the recap. Deleting it.`],
-  },
-  inhibitor: {
-    hype: ({ team }) => [`INHIBITOR DOWN! Super minions incoming for ${team}!`],
-    analyst: ({ team, enemy }) => [
-      `${team} takes an inhibitor. ${enemy}'s base is starting to look like an open house.`,
-      `Inhibitor down. ${enemy} now has super minions to worry about, on top of everything else.`,
-    ],
+    hype: ({ actor }) => [`${actor} STEALS ELDER! THIS ISN'T OVER!`],
+    analyst: ({ actor }) => [`${actor} steals Elder. Deleting my recap.`],
   },
   nexus: {
-    hype: ({ team }) => [`THE NEXUS FALLS! ${team} WINS IT!`, `GG! ${team} destroys the Nexus!`],
-    analyst: ({ team, enemy }) => [
-      `And that's the Nexus. ${team} wins. ${enemy} will be in the replay for a while.`,
-      `GG. ${team} takes it. ${enemy} can start blaming each other now.`,
-    ],
+    hype: ({ team }) => [`THE NEXUS FALLS! ${team} WINS!`, `GG! ${team} destroys the Nexus!`],
+    analyst: ({ team, enemy }) => [`That's the Nexus. GG, ${team}.`, `GG. ${enemy} can start blaming each other.`],
   },
   surrender: {
     hype: ({ team, enemy, time }) => [`${enemy} SURRENDERS! ${team} wins at ${time}!`],
-    analyst: ({ enemy, time }) => [
-      `And ${enemy} surrenders at ${time}. A wise decision, honestly.`,
-      `${enemy} votes to surrender. Their first good team decision all game.`,
-    ],
+    analyst: ({ enemy, time }) => [`${enemy} surrenders at ${time}. Wise.`, `${enemy} surrenders. Best team decision all game.`],
   },
 }
 
 /** Analyst lines that remember the draft. */
 export const CALLBACK_LINES = {
   offRoleWins: (name: string, role: string) => [
-    `${name} ${role}. I said it was a terrible pick. I stand by that. Even now.`,
-    `${name} playing ${role} and winning. Tier lists in shambles.`,
+    `${name} ${role}. Still a terrible pick. Somehow it works.`,
+    `${name} ${role}, winning. Tier lists in shambles.`,
   ],
   offRoleDies: (name: string, role: string) => [
-    `${name} ${role}. Some things are just inevitable.`,
-    `And that is why ${name} does not usually play ${role}.`,
+    `${name} ${role}. Some things are inevitable.`,
+    `That's why ${name} doesn't play ${role}.`,
   ],
   badItemWins: (name: string, item: string) => [
-    `${name} did that with ${item}. Imagine with a real build.`,
-    `${item} on ${name}, and it still worked. Don't tell the theorycrafters.`,
+    `${name} did that with ${item}. Imagine a real build.`,
+    `${item} on ${name}, and it worked. Tell no one.`,
   ],
   badItemDies: (name: string, item: string) => [
-    `That ${item} on ${name} did exactly what we expected: nothing.`,
-    `${name} with ${item}. The build was the first mistake. This was the second.`,
+    `That ${item} on ${name} did exactly nothing.`,
+    `${name} with ${item}. The build was mistake one.`,
   ],
 } as const
 
-/** A share of eligible kills that get a draft callback instead of the normal line. */
+/** A share of eligible kills that get a draft roast. */
 const CALLBACK_CHANCE = 0.45
-/** Big moments go to the hype caster this often, small ones to the analyst. */
-const HYPE_ON_BIG = 0.75
-const ANALYST_ON_SMALL = 0.6
+/** At most this many roasts per match, so the feed stays short. */
+export const ROASTS_PER_MATCH = 2
+/** Big moments go to the hype caster this often. */
+const HYPE_ON_BIG = 0.7
 
 const LANE_NAMES: Partial<Record<MapSpot, string>> = { top: 'top lane', mid: 'mid lane', bot: 'bot lane' }
 
@@ -326,29 +166,29 @@ export function formatGameTime(seconds: number): string {
   return `${minutes}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`
 }
 
-export function lineKey({ kind, tags }: MatchEvent): LineKey {
+/** The caster line for a big moment, or null for small events. */
+export function lineKey({ kind, tags, big }: MatchEvent): LineKey | null {
+  if (!big) return null
   const has = (tag: MatchEvent['tags'][number]) => tags.includes(tag)
   switch (kind) {
     case 'soloKill':
-      return has('firstBlood') ? 'firstBlood' : has('upset') ? 'soloKillUpset' : 'soloKill'
     case 'gank':
-      if (has('escape')) return 'gankEscape'
-      if (has('counterGank')) return 'counterGank'
-      return has('firstBlood') ? 'firstBlood' : 'gank'
+      return 'firstBlood'
     case 'teamfight':
       if (has('pentakill')) return 'pentakill'
       if (has('ace')) return 'ace'
       return has('upset') ? 'teamfightUpset' : 'teamfight'
     case 'dragon':
-      return has('steal') ? 'dragonSteal' : has('soul') ? 'soul' : 'dragon'
+      return has('steal') ? 'dragonSteal' : 'soul'
     case 'baron':
       return has('steal') ? 'baronSteal' : 'baron'
     case 'elder':
       return has('steal') ? 'elderSteal' : 'elder'
-    case 'tower':
-      return has('firstTower') ? 'firstTower' : 'tower'
-    default:
+    case 'nexus':
+    case 'surrender':
       return kind
+    default:
+      return null
   }
 }
 
@@ -373,10 +213,11 @@ function callbackLines(name: string, issue: Issue, won: boolean): readonly strin
 const KILL_KINDS: readonly MatchEvent['kind'][] = ['soloKill', 'gank', 'teamfight']
 
 /**
- * One line per event, picked with its own seeded random so changing a line never changes
- * how a match plays out. Lines aren't repeated while there are unused variants.
+ * A caster line for each big moment and a few draft roasts; null for every other event.
+ * Uses its own seeded random so changing a line never changes how a match plays out.
+ * Lines aren't repeated while there are unused variants.
  */
-export function commentate(match: MatchResult, teams: MatchTeams): CommentaryLine[] {
+export function commentate(match: MatchResult, teams: MatchTeams): (CommentaryLine | null)[] {
   const random = seededRandom(match.seed ^ 0x5bd1e995)
   const used = new Set<string>()
   const roasted = new Set<string>()
@@ -392,9 +233,9 @@ export function commentate(match: MatchResult, teams: MatchTeams): CommentaryLin
     return line
   }
 
-  const callback = (event: MatchEvent): CommentaryLine | null => {
-    // Big moments (first blood, aces) keep their own line.
-    if (!KILL_KINDS.includes(event.kind) || event.big || event.tags.includes('escape') || random() >= CALLBACK_CHANCE) return null
+  const roast = (event: MatchEvent): CommentaryLine | null => {
+    if (roasted.size >= ROASTS_PER_MATCH || !KILL_KINDS.includes(event.kind) || event.tags.includes('escape')) return null
+    if (random() >= CALLBACK_CHANCE) return null
     const candidates = [
       { rating: champion(event.actor), won: true },
       { rating: champion(event.target), won: false },
@@ -410,20 +251,48 @@ export function commentate(match: MatchResult, teams: MatchTeams): CommentaryLin
   }
 
   return match.events.map((event) => {
-    const roast = callback(event)
-    if (roast) return roast
-
-    const caster: Caster = event.big
-      ? random() < HYPE_ON_BIG
-        ? 'hype'
-        : 'analyst'
-      : random() < ANALYST_ON_SMALL
-        ? 'analyst'
-        : 'hype'
-    const context = lineContext(event, teams)
-    const text = lowercaseYourMidSentence(pick(MATCH_LINES[lineKey(event)][caster](context)))
+    const key = lineKey(event)
+    if (!key) return roast(event)
+    const caster: Caster = random() < HYPE_ON_BIG ? 'hype' : 'analyst'
+    const text = lowercaseYourMidSentence(pick(MATCH_LINES[key][caster](lineContext(event, teams))))
     return { caster, text, callback: false }
   })
+}
+
+/** A plain kill-feed description of any event, e.g. "Jinx killed Ahri". */
+export function describeEvent(event: MatchEvent, teams: MatchTeams): string {
+  const { team, enemy, actor, target, lane, dragon, kills } = lineContext(event, teams)
+  const stolen = event.tags.includes('steal')
+  const text = (() => {
+    switch (event.kind) {
+      case 'soloKill':
+        return `${actor} killed ${target}`
+      case 'gank':
+        if (event.tags.includes('escape')) return `${actor} escaped ${target}'s gank`
+        return event.tags.includes('counterGank') ? `${actor} turned the gank on ${target}` : `${actor} ganked ${target}`
+      case 'teamfight':
+        return `${team} won a fight ${kills}`
+      case 'grubs':
+        return `${team} took the Void Grubs`
+      case 'herald':
+        return `${team} took Rift Herald`
+      case 'dragon':
+        return stolen ? `${actor} stole the ${dragon} Drake` : `${team} took the ${dragon} Drake`
+      case 'baron':
+        return stolen ? `${actor} stole Baron` : `${team} took Baron`
+      case 'elder':
+        return stolen ? `${actor} stole the Elder Dragon` : `${team} took the Elder Dragon`
+      case 'tower':
+        return `${team} took a ${lane} tower`
+      case 'inhibitor':
+        return `${team} destroyed an inhibitor`
+      case 'nexus':
+        return `${team} destroyed the Nexus`
+      case 'surrender':
+        return `${enemy} surrendered`
+    }
+  })()
+  return lowercaseYourMidSentence(text)
 }
 
 export function lineContext(event: MatchEvent, teams: MatchTeams): LineContext {
@@ -446,3 +315,28 @@ export function lineContext(event: MatchEvent, teams: MatchTeams): LineContext {
   }
 }
 
+
+/** The big stamp shown over the fight scene, e.g. "ACE!". Seen from the player's side for the end. */
+export function momentTitle({ kind, tags, side }: MatchEvent): string {
+  const has = (tag: MatchEvent['tags'][number]) => tags.includes(tag)
+  switch (kind) {
+    case 'soloKill':
+    case 'gank':
+      return 'First blood!'
+    case 'teamfight':
+      if (has('pentakill')) return 'Pentakill!'
+      if (has('ace')) return 'Ace!'
+      return has('upset') ? 'Upset!' : 'Teamfight!'
+    case 'dragon':
+      return has('steal') ? 'Stolen!' : 'Dragon Soul!'
+    case 'baron':
+      return has('steal') ? 'Baron stolen!' : 'Baron!'
+    case 'elder':
+      return has('steal') ? 'Elder stolen!' : 'Elder Dragon!'
+    case 'nexus':
+    case 'surrender':
+      return side === 'blue' ? 'Victory!' : 'Defeat'
+    default:
+      return ''
+  }
+}

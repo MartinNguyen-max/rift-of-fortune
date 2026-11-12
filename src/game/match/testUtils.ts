@@ -14,8 +14,8 @@ export function sampleTeams(seed = 1): MatchTeams {
 }
 
 const emptyScore = (): Scoreboard => ({
-  blue: { kills: 0, towers: 0, dragons: 0, barons: 0, gold: 2500 },
-  red: { kills: 0, towers: 0, dragons: 0, barons: 0, gold: 2500 },
+  blue: { kills: 0, towers: 0, dragons: 0, barons: 0, inhibitors: 0, gold: 2500 },
+  red: { kills: 0, towers: 0, dragons: 0, barons: 0, inhibitors: 0, gold: 2500 },
 })
 
 export function makeEvent(overrides: Partial<MatchEvent> = {}): MatchEvent {
@@ -26,6 +26,7 @@ export function makeEvent(overrides: Partial<MatchEvent> = {}): MatchEvent {
     actor: null,
     target: null,
     fightKills: null,
+    kills: [],
     dragon: null,
     tags: [],
     big: false,

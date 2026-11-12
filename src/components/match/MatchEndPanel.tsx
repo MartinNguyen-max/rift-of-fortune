@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { championIconUrl } from '../../data'
 import { BOT_PROFILES, type BotLevel } from '../../game/match/bots'
-import { CASTER_NAMES, formatGameTime, type CommentaryLine } from '../../game/match/commentary'
+import { CASTER_NAMES, describeEvent, formatGameTime, type MatchLines } from '../../game/match/commentary'
 import { formatKda, matchShareText, type MatchSummary } from '../../game/match/summary'
 import type { MatchResult, MatchTeams } from '../../game/match/types'
 import { ROLE_LABELS } from '../../game/roles'
@@ -13,7 +13,7 @@ import { eventIcon } from './matchStyles'
 interface MatchEndPanelProps {
   match: MatchResult
   teams: MatchTeams
-  lines: readonly CommentaryLine[]
+  lines: MatchLines
   summary: MatchSummary
   level: BotLevel
   onRematch: (level: BotLevel) => void
@@ -26,7 +26,7 @@ export function MatchEndPanel({ match, teams, lines, summary, level, onRematch, 
   const last = match.events[match.events.length - 1]
   const mvp = teams[summary.mvp.side].rating.champions.find(({ role }) => role === summary.mvp.role)
   const moment = summary.momentIndex === null ? null : match.events[summary.momentIndex]
-  const momentLine = summary.momentIndex === null ? null : lines[summary.momentIndex]
+  const momentLine = summary.momentIndex === null ? null : (lines[summary.momentIndex] ?? null)
   const nextLevel = won && level < 3 ? ((level + 1) as BotLevel) : null
   const url = `${window.location.origin}${window.location.pathname}${routeHref('match')}`
   const shareText = matchShareText(match, teams, summary, BOT_PROFILES[level].label, url)
@@ -62,14 +62,14 @@ export function MatchEndPanel({ match, teams, lines, summary, level, onRematch, 
         </div>
       )}
 
-      {moment && momentLine && (
+      {moment && (
         <div className="rounded-lg border border-hextech/30 bg-hextech/5 p-3 text-left">
           <p className="mb-1 text-[10px] tracking-widest text-hextech uppercase">
             Moment of the match · {formatGameTime(moment.time)}
           </p>
           <p className="text-sm text-gold-light/90">
             <span aria-hidden="true">{eventIcon(moment)} </span>
-            {momentLine.text}
+            {momentLine && !momentLine.callback ? momentLine.text : describeEvent(moment, teams)}
           </p>
         </div>
       )}

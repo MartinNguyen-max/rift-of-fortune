@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { ROLES } from '../roles'
 import { commentate } from './commentary'
 import { simulateMatch } from './simulateMatch'
-import { dramaScore, findMvp, matchShareText, momentOfTheMatch, summarizeMatch } from './summary'
+import { dramaScore, findMvp, matchShareText, momentOfTheMatch, mostDeaths, summarizeMatch } from './summary'
+import { emptyStats } from './stats'
 import { makeEvent, sampleTeams } from './testUtils'
 import type { MatchResult } from './types'
 
@@ -60,7 +61,7 @@ describe('findMvp', () => {
 describe('summarizeMatch', () => {
   it('prefers a draft roast as the best line', () => {
     const match = simulateMatch(teams, 1)
-    const lines = commentate(match, teams).map((line, index) => ({ ...line, callback: index === 2 }))
+    const lines = commentate(match, teams).map((line, index) => (index === 2 ? { caster: 'analyst' as const, text: 'Roast', callback: true } : line && { ...line, callback: false }))
     expect(summarizeMatch(match, lines).bestLine).toBe(lines[2])
   })
 })
@@ -75,5 +76,18 @@ describe('matchShareText', () => {
     expect(text).toMatch(/Kills \d+–\d+/)
     expect(text).toContain('MVP: ')
     expect(text.endsWith('https://example.com/#/match')).toBe(true)
+  })
+})
+
+describe('mostDeaths', () => {
+  it('finds the champion who died the most on either team', () => {
+    const stats = emptyStats()
+    stats.blue.TOP.deaths = 3
+    stats.red.SUPPORT.deaths = 5
+    expect(mostDeaths(stats)).toEqual({ side: 'red', role: 'SUPPORT' })
+  })
+
+  it('is null when nobody died', () => {
+    expect(mostDeaths(emptyStats())).toBeNull()
   })
 })

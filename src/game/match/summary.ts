@@ -1,7 +1,7 @@
 import type { Role } from '../../data/types'
 import { ROLES } from '../roles'
-import { formatGameTime, type CommentaryLine } from './commentary'
-import type { EventTag, KDA, MatchEvent, MatchResult, MatchTeams, Side } from './types'
+import { formatGameTime, type CommentaryLine, type MatchLines } from './commentary'
+import { SIDES, type ChampionRef, type ChampionStats, type EventTag, type KDA, type MatchEvent, type MatchResult, type MatchTeams, type Side } from './types'
 
 export interface MatchMvp {
   side: Side
@@ -12,6 +12,8 @@ export interface MatchMvp {
 export interface MatchSummary {
   winner: Side
   mvp: MatchMvp
+  /** The champion who died the most, on either team, or null when nobody died. */
+  feeder: ChampionRef | null
   /** Index of the most dramatic event, or null when nothing stood out. */
   momentIndex: number | null
   /** The best line of the match: a draft roast if there was one, otherwise the moment's line. */
@@ -46,6 +48,21 @@ export function findMvp(match: MatchResult): MatchMvp {
   return { side: match.winner, role, kda: stats[role] }
 }
 
+/** Who died the most. Ties go to the first champion in role order, blue side first. */
+export function mostDeaths(stats: ChampionStats): ChampionRef | null {
+  let worst: ChampionRef | null = null
+  let deaths = 0
+  for (const side of SIDES) {
+    for (const role of ROLES) {
+      if (stats[side][role].deaths > deaths) {
+        worst = { side, role }
+        deaths = stats[side][role].deaths
+      }
+    }
+  }
+  return worst
+}
+
 export function momentOfTheMatch(match: MatchResult): number | null {
   let best: number | null = null
   let bestScore = 0
@@ -59,12 +76,13 @@ export function momentOfTheMatch(match: MatchResult): number | null {
   return best
 }
 
-export function summarizeMatch(match: MatchResult, lines: readonly CommentaryLine[]): MatchSummary {
+export function summarizeMatch(match: MatchResult, lines: MatchLines): MatchSummary {
   const momentIndex = momentOfTheMatch(match)
-  const roast = lines.find(({ callback }) => callback)
+  const roast = lines.find((line) => line?.callback)
   return {
     winner: match.winner,
     mvp: findMvp(match),
+    feeder: mostDeaths(match.stats),
     momentIndex,
     bestLine: roast ?? (momentIndex === null ? null : (lines[momentIndex] ?? null)),
   }

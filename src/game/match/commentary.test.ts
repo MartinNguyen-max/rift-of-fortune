@@ -4,12 +4,15 @@ import { rateChampion } from '../scoring/rateTeam'
 import {
   CALLBACK_LINES,
   commentate,
+  describeEvent,
+  momentTitle,
   draftIssues,
   formatGameTime,
   lineContext,
   lineKey,
   lowercaseYourMidSentence,
   MATCH_LINES,
+  ROASTS_PER_MATCH,
   type LineContext,
 } from './commentary'
 import { simulateMatch } from './simulateMatch'
@@ -17,6 +20,9 @@ import { makeEvent, sampleTeams } from './testUtils'
 
 const teams = sampleTeams()
 const matches = Array.from({ length: 60 }, (_, seed) => simulateMatch(teams, seed))
+
+/** With typical names, about two seconds of reading. */
+const MAX_LINE_LENGTH = 64
 
 const context: LineContext = {
   team: 'Your team',
@@ -42,6 +48,14 @@ describe('MATCH_LINES', () => {
     }
   })
 
+  it('keeps every line short enough to read at full speed', () => {
+    const texts = [
+      ...Object.values(MATCH_LINES).flatMap((byCaster) => Object.values(byCaster).flatMap((lines) => lines(context))),
+      ...Object.values(CALLBACK_LINES).flatMap((lines) => lines('Garen', 'Support')),
+    ]
+    for (const text of texts) expect(text.length, text).toBeLessThanOrEqual(MAX_LINE_LENGTH)
+  })
+
   it('fills in every callback line', () => {
     for (const lines of Object.values(CALLBACK_LINES)) {
       for (const text of lines('Garen', 'Support')) expect(text).toContain('Garen')
@@ -50,18 +64,22 @@ describe('MATCH_LINES', () => {
 })
 
 describe('lineKey', () => {
-  it('picks the most specific line for an event', () => {
-    expect(lineKey(makeEvent({ kind: 'soloKill', tags: ['firstBlood', 'upset'] }))).toBe('firstBlood')
-    expect(lineKey(makeEvent({ kind: 'soloKill', tags: ['upset'] }))).toBe('soloKillUpset')
-    expect(lineKey(makeEvent({ kind: 'gank', tags: ['escape'] }))).toBe('gankEscape')
-    expect(lineKey(makeEvent({ kind: 'gank', tags: ['counterGank'] }))).toBe('counterGank')
-    expect(lineKey(makeEvent({ kind: 'teamfight', tags: ['ace', 'pentakill'] }))).toBe('pentakill')
-    expect(lineKey(makeEvent({ kind: 'teamfight', tags: ['ace'] }))).toBe('ace')
-    expect(lineKey(makeEvent({ kind: 'dragon', tags: ['steal', 'soul'] }))).toBe('dragonSteal')
-    expect(lineKey(makeEvent({ kind: 'dragon', tags: ['soul'] }))).toBe('soul')
-    expect(lineKey(makeEvent({ kind: 'baron', tags: ['steal'] }))).toBe('baronSteal')
-    expect(lineKey(makeEvent({ kind: 'tower', tags: ['firstTower'] }))).toBe('firstTower')
-    expect(lineKey(makeEvent({ kind: 'nexus' }))).toBe('nexus')
+  it('picks the most specific line for a big moment', () => {
+    expect(lineKey(makeEvent({ kind: 'soloKill', big: true, tags: ['firstBlood', 'upset'] }))).toBe('firstBlood')
+    expect(lineKey(makeEvent({ kind: 'gank', big: true, tags: ['firstBlood', 'counterGank'] }))).toBe('firstBlood')
+    expect(lineKey(makeEvent({ kind: 'teamfight', big: true, tags: ['ace', 'pentakill'] }))).toBe('pentakill')
+    expect(lineKey(makeEvent({ kind: 'teamfight', big: true, tags: ['ace'] }))).toBe('ace')
+    expect(lineKey(makeEvent({ kind: 'teamfight', big: true, tags: ['upset'] }))).toBe('teamfightUpset')
+    expect(lineKey(makeEvent({ kind: 'dragon', big: true, tags: ['steal', 'soul'] }))).toBe('dragonSteal')
+    expect(lineKey(makeEvent({ kind: 'dragon', big: true, tags: ['soul'] }))).toBe('soul')
+    expect(lineKey(makeEvent({ kind: 'baron', big: true, tags: ['steal'] }))).toBe('baronSteal')
+    expect(lineKey(makeEvent({ kind: 'nexus', big: true }))).toBe('nexus')
+  })
+
+  it('gives small events no caster line', () => {
+    expect(lineKey(makeEvent({ kind: 'tower', tags: ['firstTower'] }))).toBeNull()
+    expect(lineKey(makeEvent({ kind: 'soloKill' }))).toBeNull()
+    expect(lineKey(makeEvent({ kind: 'teamfight', tags: ['upset'] }))).toBeNull()
   })
 })
 
@@ -85,25 +103,40 @@ describe('lineContext', () => {
 })
 
 describe('commentate', () => {
-  it('gives one line per event and is reproducible', () => {
-    for (const match of matches.slice(0, 10)) {
-      const lines = commentate(match, teams)
-      expect(lines).toHaveLength(match.events.length)
-      expect(commentate(match, teams)).toEqual(lines)
+  const allLines = matches.map((match) => commentate(match, teams))
+  const spoken = allLines.flat().filter((line) => line !== null)
+
+  it('gives one entry per event and is reproducible', () => {
+    for (const [index, match] of matches.slice(0, 10).entries()) {
+      expect(allLines[index]).toHaveLength(match.events.length)
+      expect(commentate(match, teams)).toEqual(allLines[index])
+    }
+  })
+
+  it('gives every big moment its own line, never a roast', () => {
+    for (const [index, match] of matches.entries()) {
+      for (const [eventIndex, event] of match.events.entries()) {
+        if (event.big) expect(allLines[index]?.[eventIndex]?.callback).toBe(false)
+      }
+    }
+  })
+
+  it('stays quiet on small events, apart from a few roasts', () => {
+    for (const [index, match] of matches.entries()) {
+      const lines = allLines[index] ?? []
+      const small = match.events.flatMap((event, eventIndex) => (event.big ? [] : [lines[eventIndex]]))
+      expect(small.every((line) => !line || line.callback)).toBe(true)
+      expect(lines.filter((line) => line?.callback).length).toBeLessThanOrEqual(ROASTS_PER_MATCH)
     }
   })
 
   it('never leaves a blank in a line', () => {
-    for (const match of matches) {
-      for (const { text } of commentate(match, teams)) expect(text).not.toMatch(/undefined|^\s|\s{2}|\s$/)
-    }
+    for (const { text } of spoken) expect(text).not.toMatch(/undefined|^\s|\s{2}|\s$/)
   })
 
   it('roasts each draft mistake at most once per match', () => {
-    for (const match of matches) {
-      const roasts = commentate(match, teams)
-        .filter(({ callback }) => callback)
-        .map(({ text }) => text)
+    for (const lines of allLines) {
+      const roasts = lines.filter((line) => line?.callback).map((line) => line?.text)
       expect(new Set(roasts).size).toBe(roasts.length)
     }
   })
@@ -111,9 +144,28 @@ describe('commentate', () => {
   it('remembers bad picks from the draft', () => {
     const issues = teams.red.rating.champions.flatMap(draftIssues)
     expect(issues.length).toBeGreaterThan(0)
-    const roasts = matches.flatMap((match) => commentate(match, teams).filter(({ callback }) => callback))
+    const roasts = spoken.filter(({ callback }) => callback)
     expect(roasts.length).toBeGreaterThan(0)
     for (const roast of roasts) expect(roast.caster).toBe('analyst')
+  })
+})
+
+describe('describeEvent', () => {
+  it('describes every event in plain words', () => {
+    for (const match of matches.slice(0, 20)) {
+      for (const event of match.events) {
+        const text = describeEvent(event, teams)
+        expect(text.length).toBeGreaterThan(5)
+        expect(text).not.toMatch(/undefined|^\s|\s{2}|\s$/)
+      }
+    }
+  })
+
+  it('names the killer and the victim', () => {
+    const event = makeEvent({ kind: 'soloKill', actor: { side: 'blue', role: 'MIDDLE' }, target: { side: 'red', role: 'TOP' } })
+    const mid = teams.blue.rating.champions.find(({ role }) => role === 'MIDDLE')?.champion.name
+    const top = teams.red.rating.champions.find(({ role }) => role === 'TOP')?.champion.name
+    expect(describeEvent(event, teams)).toBe(`${mid} killed ${top}`)
   })
 })
 
@@ -155,11 +207,23 @@ describe('formatGameTime', () => {
   })
 })
 
-describe('big moments', () => {
-  it('always get their own line, never a draft roast', () => {
+
+describe('momentTitle', () => {
+  it('names the big moment for the fight scene', () => {
+    expect(momentTitle(makeEvent({ kind: 'teamfight', tags: ['ace', 'pentakill'] }))).toBe('Pentakill!')
+    expect(momentTitle(makeEvent({ kind: 'teamfight', tags: ['ace'] }))).toBe('Ace!')
+    expect(momentTitle(makeEvent({ kind: 'baron', tags: ['steal'] }))).toBe('Baron stolen!')
+    expect(momentTitle(makeEvent({ kind: 'gank', tags: ['firstBlood'] }))).toBe('First blood!')
+  })
+
+  it('shows the end from the player side', () => {
+    expect(momentTitle(makeEvent({ kind: 'nexus', side: 'blue' }))).toBe('Victory!')
+    expect(momentTitle(makeEvent({ kind: 'surrender', side: 'red' }))).toBe('Defeat')
+  })
+
+  it('has a title for every big moment in real matches', () => {
     for (const match of matches) {
-      const lines = commentate(match, teams)
-      for (const [index, event] of match.events.entries()) if (event.big) expect(lines[index]?.callback).toBe(false)
+      for (const event of match.events) if (event.big) expect(momentTitle(event)).not.toBe('')
     }
   })
 })
