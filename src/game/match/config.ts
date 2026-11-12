@@ -96,3 +96,11 @@ export const PENTAKILL_CHANCE = 0.08
 export const FAILED_GANK_KILL_CHANCE = 0.5
 /** Bonus strength for the ganking side (two against one). */
 export const GANK_BONUS = 12
+
+/**
+ * Who gets the kills in a teamfight. A 15-point better champion is e^1 ≈ 2.7× as likely to get a
+ * kill, and each kill or death so far adds 60% to the odds, so carries snowball (17/2) and
+ * feeders keep feeding (1/11), like in real low-elo games. This only decides who gets a kill,
+ * never which team wins.
+ */
+export const KILL_SPREAD = { score: 12, fed: 0.6, feeding: 1.2 } as const

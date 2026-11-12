@@ -6,7 +6,8 @@ import { rateTeam, type TeamRating } from '../scoring/rateTeam'
 import { simulateGame } from '../scoring/simulate'
 import { DRAGONS_FOR_SOUL, TOWERS_FOR_INHIBITOR, MATCH_TIMES } from './config'
 import { simulateMatch } from './simulateMatch'
-import type { MatchResult, MatchTeams } from './types'
+import { SIDES, type MatchResult, type MatchTeams } from './types'
+import { sampleTeams } from './testUtils'
 
 /** A mix of sensible and random teams, so team scores range from Iron to Challenger. */
 function ratingPool(size: number, seed: number): TeamRating[] {
@@ -174,5 +175,19 @@ describe('match balancing', () => {
     expect(baronSteals).toBeLessThan(0.25)
     expect(surrenders).toBeGreaterThan(0.02)
     expect(surrenders).toBeLessThan(0.15)
+  })
+})
+
+describe('kill spread', () => {
+  it('makes hyper carries and feeders: the top killer usually has 10+ kills', () => {
+    const teams = sampleTeams()
+    const tops = Array.from({ length: 100 }, (_, seed) => {
+      const { stats } = simulateMatch(teams, seed)
+      const all = SIDES.flatMap((side) => ROLES.map((role) => stats[side][role]))
+      return { kills: Math.max(...all.map(({ kills }) => kills)), deaths: Math.max(...all.map(({ deaths }) => deaths)) }
+    })
+    const median = (values: number[]) => [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)] ?? 0
+    expect(median(tops.map(({ kills }) => kills))).toBeGreaterThanOrEqual(10)
+    expect(median(tops.map(({ deaths }) => deaths))).toBeGreaterThanOrEqual(6)
   })
 })

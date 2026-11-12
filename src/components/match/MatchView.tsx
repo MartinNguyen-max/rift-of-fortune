@@ -6,7 +6,7 @@ import { buildHighlightReel } from '../../game/match/highlights'
 import { activeBigEvent, buildTimeline, eventsShown, gameClock, liveScore } from '../../game/match/playback'
 import { simulateMatch } from '../../game/match/simulateMatch'
 import { statsAfter } from '../../game/match/stats'
-import { summarizeMatch } from '../../game/match/summary'
+import { matchStory, standouts, summarizeMatch } from '../../game/match/summary'
 import type { MatchTeams } from '../../game/match/types'
 import { winChanceTimeline } from '../../game/match/winChance'
 import { ChampionScoreboard } from './ChampionScoreboard'
@@ -52,6 +52,8 @@ export function MatchView({ teams, level, seed, onRematch, onNewTeam }: MatchVie
   const lastBig = shownEvents.findLastIndex(({ big }) => big)
   const summary = ended ? summarizeMatch(reelMatch, lines) : null
   const worstRoast = summary && roastWorstPlayer(match, teams, summary.feeder)
+  const story = summary ? matchStory(match, teams, summary) : []
+  const live = standouts(stats)
 
   const fightIndex = activeBigEvent(reel.events, timeline, elapsed)
   const fightEvent = fightIndex === null ? undefined : reel.events[fightIndex]
@@ -94,12 +96,19 @@ export function MatchView({ teams, level, seed, onRematch, onNewTeam }: MatchVie
             teams={teams}
             lines={lines}
             summary={summary}
+            story={story}
             level={level}
             onRematch={onRematch}
             onNewTeam={onNewTeam}
           />
         )}
-        <ChampionScoreboard teams={teams} stats={stats} awards={summary ? { mvp: summary.mvp, feeder: summary.feeder } : undefined} />
+        <ChampionScoreboard
+          teams={teams}
+          stats={stats}
+          best={summary ? summary.mvp : live.best}
+          worst={summary ? summary.feeder : live.worst}
+          final={summary !== null}
+        />
         {worstRoast && (
           <motion.p
             initial={{ opacity: 0, y: -6 }}

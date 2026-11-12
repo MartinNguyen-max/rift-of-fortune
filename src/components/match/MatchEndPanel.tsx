@@ -15,13 +15,15 @@ interface MatchEndPanelProps {
   teams: MatchTeams
   lines: MatchLines
   summary: MatchSummary
+  /** How the match went, in a few sentences. */
+  story: readonly string[]
   level: BotLevel
   onRematch: (level: BotLevel) => void
   onNewTeam: () => void
 }
 
 /** Victory or Defeat, the MVP, the moment of the match and what to do next. */
-export function MatchEndPanel({ match, teams, lines, summary, level, onRematch, onNewTeam }: MatchEndPanelProps) {
+export function MatchEndPanel({ match, teams, lines, summary, story, level, onRematch, onNewTeam }: MatchEndPanelProps) {
   const won = match.winner === 'blue'
   const last = match.events[match.events.length - 1]
   const mvp = teams[summary.mvp.side].rating.champions.find(({ role }) => role === summary.mvp.role)
@@ -48,6 +50,13 @@ export function MatchEndPanel({ match, teams, lines, summary, level, onRematch, 
             : `Nexus destroyed at ${formatGameTime(match.duration)}`}
         </p>
       </div>
+
+      {story.length > 0 && (
+        <div className="rounded-lg border border-gold/30 bg-abyss/50 p-3 text-left">
+          <p className="mb-1 text-[10px] tracking-widest text-gold/70 uppercase">How it went</p>
+          <p className="text-sm leading-relaxed text-gold-light/90">{story.join(' ')}</p>
+        </div>
+      )}
 
       {mvp && (
         <div className="flex items-center justify-center gap-3">

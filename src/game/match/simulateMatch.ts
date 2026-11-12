@@ -9,6 +9,7 @@ import {
   GANK_BONUS,
   GOLD,
   GOLD_SCALE,
+  KILL_SPREAD,
   LANE_TOWERS,
   LANE_WEIGHT,
   LUCK_SHARE,
@@ -25,7 +26,7 @@ import {
   SURRENDER,
   TOWERS_FOR_INHIBITOR,
 } from './config'
-import { statsAfter } from './stats'
+import { emptyStats, statsAfter } from './stats'
 import {
   DRAGON_KINDS,
   opponent,
@@ -107,6 +108,8 @@ class Simulation {
   private readonly events: MatchEvent[] = []
   /** Kills since the last event, attached to the next one. */
   private pendingKills: Kill[] = []
+  /** K/D/A so far, so fed champions keep getting kills and feeders keep dying. */
+  private readonly tally = emptyStats()
   private readonly sides: Record<Side, SideState> = { blue: newSideState(), red: newSideState() }
   private readonly spawns: Record<Objective, number> = {
     dragon: MATCH_TIMES.dragonSpawn,
@@ -239,17 +242,31 @@ class Simulation {
     const bounty = Math.min(BOUNTY.max, Math.max(0, this.goldLead(victim.side)) * BOUNTY.share)
     killerSide.kills += 1
     killerSide.gold += GOLD.kill + bounty
+    this.tally[killer.side][killer.role].kills += 1
+    this.tally[victim.side][victim.role].deaths += 1
     this.pendingKills.push({ killer, victim, assists })
   }
 
-  /** Carries with good scores get more kills. */
+  /** Good picks get more kills, and a fed champion keeps getting fed (hyper carries). */
   private pickKiller(side: Side, roles: readonly Role[] = ROLES): Role {
-    return weightedPick(roles, (role) => this.lanes[side][role] + 10, this.random)
+    return weightedPick(
+      roles,
+      (role) =>
+        Math.exp((this.lanes[side][role] - 50) / KILL_SPREAD.score) *
+        (1 + this.tally[side][role].kills * KILL_SPREAD.fed),
+      this.random,
+    )
   }
 
-  /** Weak picks die more often. */
+  /** Weak picks die more often, and whoever keeps dying keeps dying (feeders). */
   private pickVictim(side: Side, roles: readonly Role[] = ROLES): Role {
-    return weightedPick(roles, (role) => 115 - this.lanes[side][role], this.random)
+    return weightedPick(
+      roles,
+      (role) =>
+        Math.exp((50 - this.lanes[side][role]) / KILL_SPREAD.score) *
+        (1 + this.tally[side][role].deaths * KILL_SPREAD.feeding),
+      this.random,
+    )
   }
 
   private laner(lane: Lane): Role {

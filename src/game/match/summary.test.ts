@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { ROLES } from '../roles'
 import { commentate } from './commentary'
 import { simulateMatch } from './simulateMatch'
-import { dramaScore, findMvp, matchShareText, momentOfTheMatch, mostDeaths, summarizeMatch } from './summary'
+import { dramaScore, findMvp, matchShareText, matchStory, momentOfTheMatch, mostDeaths, standouts, summarizeMatch } from './summary'
+import { winChanceTimeline } from './winChance'
 import { emptyStats } from './stats'
 import { makeEvent, sampleTeams } from './testUtils'
 import type { MatchResult } from './types'
@@ -89,5 +90,48 @@ describe('mostDeaths', () => {
 
   it('is null when nobody died', () => {
     expect(mostDeaths(emptyStats())).toBeNull()
+  })
+})
+
+describe('matchStory', () => {
+  const stories = Array.from({ length: 60 }, (_, seed) => {
+    const match = simulateMatch(teams, seed)
+    const story = matchStory(match, teams, summarizeMatch(match, commentate(match, teams)))
+    return { match, story, before: winChanceTimeline(match, teams)[0] ?? 0.5 }
+  })
+
+  it('tells who had the better team, the turning point and who carried', () => {
+    for (const { story } of stories) {
+      expect(story.length).toBeGreaterThanOrEqual(2)
+      expect(story[0]).toMatch(/\d+%/)
+      expect(story.at(-1)).toContain('carried with')
+      for (const sentence of story) expect(sentence).not.toMatch(/undefined|\s{2}/)
+    }
+  })
+
+  it('says the game turned when the underdog won', () => {
+    const upsets = stories.filter(({ match, before }) => (before >= 0.5 ? 'blue' : 'red') !== match.winner)
+    expect(upsets.length).toBeGreaterThan(0)
+    for (const { story } of upsets) expect(story.join(' ')).toMatch(/turned|coin flip/)
+  })
+
+  it('names the favourite in the first sentence', () => {
+    for (const { story, before } of stories) {
+      if (Math.abs(before - 0.5) < 0.05) continue
+      expect(story[0]).toContain(before >= 0.5 ? 'Your team' : 'Team Bot')
+    }
+  })
+})
+
+describe('standouts', () => {
+  it('finds the best and the worst player so far, on either team', () => {
+    const stats = emptyStats()
+    stats.red.MIDDLE = { kills: 9, deaths: 1, assists: 3 }
+    stats.blue.SUPPORT = { kills: 0, deaths: 7, assists: 2 }
+    expect(standouts(stats)).toEqual({ best: { side: 'red', role: 'MIDDLE' }, worst: { side: 'blue', role: 'SUPPORT' } })
+  })
+
+  it('has nobody to point at before the first kill', () => {
+    expect(standouts(emptyStats())).toEqual({ best: null, worst: null })
   })
 })
