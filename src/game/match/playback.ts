@@ -11,10 +11,10 @@ export const WATCH_SECONDS = { min: 10, max: 15, shortGameMinutes: 20, longGameM
 export const LEAD_IN = 1
 
 /** How much watch time each event gets, relative to each other. Big moments get time for the fight scene and the caster line. */
-export const BEATS = { small: 1, big: 2 } as const
+export const BEATS = { small: 1, big: 1.5 } as const
 
 /** The game clock stands still for this share of a big moment, so the player can take it in. */
-export const BIG_PAUSE = 0.6
+export const BIG_PAUSE = 0.4
 
 /** Game time shown when the clock starts, this long before the first event. */
 const CLOCK_LEAD_IN = 60
