@@ -221,6 +221,7 @@ export function toChampion(
 
   return {
     id: champion.id,
+    key: champion.key,
     name: champion.name,
     title: champion.title,
     image: champion.image.full,

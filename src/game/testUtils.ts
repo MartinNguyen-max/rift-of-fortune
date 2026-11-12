@@ -3,6 +3,7 @@ import type { Champion, Item } from '../data/types'
 export function makeChampion(overrides: Partial<Champion> = {}): Champion {
   return {
     id: 'Test',
+    key: '0',
     name: overrides.id ?? 'Test',
     title: '',
     image: '',

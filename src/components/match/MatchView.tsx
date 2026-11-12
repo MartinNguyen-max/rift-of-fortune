@@ -9,6 +9,7 @@ import { statsAfter } from '../../game/match/stats'
 import { matchStory, standouts, summarizeMatch } from '../../game/match/summary'
 import type { MatchTeams } from '../../game/match/types'
 import { winChanceTimeline } from '../../game/match/winChance'
+import { playSound } from '../../services/sound'
 import { ChampionScoreboard } from './ChampionScoreboard'
 import { EventFeed } from './EventFeed'
 import { FightScene } from './FightScene'
@@ -40,8 +41,12 @@ export function MatchView({ teams, level, seed, onRematch, onNewTeam }: MatchVie
   const [started, setStarted] = useState(false)
 
   const { elapsed, skip } = usePlaybackClock(timeline.total, started)
+  const startMatch = () => {
+    playSound('match-start')
+    setStarted(true)
+  }
 
-  if (!started) return <VersusPanel teams={teams} botLabel={BOT_PROFILES[level].label} onStart={() => setStarted(true)} />
+  if (!started) return <VersusPanel teams={teams} botLabel={BOT_PROFILES[level].label} onStart={startMatch} />
 
   const shown = eventsShown(timeline, elapsed)
   const ended = elapsed >= timeline.total

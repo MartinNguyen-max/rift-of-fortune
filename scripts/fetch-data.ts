@@ -1,5 +1,5 @@
 import { mkdir, writeFile } from 'node:fs/promises'
-import { END_OF_GAME_ICONS, MAP_ICONS, RANK_TIERS, SOUND_FILES, type GameData } from '../src/data/types.ts'
+import { championVoicePath, END_OF_GAME_ICONS, MAP_ICONS, RANK_TIERS, SOUND_FILES, type Champion, type GameData } from '../src/data/types.ts'
 import {
   dedupeByName,
   isFullItem,
@@ -74,6 +74,27 @@ async function downloadClientFiles(files: Record<string, string>, folder: string
   console.log(`Saved ${Object.keys(files).length} files to public/${folder}/`)
 }
 
+/** Saves every champion's voice line to public/sounds/champions/, a few at a time. Missing ones are skipped. */
+async function downloadChampionVoices(champions: Champion[]): Promise<void> {
+  const output = new URL('../public/sounds/champions/', import.meta.url)
+  await mkdir(output, { recursive: true })
+  const queue = [...champions]
+  const missing: string[] = []
+  const worker = async () => {
+    for (let champion = queue.shift(); champion; champion = queue.shift()) {
+      const response = await fetch(`https://raw.communitydragon.org/latest/${championVoicePath(champion.key)}`)
+      if (!response.ok) {
+        missing.push(champion.name)
+        continue
+      }
+      await writeFile(new URL(`${champion.id}.ogg`, output), Buffer.from(await response.arrayBuffer()))
+    }
+  }
+  await Promise.all(Array.from({ length: 6 }, worker))
+  console.log(`Saved ${champions.length - missing.length} champion voice lines to public/sounds/champions/`)
+  if (missing.length > 0) console.warn(`No voice line yet for: ${missing.join(', ')}`)
+}
+
 async function main(): Promise<void> {
   const [patch] = await fetchJson<string[]>(`${DDRAGON}/api/versions.json`)
   if (!patch) throw new Error('No Data Dragon versions found')
@@ -111,6 +132,7 @@ async function main(): Promise<void> {
   await downloadMapIcons()
   await downloadClientFiles(END_OF_GAME_ICONS, 'icons', 'png')
   await downloadClientFiles(SOUND_FILES, 'sounds', 'ogg')
+  await downloadChampionVoices(champions)
 }
 
 await main()

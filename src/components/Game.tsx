@@ -32,7 +32,7 @@ import { canAssignItem, itemsForRole, ITEMS_PER_CHAMPION, unassignedItems } from
 import { isRole } from '../game/roles'
 import type { GameRules } from '../game/rules'
 import { rateTeam, type TeamRating } from '../game/scoring/rateTeam'
-import { playSound } from '../services/sound'
+import { playSound, prepareChampionVoice } from '../services/sound'
 import { emptyRoles } from '../game/team'
 import { ITEM_POOL_ID, itemIdFromDragId, ROLLED_CHAMPION_ID } from './dragIds'
 import { DraftPanel } from './DraftPanel'
@@ -98,12 +98,15 @@ export function Game({
   const place = (role: Role) => {
     const placed = gameReducer(state, { type: 'place', role })
     dispatch({ type: 'place', role })
+    playSound('lock-in')
     if (canRoll(placed)) dispatch({ type: 'roll', champion: nextChampion(placed) })
   }
   /** One tap rerolls: no confirm step, so it stays fast. */
   const rerollChampionIn = (role: Role) => {
     if (!rerollChampion || !canRerollChampion(state, role) || spinningRole) return
-    dispatch({ type: 'rerollChampion', role, champion: rerollChampion(state) })
+    const champion = rerollChampion(state)
+    dispatch({ type: 'rerollChampion', role, champion })
+    prepareChampionVoice(champion.id)()
     playSound('reroll')
     setSpinningRole(role)
   }

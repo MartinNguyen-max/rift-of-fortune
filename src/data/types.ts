@@ -24,6 +24,8 @@ export type AttackType = 'MELEE' | 'RANGED'
 
 export interface Champion {
   id: string
+  /** Riot's numeric champion id, e.g. "222" for Jinx. Names the champion's voice line file. */
+  key: string
   name: string
   title: string
   image: string
@@ -100,6 +102,8 @@ const POSTGAME = 'plugins/rcp-fe-lol-postgame/global/default'
 const CHAMP_SELECT = 'plugins/rcp-fe-lol-champ-select/global/default/sounds'
 export const SOUND_FILES = {
   reroll: `${CHAMP_SELECT}/sfx-cs-button-reroll-click.ogg`,
+  'lock-in': `${CHAMP_SELECT}/sfx-cs-lockin-button-click.ogg`,
+  'match-start': `${CHAMP_SELECT}/sfx-cs-draft-pick-intro.ogg`,
   victory: `${POSTGAME}/sfx-ranked-ui-promo-win.ogg`,
   defeat: `${POSTGAME}/sfx-ranked-ui-promo-loss.ogg`,
   'big-moment': `${POSTGAME}/sfx-eog-ui-edge-flare.ogg`,
@@ -121,3 +125,7 @@ export const END_OF_GAME_ICONS = {
   victory: `${POSTGAME}/icon-sr-victory.png`,
   defeat: `${POSTGAME}/icon-sr-defeat.png`,
 } as const
+
+/** Each champion's champion select voice line on CommunityDragon, by Riot's numeric champion key. */
+export const championVoicePath = (key: string): string =>
+  `plugins/rcp-be-lol-game-data/global/default/v1/champion-choose-vo/${key}.ogg`

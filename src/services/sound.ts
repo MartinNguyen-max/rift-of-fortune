@@ -9,7 +9,10 @@ export interface SoundSettings {
 
 export const DEFAULT_SOUND_SETTINGS: SoundSettings = { effects: true, music: false }
 export const EFFECTS_VOLUME = 0.35
-export const MUSIC_VOLUME = 0.18
+/** Music is a quiet background layer, far below the effects. */
+export const MUSIC_VOLUME = 0.06
+/** Champion voice lines, a little louder than the effects so they can be heard. */
+export const VOICE_VOLUME = 0.5
 
 const STORAGE_KEY = 'sound'
 
@@ -84,4 +87,21 @@ export const RANK_SOUNDS: Record<RankTier, Exclude<SoundName, 'music'>> = {
   Master: 'rank-master',
   Grandmaster: 'rank-grandmaster',
   Challenger: 'rank-challenger',
+}
+
+/**
+ * Loads a champion's champion select voice line ("Jinx! Let's do this!") and returns a function
+ * that plays it, so it can start right as the roll lands. Silent when effects are muted.
+ */
+export function prepareChampionVoice(championId: string): () => void {
+  if (typeof Audio === 'undefined') return () => {}
+  const audio = new Audio(`${import.meta.env.BASE_URL}sounds/champions/${championId}.ogg`)
+  audio.preload = 'auto'
+  audio.volume = VOICE_VOLUME
+  return () => {
+    if (!settings.effects) return
+    audio.play().catch(() => {
+      // Blocked or missing: the roll works fine without the voice.
+    })
+  }
 }
