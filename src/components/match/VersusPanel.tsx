@@ -43,20 +43,25 @@ interface TeamCardProps {
   delay: number
 }
 
+/** Cinzel is wide: about 0.7em per character. Never bigger than 1rem. */
+const oneLineFontSize = (text: string) => `min(1rem, ${(100 / (text.length * 0.7)).toFixed(1)}cqi)`
+
 function TeamCard({ team, side, subtitle, delay }: TeamCardProps) {
   const { rating } = team
+  const rankLine = `${rankLabel(rating.rank)} · ${rating.score}`
   return (
     <motion.article
       initial={{ x: side === 'blue' ? -30 : 30, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       transition={{ delay }}
-      className="flex min-w-0 flex-col items-center gap-2 rounded-xl border border-gold/30 bg-panel/70 p-3 text-center shadow-2xl shadow-black/50 backdrop-blur sm:p-4"
+      className="@container flex min-w-0 flex-col items-center gap-2 rounded-xl border border-gold/30 bg-panel/70 p-2 text-center shadow-2xl shadow-black/50 backdrop-blur sm:p-4"
     >
       <p className="text-[10px] tracking-widest text-gold/60 uppercase">{subtitle}</p>
       <h2 className={`max-w-full truncate font-display text-base font-black sm:text-xl ${SIDE_TEXT[side]}`}>{team.name}</h2>
       <img src={rankEmblemUrl(rating.rank.tier)} alt="" className="-my-2 size-20 object-contain sm:size-28" />
-      <p className="font-display font-bold text-gold-light">
-        {rankLabel(rating.rank)} · {rating.score}
+      {/* Sized by its own length and the card width, so every rank stays on one line on small phones. */}
+      <p className="max-w-full font-display font-bold whitespace-nowrap text-gold-light" style={{ fontSize: oneLineFontSize(rankLine) }}>
+        {rankLine}
       </p>
       <ul className="flex w-full flex-col gap-1.5">
         {rating.champions.map(({ role, champion, items }) => {
