@@ -74,6 +74,12 @@ export const GOLD = {
   perMinute: 1650,
 } as const
 
+/**
+ * Multiplayer: extra gold for winning a live event, on top of what the event itself is worth,
+ * so a won mini-game always matters. Tuned with the live match tests in simulateMatch.test.ts.
+ */
+export const LIVE_EVENT_GOLD = { gank: 1500, teamfight: 2500, baron: 2000, elder: 3000 } as const
+
 /** Extra gold for kills on a leading team: this share of the lead, capped (shutdown bounties). */
 export const BOUNTY = { share: 0.08, max: 1000 } as const
 

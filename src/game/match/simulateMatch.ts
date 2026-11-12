@@ -11,6 +11,7 @@ import {
   GOLD_SCALE,
   KILL_SPREAD,
   LANE_TOWERS,
+  LIVE_EVENT_GOLD,
   LANE_WEIGHT,
   LOCK_IN,
   LUCK_SHARE,
@@ -35,6 +36,11 @@ import {
   type ChampionRef,
   type DragonKind,
   type EventTag,
+  type Lane,
+  LANES,
+  type LiveMatch,
+  type MatchScript,
+  type ScriptedEvent,
   type Kill,
   type MapSpot,
   type MatchEvent,
@@ -44,8 +50,6 @@ import {
   type Side,
 } from './types'
 
-type Lane = 'top' | 'mid' | 'bot'
-const LANES = ['top', 'mid', 'bot'] as const satisfies readonly Lane[]
 const LANE_ROLES: Record<Lane, Role[]> = { top: ['TOP'], mid: ['MIDDLE'], bot: ['BOTTOM', 'SUPPORT'] }
 /** Who gets the last hit in bot lane, ADC or support. */
 const BOT_LANE_KILL_SHARE = { BOTTOM: 0.7, SUPPORT: 0.3 } as const
@@ -124,10 +128,18 @@ class Simulation {
   private readonly lanes: Record<Side, Record<Role, number>>
   private readonly random: RandomFn
   private readonly teams: MatchTeams
+  /** Multiplayer live events. Empty against bots. */
+  private readonly script: MatchScript
+  private scriptIndex = 0
+  private readonly scripted: number[] = []
+  private pendingEvent: number | null = null
 
-  constructor(teams: MatchTeams, random: RandomFn) {
+  constructor(teams: MatchTeams, random: RandomFn, script: MatchScript = { events: [], winners: [] }) {
     this.random = random
     this.teams = teams
+    this.script = script
+    // The live Baron is the first Baron of the game.
+    if (this.liveEventAhead('baron')) this.spawns.baron = Infinity
     this.power = { blue: teams.blue.rating.score, red: teams.red.rating.score }
     const laneScores = (side: Side) =>
       Object.fromEntries(
@@ -139,16 +151,69 @@ class Simulation {
     this.lanes = { blue: laneScores('blue'), red: laneScores('red') }
   }
 
-  run(seed: number): MatchResult {
+  run(seed: number): LiveMatch {
     this.time = this.between(MATCH_TIMES.firstEvent)
     while (this.winner === null) {
+      if (!this.playLiveEvents()) break
       this.step()
       if (this.winner === null) this.maybeSurrender()
       this.time += this.between(this.time < MATCH_TIMES.laningEnd ? MATCH_TIMES.laningGap : MATCH_TIMES.lateGap)
     }
     const last = this.events[this.events.length - 1]
-    const stats = statsAfter(this.events)
-    return { seed, winner: this.winner, duration: last?.time ?? this.time, events: this.events, stats }
+    return {
+      seed,
+      winner: this.winner,
+      duration: last?.time ?? this.time,
+      events: this.events,
+      stats: statsAfter(this.events),
+      scripted: this.scripted,
+      pendingEvent: this.pendingEvent,
+    }
+  }
+
+  // ── Live events (multiplayer) ───────────────────────────────
+
+  /**
+   * Plays every live event that is due. Returns false when the next one has no winner yet: the
+   * match pauses there. Nothing random happens before the pause, so replaying the match with the
+   * winner added gives exactly the same events up to this point.
+   */
+  private playLiveEvents(): boolean {
+    for (;;) {
+      const event = this.script.events[this.scriptIndex]
+      if (!event || this.time < event.time) return true
+      const winner = this.script.winners[this.scriptIndex]
+      if (!winner) {
+        this.pendingEvent = this.scriptIndex
+        return false
+      }
+      this.playLiveEvent(event, winner)
+      this.scriptIndex += 1
+    }
+  }
+
+  private playLiveEvent(event: ScriptedEvent, winner: Side) {
+    this.sides[winner].gold += LIVE_EVENT_GOLD[event.kind]
+    this.scripted.push(this.events.length)
+    switch (event.kind) {
+      case 'gank':
+        return this.gank({ ganker: event.ganker, lane: event.lane, winner })
+      case 'teamfight':
+        this.teamfight('mid', true, winner)
+        return
+      case 'baron':
+      case 'elder':
+        return this.contestObjective(event.kind, winner)
+    }
+  }
+
+  /** The game can't end while live events are still to come. */
+  private liveEventsLeft(): boolean {
+    return this.scriptIndex < this.script.events.length
+  }
+
+  private liveEventAhead(kind: ScriptedEvent['kind']): boolean {
+    return this.script.events.slice(this.scriptIndex).some((event) => event.kind === kind)
   }
 
   // ── Turn order ──────────────────────────────────────────────
@@ -223,9 +288,10 @@ class Simulation {
     return luck * 0.5 + (1 - luck) * logistic(edge)
   }
 
-  private contest(strength: (side: Side) => number, withBuffs = false): ContestResult {
+  /** Rolls who wins, unless a live event already decided it (`forcedWinner`). */
+  private contest(strength: (side: Side) => number, withBuffs = false, forcedWinner?: Side): ContestResult {
     const blueChance = this.blueChance(strength('blue'), strength('red'), withBuffs)
-    const winner: Side = this.random() < blueChance ? 'blue' : 'red'
+    const winner: Side = forcedWinner ?? (this.random() < blueChance ? 'blue' : 'red')
     const chance = winner === 'blue' ? blueChance : 1 - blueChance
     this.updateStreaks(winner, chance)
     return { winner, chance }
@@ -312,20 +378,25 @@ class Simulation {
     })
   }
 
-  private gank() {
-    const blueGanks =
-      this.random() < this.blueChance(this.lanes.blue.JUNGLE, this.lanes.red.JUNGLE, false)
-    const ganker: Side = blueGanks ? 'blue' : 'red'
+  /** A random gank, or the live one (`live`), where the players already decided who wins. */
+  private gank(live?: { ganker: Side; lane: Lane; winner: Side }) {
+    const ganker: Side =
+      live?.ganker ??
+      (this.random() < this.blueChance(this.lanes.blue.JUNGLE, this.lanes.red.JUNGLE, false) ? 'blue' : 'red')
     const defender = opponent(ganker)
-    const lane = pickRandom(LANES, this.random)
+    const lane = live?.lane ?? pickRandom(LANES, this.random)
     const laner = this.laner(lane)
     const firstBlood = this.totalKills() === 0
-    const { winner, chance } = this.contest((side) =>
-      side === ganker
-        ? (this.lanes[side].JUNGLE + this.laneStrength(side, lane)) / 2 + GANK_BONUS
-        : this.laneStrength(side, lane),
+    const { winner, chance } = this.contest(
+      (side) =>
+        side === ganker
+          ? (this.lanes[side].JUNGLE + this.laneStrength(side, lane)) / 2 + GANK_BONUS
+          : this.laneStrength(side, lane),
+      false,
+      live?.winner,
     )
     const upset = chance < 0.4
+    const big = firstBlood || live !== undefined
 
     if (winner === ganker) {
       const killerRole = this.random() < 0.5 ? 'JUNGLE' : laner
@@ -339,14 +410,15 @@ class Simulation {
         actor: killer,
         target: victim,
         tags: this.tags({ firstBlood, upset }),
-        big: firstBlood,
+        big,
         spot: lane,
       })
     }
 
     const defenderRef: ChampionRef = { side: defender, role: laner }
     const jungler: ChampionRef = { side: ganker, role: 'JUNGLE' }
-    if (this.random() < FAILED_GANK_KILL_CHANCE) {
+    // A won live gank always ends in a kill: the guess was right, the jungler walked into a trap.
+    if (live || this.random() < FAILED_GANK_KILL_CHANCE) {
       this.kill(defenderRef, jungler)
       return this.addEvent({
         kind: 'gank',
@@ -354,7 +426,7 @@ class Simulation {
         actor: defenderRef,
         target: jungler,
         tags: this.tags({ firstBlood, upset, counterGank: true }),
-        big: firstBlood,
+        big,
         spot: lane,
       })
     }
@@ -392,7 +464,12 @@ class Simulation {
 
   // ── Objectives ──────────────────────────────────────────────
 
-  private contestObjective(objective: Objective) {
+  /** A contested objective. Live (multiplayer) Barons and Elders go to `liveWinner`, the better smite. */
+  private contestObjective(objective: Objective, liveWinner?: Side) {
+    if (liveWinner) {
+      const { chance } = this.contest((side) => this.power[side], true, liveWinner)
+      return this.takeObjective(objective, liveWinner, chance, true)
+    }
     const fightFirst = this.time >= MATCH_TIMES.laningEnd && this.random() < 0.45
     const spot: MapSpot = objective === 'dragon' || objective === 'elder' ? 'dragon' : 'baron'
     if (fightFirst) {
@@ -413,9 +490,14 @@ class Simulation {
     this.takeObjective(objective, winner, chance)
   }
 
-  private takeObjective(objective: Objective, contestWinner: Side, chance: number) {
+  /**
+   * A live objective can't be stolen (the smite duel already decided it), and only pushes a little,
+   * so one mini-game never ends the match on its own.
+   */
+  private takeObjective(objective: Objective, contestWinner: Side, chance: number, live = false) {
     const stealChance = objective === 'dragon' || objective === 'baron' || objective === 'elder' ? STEAL_CHANCE[objective] : 0
-    const stolen = this.random() < stealChance
+    const stolen = !live && this.random() < stealChance
+    const followUp: PushPower = live ? 'small' : 'big'
     const side = stolen ? opponent(contestWinner) : contestWinner
     const tags = this.tags({ steal: stolen, upset: stolen || chance < 0.4 })
     const actor: ChampionRef = { side, role: 'JUNGLE' }
@@ -428,7 +510,8 @@ class Simulation {
         const soul = state.dragons === DRAGONS_FOR_SOUL
         if (soul) tags.push('soul')
         this.spawns.dragon = soul ? Infinity : this.time + MATCH_TIMES.dragonRespawn
-        if (soul) this.spawns.elder = this.time + MATCH_TIMES.elderRespawn
+        // With a live Elder still to come, that one is the first Elder of the game.
+        if (soul && !this.liveEventAhead('elder')) this.spawns.elder = this.time + MATCH_TIMES.elderRespawn
         return this.addEvent({ kind: 'dragon', side, actor, tags, big: stolen || soul, spot: 'dragon', dragon: this.dragonKind() })
       }
       case 'grubs':
@@ -446,13 +529,13 @@ class Simulation {
         state.baronUntil = this.time + MATCH_TIMES.baronBuff
         this.spawns.baron = this.time + MATCH_TIMES.baronRespawn
         this.addEvent({ kind: 'baron', side, actor, tags, big: true, spot: 'baron' })
-        return this.push(side, 'big')
+        return this.push(side, followUp)
       case 'elder':
         state.gold += GOLD.elder
         state.elderUntil = this.time + MATCH_TIMES.elderBuff
         this.spawns.elder = this.time + MATCH_TIMES.elderRespawn
         this.addEvent({ kind: 'elder', side, actor, tags, big: true, spot: 'dragon' })
-        return this.push(side, 'big')
+        return this.push(side, followUp)
     }
   }
 
@@ -463,10 +546,13 @@ class Simulation {
 
   // ── Teamfights and pushes ───────────────────────────────────
 
-  /** Plays a teamfight and returns the winner. Big wins are followed by a push unless `canPush` is false. */
-  private teamfight(spot: MapSpot, canPush = true): Side {
+  /**
+   * Plays a teamfight and returns the winner. Big wins are followed by a push unless `canPush` is
+   * false. A live teamfight goes to `liveWinner`, the better ult.
+   */
+  private teamfight(spot: MapSpot, canPush = true, liveWinner?: Side): Side {
     const firstBlood = this.totalKills() === 0
-    const { winner, chance } = this.contest((side) => this.power[side], true)
+    const { winner, chance } = this.contest((side) => this.power[side], true, liveWinner)
     const loser = opponent(winner)
     const winnerKills = Math.min(5, 1 + Math.floor(this.random() * 4) + (chance > 0.65 ? 1 : 0))
     const loserKills = Math.floor(this.random() * Math.min(3, winnerKills))
@@ -482,7 +568,7 @@ class Simulation {
       actor: { side: winner, role: fightKills.topKiller },
       fightKills: { [winner]: winnerKills, [loser]: loserKills } as Record<Side, number>,
       tags: this.tags({ firstBlood, upset: chance < 0.4, ace, pentakill }),
-      big: ace || winnerKills - loserKills >= 3,
+      big: liveWinner !== undefined || ace || winnerKills - loserKills >= 3,
       spot,
     })
 
@@ -516,7 +602,7 @@ class Simulation {
     const inhibitorsOpen = this.time >= MATCH_TIMES.inhibitorsFrom && state.towers >= TOWERS_FOR_INHIBITOR
     const baseSpot: MapSpot = side === 'blue' ? 'redBase' : 'blueBase'
 
-    if (power === 'big' && state.inhibitors > 0) {
+    if (power === 'big' && state.inhibitors > 0 && !this.liveEventsLeft()) {
       state.towers += NEXUS_TOWERS
       this.winner = side
       return this.addEvent({ kind: 'nexus', side, actor: null, tags: [], big: true, spot: baseSpot })
@@ -530,7 +616,7 @@ class Simulation {
   }
 
   private maybeSurrender() {
-    if (this.time < MATCH_TIMES.surrenderFrom) return
+    if (this.time < MATCH_TIMES.surrenderFrom || this.liveEventsLeft()) return
     const leader: Side = this.goldLead('blue') >= 0 ? 'blue' : 'red'
     if (this.goldLead(leader) < SURRENDER.lead || this.random() >= SURRENDER.chance) return
     this.time += this.between(MATCH_TIMES.followUp)
@@ -576,7 +662,22 @@ class Simulation {
 
 /** Plays a whole match up front. The UI only plays the events back. */
 export function simulateMatch(teams: MatchTeams, seed: number): MatchResult {
-  return new Simulation(teams, seededRandom(seed)).run(seed)
+  const { winner, duration, events, stats } = new Simulation(teams, seededRandom(seed)).run(seed)
+  if (!winner) throw new Error('A match without live events always ends')
+  return { seed, winner, duration, events, stats }
+}
+
+/**
+ * Multiplayer: plays the match up to the first live event without a winner and pauses there.
+ * Both players run this with the same teams, seed and winners, so they always see the same match.
+ */
+export function simulateLiveMatch(teams: MatchTeams, seed: number, script: MatchScript): LiveMatch {
+  return new Simulation(teams, seededRandom(seed), script).run(seed)
+}
+
+/** The finished live match as a normal match result, or null while it is still going. */
+export function finishedMatch({ seed, winner, duration, events, stats }: LiveMatch): MatchResult | null {
+  return winner ? { seed, winner, duration, events, stats } : null
 }
 
 /** Gold difference (blue minus red) after an event. */

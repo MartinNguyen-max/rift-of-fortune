@@ -111,6 +111,44 @@ export interface KDA {
 
 export type ChampionStats = Record<Side, Record<Role, KDA>>
 
+/** A lane on the Rift. */
+export type Lane = 'top' | 'mid' | 'bot'
+export const LANES = ['top', 'mid', 'bot'] as const satisfies readonly Lane[]
+
+/** Multiplayer: the moments the players decide themselves with a mini-game, in game order. */
+export type LiveEventKind = 'gank' | 'teamfight' | 'baron' | 'elder'
+
+/** A live event forced into the match at `time`. `ganker` and `lane` are only used by the gank. */
+export interface ScriptedEvent {
+  kind: LiveEventKind
+  time: number
+  ganker: Side
+  lane: Lane
+}
+
+/**
+ * Live events and the winners decided so far. The match plays until it reaches an event whose
+ * winner isn't known yet, then pauses there.
+ */
+export interface MatchScript {
+  events: readonly ScriptedEvent[]
+  winners: readonly Side[]
+}
+
+/** A match that may be paused before a live event. */
+export interface LiveMatch {
+  seed: number
+  events: MatchEvent[]
+  stats: ChampionStats
+  /** Index in `events` of each live event played so far. */
+  scripted: number[]
+  /** The live event (index in the script) the match is waiting for, or null when it is over. */
+  pendingEvent: number | null
+  /** Null while the match is still going. */
+  winner: Side | null
+  duration: number
+}
+
 export interface MatchResult {
   seed: number
   winner: Side
