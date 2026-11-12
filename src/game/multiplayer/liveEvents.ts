@@ -31,6 +31,11 @@ export function liveScript(seed: number): ScriptedEvent[] {
   return LIVE_EVENTS.map(({ kind, time }) => ({ kind, time, ganker, lane }))
 }
 
+/** The seed for one mini-game (Baron's hits, the ult bar), the same for both players. */
+export function eventSeed(seed: number, eventIndex: number): number {
+  return (seed ^ Math.imul(eventIndex + 1, 0x27d4eb2d)) >>> 0
+}
+
 /** A fair coin for a tie, the same for both players. */
 export function tieBreaker(seed: number, eventIndex: number): Side {
   return seededRandom(seed ^ SCRIPT_SALT ^ ((eventIndex + 1) * 0x85ebca6b))() < 0.5 ? 'blue' : 'red'
@@ -46,3 +51,6 @@ export function duelWinner(scores: Record<Side, number>, seed: number, eventInde
 export function gankWinner(ganker: Side, bush: Lane, guess: Lane | null): Side {
   return guess === bush ? opponent(ganker) : ganker
 }
+
+/** The gank's three bushes, one per lane. */
+export const BUSH_NAMES: Record<Lane, string> = { top: 'Top', mid: 'Mid', bot: 'Bot' }

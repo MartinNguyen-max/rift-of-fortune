@@ -257,7 +257,7 @@ const KILL_KINDS: readonly MatchEvent['kind'][] = ['soloKill', 'gank', 'teamfigh
  * Uses its own seeded random so changing a line never changes how a match plays out.
  * Lines aren't repeated while there are unused variants.
  */
-export function commentate(match: MatchResult, teams: MatchTeams): (CommentaryLine | null)[] {
+export function commentate(match: Pick<MatchResult, 'seed' | 'events'>, teams: MatchTeams): (CommentaryLine | null)[] {
   const random = seededRandom(match.seed ^ 0x5bd1e995)
   const used = new Set<string>()
   const roasted = new Set<string>()

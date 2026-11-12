@@ -73,44 +73,22 @@ export function HomePage() {
         stolen Barons and two casters who have seen too much.
       </ModeCard>
 
-      <ComingSoonCard title="Multiplayer" icon="🤝" delay={0.3}>
-        Draft against a friend, then watch both teams fight it out on the Rift. Settle who really has fortune on
-        their side.
-      </ComingSoonCard>
-    </div>
-  )
-}
-
-interface ComingSoonCardProps {
-  title: string
-  icon: string
-  delay: number
-  children: ReactNode
-}
-
-/** A mode that isn't playable yet: no link, dimmed, with a "Coming soon" badge. */
-function ComingSoonCard({ title, icon, delay, children }: ComingSoonCardProps) {
-  return (
-    <motion.div
-      initial={{ y: 20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ delay }}
-      aria-disabled="true"
-      className="flex flex-col gap-2 rounded-xl border border-dashed border-gold/25 bg-panel/40 p-5"
-    >
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="font-display text-lg font-black text-gold/70 sm:text-xl">
-          <span aria-hidden="true" className="mr-2">
-            {icon}
+      <ModeCard
+        route="play"
+        badge="New · 1v1"
+        title="Multiplayer"
+        cta="Play a friend"
+        art={
+          <span className="font-display text-8xl font-black text-gold/15 select-none sm:text-9xl" aria-hidden="true">
+            1v1
           </span>
-          {title}
-        </h2>
-        <span className="shrink-0 rounded-full border border-gold/30 px-2.5 py-0.5 text-xs font-semibold tracking-wider text-gold/60 uppercase">
-          Coming soon
-        </span>
-      </div>
-      <p className="text-sm text-gold-light/60">{children}</p>
-    </motion.div>
+        }
+        delay={0.3}
+      >
+        Send a friend a link, draft at the same time, then fight it out. Smite Baron and Elder, land your ult and read
+        the gank. Spam GG when you win.
+      </ModeCard>
+    </div>
   )
 }
 

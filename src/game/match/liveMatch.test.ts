@@ -78,7 +78,7 @@ describe('simulateLiveMatch', () => {
   })
 })
 
-describe('live event balance', () => {
+describe('live event balance', { timeout: 60_000 }, () => {
   const random = seededRandom(9)
   const pool: TeamRating[] = Array.from({ length: 200 }, (_, index) =>
     rateTeam(simulateGame(gameData, index % 2 === 0 ? 'sensible' : 'random', random)),

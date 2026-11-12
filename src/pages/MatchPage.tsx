@@ -2,25 +2,14 @@ import { useState } from 'react'
 import { Game } from '../components/Game'
 import { MatchView } from '../components/match/MatchView'
 import { gameData } from '../data'
-import { rollChampion } from '../game/draft'
-import type { GameState } from '../game/gameState'
-import { drawItems } from '../game/items'
+import { nextChampion, randomItems, rerollChampion, rerollItem } from '../components/matchDraft'
 import { BOT_LEVELS, BOT_PROFILES, createBotTeam, type BotLevel } from '../game/match/bots'
 import { PLAYER_TEAM_NAME } from '../game/match/commentary'
 import type { MatchTeams } from '../game/match/types'
-import { pickRandom, seededRandom } from '../game/random'
+import { seededRandom } from '../game/random'
 import { MATCH_RULES } from '../game/rules'
 import type { TeamRating } from '../game/scoring/rateTeam'
 
-const nextChampion = (state: GameState) => rollChampion(gameData.champions, state.team)
-const randomItems = () => drawItems(gameData.items)
-/** A reroll never lands on a champion already on the team. */
-const rerollChampion = (state: GameState) => rollChampion(gameData.champions, state.team)
-/** An item reroll never lands on an item already in the game. */
-const rerollItem = (state: GameState) => {
-  const taken = new Set(state.items.map(({ id }) => id))
-  return pickRandom(gameData.items.filter(({ id }) => !taken.has(id)))
-}
 const newSeed = () => Math.floor(Math.random() * 2 ** 32)
 
 type View = { kind: 'draft' } | { kind: 'match'; teams: MatchTeams; level: BotLevel; seed: number }
