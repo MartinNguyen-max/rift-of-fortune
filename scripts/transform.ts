@@ -4,6 +4,7 @@ import type {
   ChampionClass,
   DamageType,
   Item,
+  ItemComponent,
   ItemStats,
   Role,
   StatKey,
@@ -178,7 +179,19 @@ export function toItem(id: string, item: DDragonItem): Item {
     image: item.image.full,
     gold: item.gold.total,
     stats: parseItemStats(item.description),
+    from: item.from ?? [],
   }
+}
+
+/** Every component used in a recipe of `items`, for the shop mini-game. Unknown ids are skipped. */
+export function toComponents(items: Item[], all: Record<string, DDragonItem>): ItemComponent[] {
+  const ids = new Set(items.flatMap((item) => item.from))
+  return [...ids]
+    .flatMap((id) => {
+      const component = all[id]
+      return component ? [{ id, name: component.name, image: component.image.full, gold: component.gold.total }] : []
+    })
+    .sort((a, b) => a.name.localeCompare(b.name))
 }
 
 function isRole(value: string): value is Role {

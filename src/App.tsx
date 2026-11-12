@@ -10,6 +10,8 @@ import { MatchPage } from './pages/MatchPage'
 
 /** Loaded only when opened: it brings the Supabase Realtime client, which the other modes don't need. */
 const MultiplayerPage = lazy(() => import('./pages/MultiplayerPage').then(({ MultiplayerPage }) => ({ default: MultiplayerPage })))
+/** Loaded only when opened, so the other modes don't download six mini-games. */
+const MiniGamesPage = lazy(() => import('./pages/MiniGamesPage').then(({ MiniGamesPage }) => ({ default: MiniGamesPage })))
 
 export default function App() {
   const route = useHashRoute()
@@ -36,6 +38,11 @@ export default function App() {
           {route === 'classic' && <ClassicPage />}
           {route === 'daily' && <DailyPage />}
           {route === 'match' && <MatchPage />}
+          {route === 'minigames' && (
+            <Suspense fallback={<p className="text-gold-light/60">Loading…</p>}>
+              <MiniGamesPage />
+            </Suspense>
+          )}
           {route === 'play' && (
             <Suspense fallback={<p className="text-gold-light/60">Loading…</p>}>
               <MultiplayerPage />

@@ -6,6 +6,7 @@ What the project owner needs to set up (accounts can't be created from code). Ea
 
 - **2026-11-12:** Vercel is live at `rift-of-fortune.vercel.app`, and Supabase is set up locally (`.env.local`). The domain riftoffortune.dk is not connected yet. **Match vs Bots is built** (`#/match`). See "Match vs Bots" in [DECISIONS.md](../DECISIONS.md).
 - **2026-11-12 (later):** **Multiplayer is built** (`#/play`), on Supabase Realtime. It needs the same two Supabase env variables on Vercel as the Daily. See "Multiplayer" in [DECISIONS.md](../DECISIONS.md).
+- **2026-11-12 (night):** **Mini-games are built** (`#/minigames`): six games against a bot. Next: the owner plays them and picks the favorites for Multiplayer. See [minigames.md](minigames.md).
 - **Built earlier:** Classic mode, Daily Rift, homepage, ranked scoring with a lane-swap table, and optional Supabase stats. Lint, build and all tests pass.
 - **Name decided: Rift of Fortune.** "Wild Rift of Fortune" was rejected: Wild Rift is Riot's mobile game.
 - **Domain:** riftoffortune.dk at Simply (the owner is buying it).

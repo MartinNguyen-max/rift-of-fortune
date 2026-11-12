@@ -41,6 +41,7 @@ Out of Scope for the MVP
 Future Ideas (later, not now)
 • Match vs bots: Each team gets a power score, the higher score wins with some randomness, and bot difficulty is level 1–3.
 • ~~Real-time multiplayer~~: built (see "Multiplayer" in DECISIONS.md). It uses Supabase Realtime, and the first player in the lobby acts as referee instead of a server.
+• ~~Mini-games~~: built as a fifth mode, vs a bot for now (see docs/minigames.md).
 • Async multiplayer: Fight other players' saved teams, so no real-time server is needed.
 • Single-player campaign (FIFA Ultimate Team style): Starter team, win matches to earn money, open packs (random or role-specific, e.g. top-only), swap champions, upgrade champions with duplicates, and a ladder of harder bot teams with a final boss.
 • Chemistry: Bonuses for real synergies and lore pairs (e.g. Xayah + Rakan).

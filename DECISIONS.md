@@ -176,6 +176,15 @@ Designed with the owner on 2026-11-12. Replaces the earlier "async first" plan: 
 - **Highlight reel:** 3 moments between live events plus first blood, every live event and the ending, at a fixed pace, so the reel never shifts when it grows after an event. No Skip.
 - **New dependency:** `@supabase/supabase-js` (for Realtime; the Daily still uses plain `fetch`). The multiplayer page is lazy-loaded, so other modes don't download it.
 
+## Mini-games (vs bot)
+
+Built on 2026-11-12 from the owner's six ideas. The owner asked for all of them, to keep the favorites later, and said "develop as it pleases you". The full design is in [docs/minigames.md](docs/minigames.md).
+
+- **New mode** at `#/minigames`, with a fifth (wide) card on the homepage. Each game has a funny name, a champion icon and a one-line description. Played against a bot for now; built for Multiplayer later (pure, seeded rules in `src/game/minigames/`).
+- **Own choices:** Teemo uses the path version (plant, then walk); Mundo has three lanes instead of two; Udyr for the combo game; Thresh as the hook rival.
+- **Data:** item recipes (`Item.from`) and the component list (`GameData.components`) are now part of `npm run data`.
+- **No new dependencies.** The page is lazy-loaded.
+
 ---
 
 # Summary

@@ -8,6 +8,7 @@ import {
   parseItemStats,
   parseWikiPositions,
   toChampion,
+  toComponents,
   type DDragonChampion,
   type DDragonItem,
 } from './transform.ts'
@@ -147,13 +148,35 @@ describe('guessPositions', () => {
 
 describe('dedupeByName', () => {
   it('keeps the lowest id per name and sorts by name', () => {
-    const item = { image: '', gold: 0, stats: {} }
+    const item = { image: '', gold: 0, stats: {}, from: [] }
     const result = dedupeByName([
       { ...item, id: '3050', name: 'Zeke' },
       { ...item, id: '323003', name: 'Archangel' },
       { ...item, id: '3003', name: 'Archangel' },
     ])
     expect(result.map((i) => i.id)).toEqual(['3003', '3050'])
+  })
+})
+
+describe('toComponents', () => {
+  const component = (name: string, gold: number) => ({
+    name,
+    description: '',
+    image: { full: `${name}.png` },
+    gold: { total: gold, purchasable: true },
+    tags: [],
+    maps: {},
+  })
+
+  it('lists each recipe component once, sorted by name, skipping unknown ids', () => {
+    const item = { image: '', gold: 0, stats: {}, name: 'Item' }
+    const items = [
+      { ...item, id: '3031', from: ['1038', '3133', '1038'] },
+      { ...item, id: '3089', from: ['1058', '9999'] },
+    ]
+    const all = { '1038': component('B. F. Sword', 1300), '3133': component('Pickaxe', 875), '1058': component('Needlessly Large Rod', 1200) }
+    expect(toComponents(items, all).map((c) => c.name)).toEqual(['B. F. Sword', 'Needlessly Large Rod', 'Pickaxe'])
+    expect(toComponents(items, all)[0]).toEqual({ id: '1038', name: 'B. F. Sword', image: 'B. F. Sword.png', gold: 1300 })
   })
 })
 

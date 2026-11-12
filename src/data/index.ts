@@ -12,6 +12,13 @@ export const championIconUrl = (image: string): string =>
 export const championSplashUrl = (championId: string): string =>
   `${CDN}/img/champion/splash/${championId}_0.jpg`
 
+/** A skin's portrait loading screen art, e.g. Sheriff Caitlyn is skin 2. */
+export const championLoadingUrl = (championId: string, skin = 0): string =>
+  `${CDN}/img/champion/loading/${championId}_${skin}.jpg`
+
+/** A champion ability icon, e.g. "UdyrQ.png". */
+export const spellIconUrl = (image: string): string => `${CDN}/${gameData.patch}/img/spell/${image}`
+
 export const itemIconUrl = (image: string): string => `${CDN}/${gameData.patch}/img/item/${image}`
 
 export const summonersRiftMapUrl = `${CDN}/${gameData.patch}/img/map/map11.png`

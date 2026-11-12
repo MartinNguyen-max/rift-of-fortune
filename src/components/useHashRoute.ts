@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
+import { parseMiniGameId, type MiniGameId } from '../game/minigames/catalog'
 import { parseRoomCode } from '../game/multiplayer/roomCode'
 
-export type Route = 'home' | 'classic' | 'daily' | 'match' | 'play'
+export type Route = 'home' | 'classic' | 'daily' | 'match' | 'play' | 'minigames'
 
-const PAGES: readonly Route[] = ['classic', 'daily', 'match', 'play']
+const PAGES: readonly Route[] = ['classic', 'daily', 'match', 'play', 'minigames']
 
 const pathOf = (hash: string) => hash.replace(/^#\/?/, '')
 
@@ -22,6 +23,14 @@ export function roomCodeFromHash(hash: string): string | null {
 }
 
 export const roomHref = (code: string): string => `${routeHref('play')}/${code}`
+
+/** The mini-game in "#/minigames/hook", or null on the mini-game list. */
+export function miniGameFromHash(hash: string): MiniGameId | null {
+  const [page, id] = pathOf(hash).split('/')
+  return page === 'minigames' ? parseMiniGameId(id) : null
+}
+
+export const miniGameHref = (id: MiniGameId): string => `${routeHref('minigames')}/${id}`
 
 /** The full invite link for a lobby, to send to a friend. */
 export const inviteLink = (code: string): string =>
@@ -46,6 +55,11 @@ function useHash(): string {
 /** The current page. */
 export function useHashRoute(): Route {
   return parseRoute(useHash())
+}
+
+/** The open mini-game in the URL, if any. */
+export function useMiniGameId(): MiniGameId | null {
+  return miniGameFromHash(useHash())
 }
 
 /** The lobby code in the URL, if any. */

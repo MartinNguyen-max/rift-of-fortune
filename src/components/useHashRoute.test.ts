@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseRoute, roomCodeFromHash, roomHref, routeHref } from './useHashRoute'
+import { miniGameFromHash, miniGameHref, parseRoute, roomCodeFromHash, roomHref, routeHref } from './useHashRoute'
 
 describe('parseRoute', () => {
   it.each([
@@ -8,6 +8,8 @@ describe('parseRoute', () => {
     ['#/match', 'match'],
     ['#/play', 'play'],
     ['#/play/K7Q2X', 'play'],
+    ['#/minigames', 'minigames'],
+    ['#/minigames/hook', 'minigames'],
     ['#daily', 'daily'],
     ['#/', 'home'],
     ['', 'home'],
@@ -17,7 +19,7 @@ describe('parseRoute', () => {
   })
 
   it('round-trips with routeHref', () => {
-    for (const route of ['home', 'classic', 'daily', 'match', 'play'] as const) {
+    for (const route of ['home', 'classic', 'daily', 'match', 'play', 'minigames'] as const) {
       expect(parseRoute(routeHref(route))).toBe(route)
     }
   })
@@ -33,5 +35,14 @@ describe('roomCodeFromHash', () => {
     expect(roomCodeFromHash('#/play')).toBeNull()
     expect(roomCodeFromHash('#/play/nope')).toBeNull()
     expect(roomCodeFromHash('#/daily/K7Q2X')).toBeNull()
+  })
+})
+
+describe('miniGameFromHash', () => {
+  it('reads the mini-game from the URL', () => {
+    expect(miniGameFromHash(miniGameHref('hook'))).toBe('hook')
+    expect(miniGameFromHash('#/minigames')).toBeNull()
+    expect(miniGameFromHash('#/minigames/nope')).toBeNull()
+    expect(miniGameFromHash('#/play/hook')).toBeNull()
   })
 })

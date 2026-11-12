@@ -2814,7 +2814,11 @@
         "health": 350,
         "magicResist": 45,
         "abilityHaste": 15
-      }
+      },
+      "from": [
+        "3067",
+        "1057"
+      ]
     },
     {
       "id": "2522",
@@ -2825,7 +2829,11 @@
         "abilityPower": 90,
         "mana": 300,
         "abilityHaste": 10
-      }
+      },
+      "from": [
+        "3802",
+        "1026"
+      ]
     },
     {
       "id": "3003",
@@ -2836,7 +2844,12 @@
         "abilityPower": 70,
         "mana": 600,
         "abilityHaste": 25
-      }
+      },
+      "from": [
+        "3070",
+        "3802",
+        "3108"
+      ]
     },
     {
       "id": "3504",
@@ -2848,7 +2861,11 @@
         "healAndShieldPower": 10,
         "manaRegen": 125,
         "moveSpeed": 4
-      }
+      },
+      "from": [
+        "3113",
+        "3114"
+      ]
     },
     {
       "id": "6696",
@@ -2859,7 +2876,11 @@
         "attackDamage": 55,
         "lethality": 18,
         "abilityHaste": 20
-      }
+      },
+      "from": [
+        "2020",
+        "3133"
+      ]
     },
     {
       "id": "2524",
@@ -2871,7 +2892,12 @@
         "abilityHaste": 15,
         "armor": 20,
         "magicResist": 20
-      }
+      },
+      "from": [
+        "3067",
+        "1029",
+        "1033"
+      ]
     },
     {
       "id": "3102",
@@ -2881,7 +2907,11 @@
       "stats": {
         "abilityPower": 105,
         "magicResist": 40
-      }
+      },
+      "from": [
+        "1058",
+        "4632"
+      ]
     },
     {
       "id": "2520",
@@ -2892,7 +2922,11 @@
         "attackDamage": 55,
         "lethality": 18,
         "abilityHaste": 15
-      }
+      },
+      "from": [
+        "2020",
+        "3134"
+      ]
     },
     {
       "id": "3071",
@@ -2903,7 +2937,12 @@
         "attackDamage": 45,
         "health": 400,
         "abilityHaste": 20
-      }
+      },
+      "from": [
+        "3044",
+        "3067",
+        "1037"
+      ]
     },
     {
       "id": "2503",
@@ -2914,7 +2953,11 @@
         "abilityPower": 80,
         "mana": 600,
         "abilityHaste": 20
-      }
+      },
+      "from": [
+        "3802",
+        "2508"
+      ]
     },
     {
       "id": "3153",
@@ -2925,7 +2968,12 @@
         "attackDamage": 40,
         "attackSpeed": 25,
         "lifeSteal": 10
-      }
+      },
+      "from": [
+        "1053",
+        "1043",
+        "1037"
+      ]
     },
     {
       "id": "8010",
@@ -2936,7 +2984,11 @@
         "abilityPower": 65,
         "health": 400,
         "abilityHaste": 15
-      }
+      },
+      "from": [
+        "3147",
+        "3108"
+      ]
     },
     {
       "id": "3072",
@@ -2946,7 +2998,12 @@
       "stats": {
         "attackDamage": 80,
         "lifeSteal": 15
-      }
+      },
+      "from": [
+        "1038",
+        "1037",
+        "1053"
+      ]
     },
     {
       "id": "6609",
@@ -2957,7 +3014,12 @@
         "attackDamage": 45,
         "health": 450,
         "abilityHaste": 15
-      }
+      },
+      "from": [
+        "3123",
+        "1011",
+        "3133"
+      ]
     },
     {
       "id": "4629",
@@ -2969,7 +3031,12 @@
         "health": 350,
         "abilityHaste": 25,
         "moveSpeed": 4
-      }
+      },
+      "from": [
+        "3067",
+        "3113",
+        "3108"
+      ]
     },
     {
       "id": "3137",
@@ -2980,7 +3047,12 @@
         "abilityPower": 75,
         "magicPenetration": 30,
         "abilityHaste": 20
-      }
+      },
+      "from": [
+        "4630",
+        "3108",
+        "3108"
+      ]
     },
     {
       "id": "6621",
@@ -2991,7 +3063,12 @@
         "abilityPower": 45,
         "healAndShieldPower": 16,
         "manaRegen": 100
-      }
+      },
+      "from": [
+        "1026",
+        "3114",
+        "3114"
+      ]
     },
     {
       "id": "3742",
@@ -3002,7 +3079,12 @@
         "health": 350,
         "armor": 55,
         "moveSpeed": 4
-      }
+      },
+      "from": [
+        "3066",
+        "1028",
+        "1031"
+      ]
     },
     {
       "id": "6333",
@@ -3013,7 +3095,12 @@
         "attackDamage": 60,
         "armor": 50,
         "abilityHaste": 15
-      }
+      },
+      "from": [
+        "2019",
+        "1037",
+        "3133"
+      ]
     },
     {
       "id": "2510",
@@ -3025,7 +3112,13 @@
         "abilityPower": 60,
         "abilityHaste": 20,
         "attackSpeed": 20
-      }
+      },
+      "from": [
+        "3057",
+        "1026",
+        "3067",
+        "1042"
+      ]
     },
     {
       "id": "6620",
@@ -3037,7 +3130,11 @@
         "health": 200,
         "abilityHaste": 20,
         "manaRegen": 125
-      }
+      },
+      "from": [
+        "3067",
+        "4642"
+      ]
     },
     {
       "id": "6692",
@@ -3047,7 +3144,12 @@
       "stats": {
         "attackDamage": 60,
         "abilityHaste": 15
-      }
+      },
+      "from": [
+        "3133",
+        "1037",
+        "1036"
+      ]
     },
     {
       "id": "3814",
@@ -3058,7 +3160,11 @@
         "attackDamage": 50,
         "lethality": 15,
         "health": 250
-      }
+      },
+      "from": [
+        "3134",
+        "2021"
+      ]
     },
     {
       "id": "2517",
@@ -3069,7 +3175,12 @@
         "attackDamage": 65,
         "omnivamp": 5,
         "tenacity": 20
-      }
+      },
+      "from": [
+        "3133",
+        "1037",
+        "1036"
+      ]
     },
     {
       "id": "3508",
@@ -3080,7 +3191,12 @@
         "attackDamage": 50,
         "abilityHaste": 20,
         "critChance": 25
-      }
+      },
+      "from": [
+        "3057",
+        "3133",
+        "1018"
+      ]
     },
     {
       "id": "3073",
@@ -3091,7 +3207,12 @@
         "attackDamage": 40,
         "attackSpeed": 20,
         "health": 450
-      }
+      },
+      "from": [
+        "2021",
+        "1042",
+        "3044"
+      ]
     },
     {
       "id": "2512",
@@ -3102,7 +3223,11 @@
         "attackSpeed": 45,
         "critChance": 25,
         "moveSpeed": 4
-      }
+      },
+      "from": [
+        "3086",
+        "3144"
+      ]
     },
     {
       "id": "4401",
@@ -3113,7 +3238,12 @@
         "health": 400,
         "magicResist": 55,
         "moveSpeed": 4
-      }
+      },
+      "from": [
+        "1057",
+        "1028",
+        "3066"
+      ]
     },
     {
       "id": "3110",
@@ -3124,7 +3254,11 @@
         "armor": 75,
         "mana": 400,
         "abilityHaste": 20
-      }
+      },
+      "from": [
+        "3082",
+        "3024"
+      ]
     },
     {
       "id": "3026",
@@ -3134,7 +3268,11 @@
       "stats": {
         "attackDamage": 55,
         "armor": 45
-      }
+      },
+      "from": [
+        "2019",
+        "1038"
+      ]
     },
     {
       "id": "3124",
@@ -3145,7 +3283,12 @@
         "attackDamage": 30,
         "abilityPower": 30,
         "attackSpeed": 25
-      }
+      },
+      "from": [
+        "1052",
+        "1043",
+        "1037"
+      ]
     },
     {
       "id": "3084",
@@ -3155,7 +3298,12 @@
       "stats": {
         "health": 900,
         "healthRegen": 100
-      }
+      },
+      "from": [
+        "1011",
+        "3801",
+        "1011"
+      ]
     },
     {
       "id": "2523",
@@ -3165,7 +3313,12 @@
       "stats": {
         "attackDamage": 55,
         "critChance": 25
-      }
+      },
+      "from": [
+        "1037",
+        "6670",
+        "1036"
+      ]
     },
     {
       "id": "3146",
@@ -3176,7 +3329,12 @@
         "abilityPower": 80,
         "attackDamage": 40,
         "omnivamp": 10
-      }
+      },
+      "from": [
+        "1053",
+        "3145",
+        "1052"
+      ]
     },
     {
       "id": "3152",
@@ -3187,7 +3345,12 @@
         "abilityPower": 60,
         "health": 350,
         "abilityHaste": 10
-      }
+      },
+      "from": [
+        "3145",
+        "3067",
+        "1028"
+      ]
     },
     {
       "id": "6664",
@@ -3199,7 +3362,11 @@
         "magicResist": 40,
         "abilityHaste": 10,
         "healthRegen": 100
-      }
+      },
+      "from": [
+        "6660",
+        "3211"
+      ]
     },
     {
       "id": "4628",
@@ -3209,7 +3376,12 @@
       "stats": {
         "abilityPower": 75,
         "abilityHaste": 25
-      }
+      },
+      "from": [
+        "3108",
+        "3108",
+        "1052"
+      ]
     },
     {
       "id": "6697",
@@ -3220,7 +3392,11 @@
         "attackDamage": 55,
         "lethality": 18,
         "abilityHaste": 10
-      }
+      },
+      "from": [
+        "3134",
+        "3133"
+      ]
     },
     {
       "id": "3181",
@@ -3231,7 +3407,12 @@
         "attackDamage": 40,
         "health": 500,
         "moveSpeed": 4
-      }
+      },
+      "from": [
+        "2021",
+        "3066",
+        "1037"
+      ]
     },
     {
       "id": "6662",
@@ -3242,7 +3423,12 @@
         "health": 300,
         "armor": 50,
         "abilityHaste": 15
-      }
+      },
+      "from": [
+        "3057",
+        "1028",
+        "1031"
+      ]
     },
     {
       "id": "6673",
@@ -3252,7 +3438,11 @@
       "stats": {
         "attackDamage": 55,
         "critChance": 25
-      }
+      },
+      "from": [
+        "1037",
+        "6670"
+      ]
     },
     {
       "id": "4005",
@@ -3263,7 +3453,12 @@
         "abilityPower": 60,
         "abilityHaste": 15,
         "manaRegen": 150
-      }
+      },
+      "from": [
+        "1052",
+        "4642",
+        "1052"
+      ]
     },
     {
       "id": "3031",
@@ -3274,7 +3469,12 @@
         "attackDamage": 75,
         "critChance": 25,
         "critDamage": 30
-      }
+      },
+      "from": [
+        "1038",
+        "1037",
+        "1018"
+      ]
     },
     {
       "id": "6665",
@@ -3285,7 +3485,12 @@
         "health": 350,
         "armor": 45,
         "magicResist": 45
-      }
+      },
+      "from": [
+        "1011",
+        "1031",
+        "1057"
+      ]
     },
     {
       "id": "2504",
@@ -3296,7 +3501,11 @@
         "health": 400,
         "magicResist": 80,
         "healthRegen": 100
-      }
+      },
+      "from": [
+        "3211",
+        "1057"
+      ]
     },
     {
       "id": "3109",
@@ -3308,7 +3517,12 @@
         "armor": 40,
         "abilityHaste": 10,
         "healthRegen": 100
-      }
+      },
+      "from": [
+        "3067",
+        "1031",
+        "1006"
+      ]
     },
     {
       "id": "6672",
@@ -3319,7 +3533,12 @@
         "attackDamage": 45,
         "attackSpeed": 40,
         "moveSpeed": 4
-      }
+      },
+      "from": [
+        "6690",
+        "3051",
+        "1043"
+      ]
     },
     {
       "id": "6653",
@@ -3329,7 +3548,11 @@
       "stats": {
         "abilityPower": 60,
         "health": 300
-      }
+      },
+      "from": [
+        "3147",
+        "2508"
+      ]
     },
     {
       "id": "3100",
@@ -3340,7 +3563,12 @@
         "abilityPower": 100,
         "moveSpeed": 6,
         "abilityHaste": 10
-      }
+      },
+      "from": [
+        "3057",
+        "3113",
+        "1026"
+      ]
     },
     {
       "id": "3190",
@@ -3352,7 +3580,12 @@
         "armor": 30,
         "magicResist": 30,
         "abilityHaste": 10
-      }
+      },
+      "from": [
+        "3067",
+        "1029",
+        "1033"
+      ]
     },
     {
       "id": "3036",
@@ -3363,7 +3596,11 @@
         "attackDamage": 35,
         "armorPenetration": 35,
         "critChance": 25
-      }
+      },
+      "from": [
+        "3035",
+        "6670"
+      ]
     },
     {
       "id": "6655",
@@ -3374,7 +3611,11 @@
         "abilityPower": 100,
         "mana": 600,
         "abilityHaste": 10
-      }
+      },
+      "from": [
+        "3802",
+        "3145"
+      ]
     },
     {
       "id": "3118",
@@ -3385,7 +3626,11 @@
         "abilityPower": 90,
         "mana": 600,
         "abilityHaste": 15
-      }
+      },
+      "from": [
+        "3802",
+        "1026"
+      ]
     },
     {
       "id": "3004",
@@ -3396,7 +3641,12 @@
         "attackDamage": 35,
         "mana": 500,
         "abilityHaste": 15
-      }
+      },
+      "from": [
+        "3070",
+        "3133",
+        "1036"
+      ]
     },
     {
       "id": "3156",
@@ -3407,7 +3657,11 @@
         "attackDamage": 60,
         "abilityHaste": 15,
         "magicResist": 40
-      }
+      },
+      "from": [
+        "3155",
+        "3133"
+      ]
     },
     {
       "id": "3139",
@@ -3418,7 +3672,12 @@
         "attackDamage": 50,
         "magicResist": 35,
         "lifeSteal": 10
-      }
+      },
+      "from": [
+        "3140",
+        "1037",
+        "1053"
+      ]
     },
     {
       "id": "3222",
@@ -3430,7 +3689,11 @@
         "manaRegen": 100,
         "healAndShieldPower": 12,
         "abilityHaste": 15
-      }
+      },
+      "from": [
+        "3067",
+        "3114"
+      ]
     },
     {
       "id": "6617",
@@ -3442,7 +3705,11 @@
         "health": 200,
         "abilityHaste": 20,
         "manaRegen": 125
-      }
+      },
+      "from": [
+        "3067",
+        "4642"
+      ]
     },
     {
       "id": "3165",
@@ -3453,7 +3720,12 @@
         "abilityPower": 75,
         "health": 350,
         "abilityHaste": 15
-      }
+      },
+      "from": [
+        "3916",
+        "1026",
+        "3067"
+      ]
     },
     {
       "id": "3033",
@@ -3464,7 +3736,12 @@
         "attackDamage": 35,
         "armorPenetration": 30,
         "critChance": 25
-      }
+      },
+      "from": [
+        "3123",
+        "3035",
+        "1018"
+      ]
     },
     {
       "id": "3115",
@@ -3475,7 +3752,12 @@
         "abilityPower": 80,
         "attackSpeed": 50,
         "abilityHaste": 15
-      }
+      },
+      "from": [
+        "1043",
+        "1026",
+        "3108"
+      ]
     },
     {
       "id": "6675",
@@ -3486,7 +3768,12 @@
         "attackSpeed": 40,
         "critChance": 25,
         "moveSpeed": 4
-      }
+      },
+      "from": [
+        "1042",
+        "3086",
+        "1042"
+      ]
     },
     {
       "id": "2501",
@@ -3496,7 +3783,11 @@
       "stats": {
         "attackDamage": 40,
         "health": 550
-      }
+      },
+      "from": [
+        "2021",
+        "2021"
+      ]
     },
     {
       "id": "3046",
@@ -3507,7 +3798,12 @@
         "attackSpeed": 65,
         "critChance": 25,
         "moveSpeed": 10
-      }
+      },
+      "from": [
+        "1042",
+        "3086",
+        "1042"
+      ]
     },
     {
       "id": "6698",
@@ -3518,7 +3814,11 @@
         "attackDamage": 55,
         "lethality": 18,
         "abilityHaste": 10
-      }
+      },
+      "from": [
+        "3077",
+        "2020"
+      ]
     },
     {
       "id": "2525",
@@ -3528,7 +3828,11 @@
       "stats": {
         "health": 600,
         "abilityHaste": 20
-      }
+      },
+      "from": [
+        "3067",
+        "1011"
+      ]
     },
     {
       "id": "3089",
@@ -3537,7 +3841,11 @@
       "gold": 3500,
       "stats": {
         "abilityPower": 130
-      }
+      },
+      "from": [
+        "1058",
+        "1058"
+      ]
     },
     {
       "id": "3143",
@@ -3547,7 +3855,11 @@
       "stats": {
         "health": 350,
         "armor": 75
-      }
+      },
+      "from": [
+        "3082",
+        "1011"
+      ]
     },
     {
       "id": "3094",
@@ -3558,7 +3870,11 @@
         "attackSpeed": 35,
         "critChance": 25,
         "moveSpeed": 4
-      }
+      },
+      "from": [
+        "3086",
+        "3144"
+      ]
     },
     {
       "id": "3074",
@@ -3569,7 +3885,12 @@
         "attackDamage": 65,
         "abilityHaste": 15,
         "lifeSteal": 12
-      }
+      },
+      "from": [
+        "3077",
+        "1053",
+        "3133"
+      ]
     },
     {
       "id": "3107",
@@ -3581,7 +3902,11 @@
         "abilityHaste": 15,
         "manaRegen": 100,
         "healAndShieldPower": 10
-      }
+      },
+      "from": [
+        "3108",
+        "3114"
+      ]
     },
     {
       "id": "4633",
@@ -3592,7 +3917,11 @@
         "abilityPower": 70,
         "health": 350,
         "abilityHaste": 15
-      }
+      },
+      "from": [
+        "3147",
+        "3108"
+      ]
     },
     {
       "id": "6657",
@@ -3603,7 +3932,11 @@
         "abilityPower": 45,
         "health": 350,
         "mana": 500
-      }
+      },
+      "from": [
+        "1026",
+        "3803"
+      ]
     },
     {
       "id": "3085",
@@ -3614,7 +3947,11 @@
         "attackSpeed": 40,
         "critChance": 25,
         "moveSpeed": 5
-      }
+      },
+      "from": [
+        "3086",
+        "3144"
+      ]
     },
     {
       "id": "3116",
@@ -3624,7 +3961,12 @@
       "stats": {
         "abilityPower": 65,
         "health": 400
-      }
+      },
+      "from": [
+        "1026",
+        "1011",
+        "1052"
+      ]
     },
     {
       "id": "6695",
@@ -3634,7 +3976,11 @@
       "stats": {
         "attackDamage": 55,
         "lethality": 15
-      }
+      },
+      "from": [
+        "3134",
+        "1037"
+      ]
     },
     {
       "id": "6694",
@@ -3645,7 +3991,11 @@
         "attackDamage": 45,
         "armorPenetration": 35,
         "abilityHaste": 15
-      }
+      },
+      "from": [
+        "3133",
+        "3035"
+      ]
     },
     {
       "id": "4645",
@@ -3655,7 +4005,11 @@
       "stats": {
         "abilityPower": 110,
         "magicPenetration": 15
-      }
+      },
+      "from": [
+        "3145",
+        "1058"
+      ]
     },
     {
       "id": "2065",
@@ -3667,7 +4021,11 @@
         "abilityHaste": 15,
         "moveSpeed": 4,
         "manaRegen": 125
-      }
+      },
+      "from": [
+        "3113",
+        "4642"
+      ]
     },
     {
       "id": "3161",
@@ -3677,7 +4035,12 @@
       "stats": {
         "attackDamage": 45,
         "health": 450
-      }
+      },
+      "from": [
+        "1037",
+        "2021",
+        "1028"
+      ]
     },
     {
       "id": "3065",
@@ -3689,7 +4052,11 @@
         "magicResist": 50,
         "abilityHaste": 10,
         "healthRegen": 100
-      }
+      },
+      "from": [
+        "3211",
+        "3067"
+      ]
     },
     {
       "id": "6616",
@@ -3701,7 +4068,11 @@
         "healAndShieldPower": 10,
         "manaRegen": 125,
         "abilityHaste": 10
-      }
+      },
+      "from": [
+        "3108",
+        "3114"
+      ]
     },
     {
       "id": "3087",
@@ -3713,7 +4084,12 @@
         "abilityPower": 45,
         "attackSpeed": 30,
         "moveSpeed": 4
-      }
+      },
+      "from": [
+        "3144",
+        "3113",
+        "1037"
+      ]
     },
     {
       "id": "3053",
@@ -3723,7 +4099,12 @@
       "stats": {
         "health": 400,
         "tenacity": 20
-      }
+      },
+      "from": [
+        "1037",
+        "2021",
+        "1028"
+      ]
     },
     {
       "id": "3095",
@@ -3734,7 +4115,12 @@
         "attackDamage": 50,
         "attackSpeed": 25,
         "critChance": 25
-      }
+      },
+      "from": [
+        "1038",
+        "1018",
+        "3144"
+      ]
     },
     {
       "id": "4646",
@@ -3745,7 +4131,11 @@
         "abilityPower": 90,
         "magicPenetration": 15,
         "moveSpeed": 6
-      }
+      },
+      "from": [
+        "3145",
+        "3113"
+      ]
     },
     {
       "id": "6631",
@@ -3756,7 +4146,12 @@
         "attackDamage": 40,
         "attackSpeed": 25,
         "health": 450
-      }
+      },
+      "from": [
+        "3077",
+        "3044",
+        "1042"
+      ]
     },
     {
       "id": "6610",
@@ -3767,7 +4162,11 @@
         "attackDamage": 40,
         "health": 400,
         "abilityHaste": 10
-      }
+      },
+      "from": [
+        "2021",
+        "3133"
+      ]
     },
     {
       "id": "3068",
@@ -3778,7 +4177,12 @@
         "health": 350,
         "armor": 50,
         "abilityHaste": 10
-      }
+      },
+      "from": [
+        "6660",
+        "1031",
+        "1028"
+      ]
     },
     {
       "id": "3302",
@@ -3788,7 +4192,11 @@
       "stats": {
         "attackDamage": 30,
         "attackSpeed": 35
-      }
+      },
+      "from": [
+        "3051",
+        "1043"
+      ]
     },
     {
       "id": "6676",
@@ -3799,7 +4207,12 @@
         "attackDamage": 50,
         "lethality": 10,
         "critChance": 25
-      }
+      },
+      "from": [
+        "1037",
+        "3134",
+        "1018"
+      ]
     },
     {
       "id": "3075",
@@ -3809,7 +4222,12 @@
       "stats": {
         "health": 150,
         "armor": 75
-      }
+      },
+      "from": [
+        "3076",
+        "1031",
+        "1028"
+      ]
     },
     {
       "id": "3748",
@@ -3819,7 +4237,12 @@
       "stats": {
         "attackDamage": 40,
         "health": 600
-      }
+      },
+      "from": [
+        "3077",
+        "2021",
+        "1011"
+      ]
     },
     {
       "id": "3078",
@@ -3831,7 +4254,12 @@
         "attackSpeed": 30,
         "health": 333,
         "abilityHaste": 15
-      }
+      },
+      "from": [
+        "3057",
+        "3044",
+        "3051"
+      ]
     },
     {
       "id": "3179",
@@ -3842,7 +4270,11 @@
         "attackDamage": 60,
         "lethality": 18,
         "abilityHaste": 15
-      }
+      },
+      "from": [
+        "3134",
+        "3133"
+      ]
     },
     {
       "id": "2502",
@@ -3853,7 +4285,12 @@
         "health": 400,
         "armor": 50,
         "abilityHaste": 15
-      }
+      },
+      "from": [
+        "1031",
+        "3067",
+        "1028"
+      ]
     },
     {
       "id": "3135",
@@ -3863,7 +4300,11 @@
       "stats": {
         "abilityPower": 95,
         "magicPenetration": 40
-      }
+      },
+      "from": [
+        "4630",
+        "1026"
+      ]
     },
     {
       "id": "6699",
@@ -3874,7 +4315,12 @@
         "attackDamage": 55,
         "lethality": 10,
         "abilityHaste": 10
-      }
+      },
+      "from": [
+        "2020",
+        "1036",
+        "1036"
+      ]
     },
     {
       "id": "3083",
@@ -3884,7 +4330,12 @@
       "stats": {
         "health": 1000,
         "healthRegen": 100
-      }
+      },
+      "from": [
+        "1011",
+        "1011",
+        "3801"
+      ]
     },
     {
       "id": "3119",
@@ -3895,7 +4346,12 @@
         "health": 550,
         "mana": 500,
         "abilityHaste": 15
-      }
+      },
+      "from": [
+        "3070",
+        "1011",
+        "3067"
+      ]
     },
     {
       "id": "3091",
@@ -3906,7 +4362,12 @@
         "attackSpeed": 50,
         "magicResist": 45,
         "tenacity": 20
-      }
+      },
+      "from": [
+        "1043",
+        "1057",
+        "1043"
+      ]
     },
     {
       "id": "3142",
@@ -3917,7 +4378,12 @@
         "attackDamage": 55,
         "lethality": 18,
         "moveSpeed": 4
-      }
+      },
+      "from": [
+        "3134",
+        "6690",
+        "1036"
+      ]
     },
     {
       "id": "3032",
@@ -3928,7 +4394,12 @@
         "attackDamage": 50,
         "attackSpeed": 45,
         "critChance": 0
-      }
+      },
+      "from": [
+        "1038",
+        "3144",
+        "1036"
+      ]
     },
     {
       "id": "3050",
@@ -3940,7 +4411,12 @@
         "armor": 25,
         "magicResist": 25,
         "abilityHaste": 10
-      }
+      },
+      "from": [
+        "3067",
+        "1029",
+        "1033"
+      ]
     },
     {
       "id": "3157",
@@ -3950,7 +4426,349 @@
       "stats": {
         "abilityPower": 105,
         "armor": 50
-      }
+      },
+      "from": [
+        "1058",
+        "2420"
+      ]
+    }
+  ],
+  "components": [
+    {
+      "id": "3113",
+      "name": "Aether Wisp",
+      "image": "3113.png",
+      "gold": 900
+    },
+    {
+      "id": "1052",
+      "name": "Amplifying Tome",
+      "image": "1052.png",
+      "gold": 400
+    },
+    {
+      "id": "1038",
+      "name": "B. F. Sword",
+      "image": "1038.png",
+      "gold": 1300
+    },
+    {
+      "id": "6660",
+      "name": "Bami's Cinder",
+      "image": "6660.png",
+      "gold": 900
+    },
+    {
+      "id": "4642",
+      "name": "Bandleglass Mirror",
+      "image": "4642.png",
+      "gold": 900
+    },
+    {
+      "id": "1026",
+      "name": "Blasting Wand",
+      "image": "1026.png",
+      "gold": 850
+    },
+    {
+      "id": "4630",
+      "name": "Blighting Jewel",
+      "image": "4630.png",
+      "gold": 1100
+    },
+    {
+      "id": "3076",
+      "name": "Bramble Vest",
+      "image": "3076.png",
+      "gold": 800
+    },
+    {
+      "id": "3803",
+      "name": "Catalyst of Aeons",
+      "image": "3803.png",
+      "gold": 1300
+    },
+    {
+      "id": "3133",
+      "name": "Caulfield's Warhammer",
+      "image": "3133.png",
+      "gold": 1050
+    },
+    {
+      "id": "1031",
+      "name": "Chain Vest",
+      "image": "1031.png",
+      "gold": 800
+    },
+    {
+      "id": "1018",
+      "name": "Cloak of Agility",
+      "image": "1018.png",
+      "gold": 600
+    },
+    {
+      "id": "1029",
+      "name": "Cloth Armor",
+      "image": "1029.png",
+      "gold": 300
+    },
+    {
+      "id": "3801",
+      "name": "Crystalline Bracer",
+      "image": "3801.png",
+      "gold": 800
+    },
+    {
+      "id": "1042",
+      "name": "Dagger",
+      "image": "1042.png",
+      "gold": 250
+    },
+    {
+      "id": "3123",
+      "name": "Executioner's Calling",
+      "image": "3123.png",
+      "gold": 800
+    },
+    {
+      "id": "2508",
+      "name": "Fated Ashes",
+      "image": "2508.png",
+      "gold": 900
+    },
+    {
+      "id": "3108",
+      "name": "Fiendish Codex",
+      "image": "3108.png",
+      "gold": 850
+    },
+    {
+      "id": "3114",
+      "name": "Forbidden Idol",
+      "image": "3114.png",
+      "gold": 600
+    },
+    {
+      "id": "1011",
+      "name": "Giant's Belt",
+      "image": "1011.png",
+      "gold": 900
+    },
+    {
+      "id": "3024",
+      "name": "Glacial Buckler",
+      "image": "3024.png",
+      "gold": 900
+    },
+    {
+      "id": "3147",
+      "name": "Haunting Guise",
+      "image": "3147.png",
+      "gold": 1300
+    },
+    {
+      "id": "3051",
+      "name": "Hearthbound Axe",
+      "image": "3051.png",
+      "gold": 1200
+    },
+    {
+      "id": "3155",
+      "name": "Hexdrinker",
+      "image": "3155.png",
+      "gold": 1300
+    },
+    {
+      "id": "3145",
+      "name": "Hextech Alternator",
+      "image": "3145.png",
+      "gold": 1100
+    },
+    {
+      "id": "3067",
+      "name": "Kindlegem",
+      "image": "3067.png",
+      "gold": 800
+    },
+    {
+      "id": "3035",
+      "name": "Last Whisper",
+      "image": "3035.png",
+      "gold": 1450
+    },
+    {
+      "id": "1036",
+      "name": "Long Sword",
+      "image": "1036.png",
+      "gold": 350
+    },
+    {
+      "id": "3802",
+      "name": "Lost Chapter",
+      "image": "3802.png",
+      "gold": 1200
+    },
+    {
+      "id": "1058",
+      "name": "Needlessly Large Rod",
+      "image": "1058.png",
+      "gold": 1200
+    },
+    {
+      "id": "1057",
+      "name": "Negatron Cloak",
+      "image": "1057.png",
+      "gold": 850
+    },
+    {
+      "id": "6670",
+      "name": "Noonquiver",
+      "image": "6670.png",
+      "gold": 1300
+    },
+    {
+      "id": "1033",
+      "name": "Null-Magic Mantle",
+      "image": "1033.png",
+      "gold": 400
+    },
+    {
+      "id": "3916",
+      "name": "Oblivion Orb",
+      "image": "3916.png",
+      "gold": 800
+    },
+    {
+      "id": "3044",
+      "name": "Phage",
+      "image": "3044.png",
+      "gold": 1100
+    },
+    {
+      "id": "1037",
+      "name": "Pickaxe",
+      "image": "1037.png",
+      "gold": 875
+    },
+    {
+      "id": "3140",
+      "name": "Quicksilver Sash",
+      "image": "3140.png",
+      "gold": 1300
+    },
+    {
+      "id": "6690",
+      "name": "Rectrix",
+      "image": "6690.png",
+      "gold": 775
+    },
+    {
+      "id": "1043",
+      "name": "Recurve Bow",
+      "image": "1043.png",
+      "gold": 700
+    },
+    {
+      "id": "1006",
+      "name": "Rejuvenation Bead",
+      "image": "1006.png",
+      "gold": 300
+    },
+    {
+      "id": "1028",
+      "name": "Ruby Crystal",
+      "image": "1028.png",
+      "gold": 400
+    },
+    {
+      "id": "3144",
+      "name": "Scout's Slingshot",
+      "image": "3144.png",
+      "gold": 600
+    },
+    {
+      "id": "2420",
+      "name": "Seeker's Armguard",
+      "image": "2420.png",
+      "gold": 1600
+    },
+    {
+      "id": "3134",
+      "name": "Serrated Dirk",
+      "image": "3134.png",
+      "gold": 1000
+    },
+    {
+      "id": "3057",
+      "name": "Sheen",
+      "image": "3057.png",
+      "gold": 900
+    },
+    {
+      "id": "3211",
+      "name": "Spectre's Cowl",
+      "image": "3211.png",
+      "gold": 1250
+    },
+    {
+      "id": "2019",
+      "name": "Steel Sigil",
+      "image": "2019.png",
+      "gold": 1100
+    },
+    {
+      "id": "3070",
+      "name": "Tear of the Goddess",
+      "image": "3070.png",
+      "gold": 400
+    },
+    {
+      "id": "2020",
+      "name": "The Brutalizer",
+      "image": "2020.png",
+      "gold": 1337
+    },
+    {
+      "id": "3077",
+      "name": "Tiamat",
+      "image": "3077.png",
+      "gold": 1200
+    },
+    {
+      "id": "2021",
+      "name": "Tunneler",
+      "image": "2021.png",
+      "gold": 1150
+    },
+    {
+      "id": "1053",
+      "name": "Vampiric Scepter",
+      "image": "1053.png",
+      "gold": 900
+    },
+    {
+      "id": "4632",
+      "name": "Verdant Barrier",
+      "image": "4632.png",
+      "gold": 1600
+    },
+    {
+      "id": "3082",
+      "name": "Warden's Mail",
+      "image": "3082.png",
+      "gold": 1000
+    },
+    {
+      "id": "3066",
+      "name": "Winged Moonplate",
+      "image": "3066.png",
+      "gold": 800
+    },
+    {
+      "id": "3086",
+      "name": "Zeal",
+      "image": "3086.png",
+      "gold": 1200
     }
   ]
 }

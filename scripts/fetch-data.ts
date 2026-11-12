@@ -5,6 +5,7 @@ import {
   isFullItem,
   parseWikiPositions,
   toChampion,
+  toComponents,
   toItem,
   type DDragonChampion,
   type DDragonItem,
@@ -124,9 +125,12 @@ async function main(): Promise<void> {
       .map(([id, item]) => toItem(id, item)),
   )
 
-  const data: GameData = { patch, champions, items }
+  const components = toComponents(items, itemFile.data)
+  const data: GameData = { patch, champions, items, components }
   await writeFile(OUTPUT, `${JSON.stringify(data, null, 2)}\n`)
-  console.log(`Saved ${champions.length} champions and ${items.length} items to src/data/game-data.json`)
+  console.log(
+    `Saved ${champions.length} champions, ${items.length} items and ${components.length} components to src/data/game-data.json`,
+  )
 
   await downloadRankEmblems()
   await downloadMapIcons()

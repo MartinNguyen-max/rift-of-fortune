@@ -67,12 +67,24 @@ export interface Item {
   image: string
   gold: number
   stats: ItemStats
+  /** The ids of the components it is built from, in shop order. An id appears twice for two copies. */
+  from: string[]
+}
+
+/** A component in an item recipe (Long Sword, B. F. Sword, ...). Used by the shop mini-game. */
+export interface ItemComponent {
+  id: string
+  name: string
+  image: string
+  gold: number
 }
 
 export interface GameData {
   patch: string
   champions: Champion[]
   items: Item[]
+  /** Every component that appears in a recipe of `items`, sorted by name. */
+  components: ItemComponent[]
 }
 
 /** League minimap icons used in Match vs Bots. Saved to public/icons/ by `npm run data`. */

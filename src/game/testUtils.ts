@@ -16,5 +16,5 @@ export function makeChampion(overrides: Partial<Champion> = {}): Champion {
 }
 
 export function makeItem(overrides: Partial<Item> = {}): Item {
-  return { id: '1', name: overrides.id ?? 'Item', image: '', gold: 3000, stats: {}, ...overrides }
+  return { id: '1', name: overrides.id ?? 'Item', image: '', gold: 3000, stats: {}, from: [], ...overrides }
 }

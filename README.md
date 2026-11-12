@@ -8,6 +8,7 @@ A browser game where you roll random League of Legends champions, place them in 
 - **Daily Rift**: the same champions and items for everyone each day, one try. Share a spoiler-free result (like Wordle) and see how many of today's players you beat.
 - **Multiplayer (1v1)**: create a lobby and send a friend the link or the 5-character code. Both draft at the same time (90 seconds), see each other's team, then the match plays with four live mini-games that swing it: guess the gank bush, land your ult in the teamfight, and smite Baron and Elder at the lowest health you dare. Spam GG and EZ, then rematch with new teams. Needs the Supabase settings below (Realtime is included in the free plan).
 - **Match vs Bots**: draft a team (with 3 champion and 3 item rerolls), then watch the highlights of a simulated match (about 14 seconds) against a level 1–3 bot, with a live win-chance bar, every champion's K/D/A, fight scenes for the big moments, two casters and an MVP.
+- **Mini-games** (beta): six quick games against a bot: a High Noon quick draw (Caitlyn vs Jhin), Blitzcrank hooks (like Gold Miner), Udyr's Q W E R spam memory game, Teemo shroom hopscotch, Ornn's item-building race and a Mundo cleaver duel. See [docs/minigames.md](docs/minigames.md).
 
 ## How to Play
 
@@ -37,7 +38,7 @@ Only an anonymous random player id, the Daily number and the score are stored. S
 
 ## Status
 
-See [docs/launch-setup.md](docs/launch-setup.md) for deploying (Vercel + Supabase), [docs/match-simulation.md](docs/match-simulation.md) for the match mode design, and [docs/ideas.md](docs/ideas.md) for the ideas backlog.
+See [docs/launch-setup.md](docs/launch-setup.md) for deploying (Vercel + Supabase), [docs/match-simulation.md](docs/match-simulation.md) for the match mode design, [docs/minigames.md](docs/minigames.md) for the mini-games, and [docs/ideas.md](docs/ideas.md) for the ideas backlog.
 
 MVP. See [SPEC.md](SPEC.md) for the design and [DECISIONS.md](DECISIONS.md) for decisions made while building it.
 

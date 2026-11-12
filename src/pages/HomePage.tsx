@@ -2,7 +2,8 @@ import { motion } from 'framer-motion'
 import { useState, type ReactNode } from 'react'
 import { Countdown } from '../components/Countdown'
 import { routeHref, type Route } from '../components/useHashRoute'
-import { rankEmblemUrl, summonersRiftMapUrl } from '../data'
+import { championIconUrl, gameData, rankEmblemUrl, summonersRiftMapUrl } from '../data'
+import { MINI_GAME_IDS, MINI_GAMES } from '../game/minigames/catalog'
 import { dailyNumber, dateKey } from '../game/daily'
 import { getTeamMembers } from '../game/gameState'
 import { rankLabel } from '../game/scoring/rank'
@@ -88,7 +89,24 @@ export function HomePage() {
         Send a friend a link, draft at the same time, then fight it out. Smite Baron and Elder, land your ult and read
         the gank. Spam GG when you win.
       </ModeCard>
+
+      <ModeCard route="minigames" badge="New · Beta" title="Mini-games" cta="Play mini-games" art={<MiniGameIcons />} delay={0.4} wide>
+        Six quick duels against a bot: a High Noon quick draw, Blitzcrank hooks, Udyr spam, Teemo shrooms, Ornn’s
+        forge and Mundo cleavers. Pick your favorite.
+      </ModeCard>
     </div>
+  )
+}
+
+/** The mini-game champions in a loose ring, faded behind the card text. */
+function MiniGameIcons() {
+  const icons = MINI_GAME_IDS.map((id) => gameData.champions.find((champion) => champion.id === MINI_GAMES[id].champion))
+  return (
+    <span className="grid grid-cols-3 gap-3 opacity-20" aria-hidden="true">
+      {icons.map((champion) =>
+        champion ? <img key={champion.id} src={championIconUrl(champion.image)} alt="" className="size-20 rounded-full" /> : null,
+      )}
+    </span>
   )
 }
 
@@ -99,17 +117,19 @@ interface ModeCardProps {
   cta: string
   art: ReactNode
   delay: number
+  /** Spans both columns, for an odd card out. */
+  wide?: boolean
   children: ReactNode
 }
 
-function ModeCard({ route, badge, title, cta, art, delay, children }: ModeCardProps) {
+function ModeCard({ route, badge, title, cta, art, delay, wide = false, children }: ModeCardProps) {
   return (
     <motion.a
       href={routeHref(route)}
       initial={{ y: 20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay }}
-      className="group relative isolate flex flex-col gap-3 overflow-hidden rounded-xl border border-gold/30 bg-panel/70 p-6 shadow-2xl shadow-black/50 backdrop-blur transition hover:border-gold hover:shadow-gold/10"
+      className={`${wide ? 'md:col-span-2' : ''} group relative isolate flex flex-col gap-3 overflow-hidden rounded-xl border border-gold/30 bg-panel/70 p-6 shadow-2xl shadow-black/50 backdrop-blur transition hover:border-gold hover:shadow-gold/10`}
     >
       <div className="absolute inset-0 -z-10 flex items-center justify-center">{art}</div>
       <div className="absolute inset-0 -z-10 bg-linear-to-t from-panel via-panel/80 to-panel/40" />
