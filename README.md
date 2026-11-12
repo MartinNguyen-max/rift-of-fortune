@@ -6,6 +6,7 @@ A browser game where you roll random League of Legends champions, place them in 
 
 - **Classic** (main mode): random champions and random items, play as often as you like. Then try your team in a real game, if you dare.
 - **Daily Rift**: the same champions and items for everyone each day, one try. Share a spoiler-free result (like Wordle) and see how many of today's players you beat.
+- **Match vs Bots**: draft a team, then watch it play a simulated match against a level 1–3 bot, with a live scoreboard, play-by-play from two casters, steals, aces and an MVP.
 
 ## How to Play
 
@@ -35,7 +36,7 @@ Only an anonymous random player id, the Daily number and the score are stored. S
 
 ## Status
 
-See [docs/launch-setup.md](docs/launch-setup.md) for deploying (Vercel + Supabase), [docs/match-simulation.md](docs/match-simulation.md) for the planned match mode, and [docs/ideas.md](docs/ideas.md) for the ideas backlog.
+See [docs/launch-setup.md](docs/launch-setup.md) for deploying (Vercel + Supabase), [docs/match-simulation.md](docs/match-simulation.md) for the match mode design, and [docs/ideas.md](docs/ideas.md) for the ideas backlog.
 
 MVP. See [SPEC.md](SPEC.md) for the design and [DECISIONS.md](DECISIONS.md) for decisions made while building it.
 

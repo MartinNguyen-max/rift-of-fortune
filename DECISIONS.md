@@ -129,6 +129,22 @@ A team of four off-role junglers plus Lee Sin ADC got Platinum. Causes: off-role
 - Renamed everywhere: page title, header, footer disclaimer, share text, README, SPEC, CLAUDE.md and the package name. The page description still says "League of Legends roulette game" so Google can find it.
 - The localStorage prefix and the Daily seed also changed (`rift-of-fortune:`). This was safe only because nothing was live yet. **From launch on, never change them:** players would lose saved Dailies, and the day's rolls would change mid-day.
 
+## Match vs Bots
+
+Built from [docs/match-simulation.md](docs/match-simulation.md). Decided with the owner: watch only (no in-match choices), 1×/2×/Skip, no win streak yet.
+
+- **Flow:** `#/match` drafts a team with the Classic rules. The rating screen then offers three bot levels instead of Play again. Then: versus screen → live match → end screen (Rematch / Fight the next level after a win / Share / Draft a new team).
+- **Engine (`src/game/match/`)** is pure and seeded. It returns the whole timeline up front, and the UI only plays it back. Commentary uses its own random stream, so editing lines never changes a match's result.
+- **Strength:** team score for fights, Baron and Elder. Lane events mix 60% lane (champion score) with 40% team score. Objectives mix 40% of the relevant roles (e.g. jungle + bot lane for dragons) with 60% team score.
+- **Luck:** every contest is `30% × coin flip + 70% × strength chance`, so the underdog always has at least a 15% chance. Gold lead adds a snowball edge. Lucky wins while behind build a streak (comebacks), and kills on a leading team pay bounties.
+- **Steals** (dragon 5%, Baron 9%, Elder 8%) ignore strength, so a weak jungler can still steal Baron.
+- **Structures:** 3 lane towers before an inhibitor (from 20:00). The Nexus only falls after an ace, Baron or Elder push, once an inhibitor is down. From 42:00 every won fight can end the game, so matches always finish.
+- **Calibration** (guarded by `simulateMatch.test.ts`): equal teams ~50%, 10 points better ~65–70%, 30 points better ~91%. Average match ~32 game minutes, ~32 kills. At 20 game seconds per real second, that's about 90 seconds to watch at 1×.
+- **Bots** reuse the rank-calibration strategies: level 1 random (Iron/Bronze), level 2 sensible (Gold/Platinum), level 3 best of four sensible drafts (Emerald+). Bots never pick the player's champions.
+- **Casters:** Roary (hype) and Mortimer (dry analyst). On small kill events, the analyst sometimes roasts an off-role pick or a terrible item from the draft, once per champion and issue. Big moments always keep their own line.
+- **No new dependencies.** The gold graph is a plain SVG, and animations use Framer Motion.
+- The player's team is called "Your team". Lines are written so the name works at the start of a sentence, and `lowercaseYourMidSentence` handles the rest.
+
 ---
 
 # Summary

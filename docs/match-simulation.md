@@ -1,6 +1,6 @@
 # Match Simulation: Design Doc
 
-Status: **idea, approved for later**. Shown as "Coming soon" on the homepage (Match vs Bots, Multiplayer).
+Status: **Match vs Bots is built** (see "Match vs Bots" in DECISIONS.md). Multiplayer is still "Coming soon".
 
 ## The idea
 
