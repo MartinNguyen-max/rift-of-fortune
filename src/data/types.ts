@@ -91,3 +91,33 @@ export const MAP_ICONS = {
   chemtech: 'dragon_chemtech',
 } as const
 export type MapIcon = keyof typeof MAP_ICONS
+
+/**
+ * League client sounds and end-of-game crests, saved to public/ by `npm run data`.
+ * Keys are the saved file names (without extension); values are paths on CommunityDragon.
+ */
+const POSTGAME = 'plugins/rcp-fe-lol-postgame/global/default'
+const CHAMP_SELECT = 'plugins/rcp-fe-lol-champ-select/global/default/sounds'
+export const SOUND_FILES = {
+  reroll: `${CHAMP_SELECT}/sfx-cs-button-reroll-click.ogg`,
+  victory: `${POSTGAME}/sfx-ranked-ui-promo-win.ogg`,
+  defeat: `${POSTGAME}/sfx-ranked-ui-promo-loss.ogg`,
+  'big-moment': `${POSTGAME}/sfx-eog-ui-edge-flare.ogg`,
+  'rank-iron': `${POSTGAME}/sfx-eog-ui-iron-burst.ogg`,
+  'rank-bronze': `${POSTGAME}/sfx-eog-ui-bronze-burst.ogg`,
+  'rank-silver': `${POSTGAME}/sfx-eog-ui-silver-burst.ogg`,
+  'rank-gold': `${POSTGAME}/sfx-eog-ui-gold-burst.ogg`,
+  'rank-platinum': `${POSTGAME}/sfx-eog-ui-platinum-burst.ogg`,
+  'rank-emerald': `${POSTGAME}/sfx-eog-ui-neutral-burst.ogg`,
+  'rank-diamond': `${POSTGAME}/sfx-eog-ui-diamond-burst.ogg`,
+  'rank-master': `${POSTGAME}/sfx-eog-ui-master-burst.ogg`,
+  'rank-grandmaster': `${POSTGAME}/sfx-eog-ui-grandmaster-burst.ogg`,
+  'rank-challenger': `${POSTGAME}/sfx-eog-ui-challenger-burst.ogg`,
+  music: `${CHAMP_SELECT}/music-cs-draft-pick-base-layer-01.ogg`,
+} as const
+export type SoundName = keyof typeof SOUND_FILES
+
+export const END_OF_GAME_ICONS = {
+  victory: `${POSTGAME}/icon-sr-victory.png`,
+  defeat: `${POSTGAME}/icon-sr-defeat.png`,
+} as const

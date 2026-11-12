@@ -1,5 +1,5 @@
 import { mkdir, writeFile } from 'node:fs/promises'
-import { MAP_ICONS, RANK_TIERS, type GameData } from '../src/data/types.ts'
+import { END_OF_GAME_ICONS, MAP_ICONS, RANK_TIERS, SOUND_FILES, type GameData } from '../src/data/types.ts'
 import {
   dedupeByName,
   isFullItem,
@@ -62,6 +62,18 @@ async function downloadMapIcons(): Promise<void> {
   console.log(`Saved ${Object.keys(MAP_ICONS).length} minimap icons to public/icons/`)
 }
 
+/** Saves CommunityDragon files (League client sounds and crests) into `folder` under public/. */
+async function downloadClientFiles(files: Record<string, string>, folder: string, extension: string): Promise<void> {
+  const output = new URL(`../public/${folder}/`, import.meta.url)
+  await mkdir(output, { recursive: true })
+  for (const [name, path] of Object.entries(files)) {
+    const response = await fetch(`https://raw.communitydragon.org/latest/${path}`)
+    if (!response.ok) throw new Error(`GET ${path} failed: ${response.status}`)
+    await writeFile(new URL(`${name}.${extension}`, output), Buffer.from(await response.arrayBuffer()))
+  }
+  console.log(`Saved ${Object.keys(files).length} files to public/${folder}/`)
+}
+
 async function main(): Promise<void> {
   const [patch] = await fetchJson<string[]>(`${DDRAGON}/api/versions.json`)
   if (!patch) throw new Error('No Data Dragon versions found')
@@ -97,6 +109,8 @@ async function main(): Promise<void> {
 
   await downloadRankEmblems()
   await downloadMapIcons()
+  await downloadClientFiles(END_OF_GAME_ICONS, 'icons', 'png')
+  await downloadClientFiles(SOUND_FILES, 'sounds', 'ogg')
 }
 
 await main()

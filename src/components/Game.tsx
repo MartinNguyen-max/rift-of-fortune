@@ -32,6 +32,7 @@ import { canAssignItem, itemsForRole, ITEMS_PER_CHAMPION, unassignedItems } from
 import { isRole } from '../game/roles'
 import type { GameRules } from '../game/rules'
 import { rateTeam, type TeamRating } from '../game/scoring/rateTeam'
+import { playSound } from '../services/sound'
 import { emptyRoles } from '../game/team'
 import { ITEM_POOL_ID, itemIdFromDragId, ROLLED_CHAMPION_ID } from './dragIds'
 import { DraftPanel } from './DraftPanel'
@@ -103,6 +104,7 @@ export function Game({
   const rerollChampionIn = (role: Role) => {
     if (!rerollChampion || !canRerollChampion(state, role) || spinningRole) return
     dispatch({ type: 'rerollChampion', role, champion: rerollChampion(state) })
+    playSound('reroll')
     setSpinningRole(role)
   }
   const rerollEquippedItem = (itemId: string) => {
@@ -110,6 +112,7 @@ export function Game({
     const item = rerollItem(state)
     new Image().src = itemIconUrl(item.image)
     dispatch({ type: 'rerollItem', itemId, item })
+    playSound('reroll')
     setSpinningItemId(item.id)
   }
   const startItems = () => {

@@ -15,6 +15,7 @@ import { FightScene } from './FightScene'
 import { MatchEndPanel } from './MatchEndPanel'
 import { MatchMap } from './MatchMap'
 import { MatchScoreboard } from './MatchScoreboard'
+import { MatchSounds } from './MatchSounds'
 import { usePlaybackClock } from './usePlaybackClock'
 import { VersusPanel } from './VersusPanel'
 import { WinChanceBar } from './WinChanceBar'
@@ -65,6 +66,7 @@ export function MatchView({ teams, level, seed, onRematch, onNewTeam }: MatchVie
 
   return (
     <div className="flex w-full max-w-5xl flex-col gap-3 lg:flex-row lg:items-start lg:gap-6">
+      <MatchSounds fightIndex={fightIndex} ended={ended} won={match.winner === 'blue'} />
       <div className="flex w-full flex-col gap-3 lg:sticky lg:top-4 lg:w-[26rem] lg:shrink-0">
         <motion.div
           key={lastBig}

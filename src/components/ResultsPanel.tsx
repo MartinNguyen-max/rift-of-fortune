@@ -1,10 +1,11 @@
 import { motion } from 'framer-motion'
-import type { ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { championIconUrl, itemIconUrl, rankEmblemUrl } from '../data'
 import { ROLE_LABELS } from '../game/roles'
 import { rankLabel } from '../game/scoring/rank'
 import type { ChampionRating, TeamRating } from '../game/scoring/rateTeam'
 import { isOnRole } from '../game/scoring/roleFit'
+import { playSound, RANK_SOUNDS } from '../services/sound'
 import { scoreBorderColor, scoreColor } from './scoreColor'
 
 interface ResultsPanelProps {
@@ -14,6 +15,11 @@ interface ResultsPanelProps {
 }
 
 export function ResultsPanel({ rating, actions }: ResultsPanelProps) {
+  const tier = rating.rank.tier
+  useEffect(() => {
+    playSound(RANK_SOUNDS[tier])
+  }, [tier])
+
   return (
     <section className="flex flex-col gap-6">
       <motion.div
