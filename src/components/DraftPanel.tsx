@@ -1,5 +1,6 @@
 import type { RolledChampion } from '../game/gameState'
 import { Button } from './Button'
+import { ChampionRerolls, type ChampionRerollControls } from './ChampionRerolls'
 import { ChampionRoll } from './ChampionRoll'
 import { RolledChampionCard } from './RolledChampionCard'
 
@@ -11,6 +12,8 @@ interface DraftPanelProps {
   onRoll: () => void
   onRevealed: () => void
   onStartItems: () => void
+  /** Match vs Bots: champion rerolls. */
+  rerolls?: ChampionRerollControls
 }
 
 export function DraftPanel({
@@ -21,6 +24,7 @@ export function DraftPanel({
   onRoll,
   onRevealed,
   onStartItems,
+  rerolls,
 }: DraftPanelProps) {
   if (teamComplete) {
     return (
@@ -28,6 +32,7 @@ export function DraftPanel({
         <h2 className="text-sm font-semibold tracking-widest text-gold/80 uppercase">Team locked in</h2>
         <p className="text-gold-light/70">Five brave souls. Now let&apos;s see what the shop gives them.</p>
         <Button onClick={onStartItems}>Roll items</Button>
+        {rerolls && <ChampionRerolls {...rerolls} />}
       </section>
     )
   }
@@ -56,6 +61,7 @@ export function DraftPanel({
           </p>
         </>
       )}
+      {rerolls && <ChampionRerolls {...rerolls} />}
     </section>
   )
 }

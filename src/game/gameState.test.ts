@@ -2,6 +2,12 @@ import { describe, expect, it } from 'vitest'
 import type { Role } from '../data/types'
 import {
   canFinish,
+  canRerollChampion,
+  championRerollsLeft,
+  currentRoundItems,
+  nextShopRollSize,
+  openItemSlots,
+  rulesOf,
   canRoll,
   canStartNextItemRound,
   gameReducer,
@@ -11,6 +17,7 @@ import {
   type GameAction,
   type GameState,
 } from './gameState'
+import { MATCH_RULES, SHOP_ROLL_SIZE } from './rules'
 import { makeChampion, makeItem } from './testUtils'
 
 const ahri = makeChampion({ id: 'Ahri' })
@@ -145,5 +152,82 @@ describe('getTeamMembers', () => {
     let state = gameReducer(rollAndReveal(initialGameState()), { type: 'place', role: 'MIDDLE' })
     state = { ...state, phase: 'items', items: [makeItem({ id: 'x' })], assignments: { x: 'MIDDLE' } }
     expect(getTeamMembers(state)).toEqual([{ role: 'MIDDLE', champion: ahri, items: [makeItem({ id: 'x' })] }])
+  })
+})
+
+describe('Match vs Bots rules', () => {
+  const roles: Role[] = ['TOP', 'JUNGLE', 'MIDDLE', 'BOTTOM', 'SUPPORT']
+  const apply = (state: GameState, ...actions: GameAction[]) => actions.reduce(gameReducer, state)
+  const itemsFrom = (prefix: string, count: number) => Array.from({ length: count }, (_, i) => makeItem({ id: `${prefix}${i}` }))
+
+  function fullTeam(): GameState {
+    let state = initialGameState(MATCH_RULES)
+    for (const role of roles) state = gameReducer(rollAndReveal(state, makeChampion({ id: role })), { type: 'place', role })
+    return state
+  }
+
+  describe('champion rerolls', () => {
+    it('swaps a placed champion for a new one and uses up a reroll', () => {
+      const state = gameReducer(fullTeam(), { type: 'rerollChampion', role: 'MIDDLE', champion: ahri })
+      expect(state.team.MIDDLE?.id).toBe('Ahri')
+      expect(championRerollsLeft(state)).toBe(MATCH_RULES.championRerolls - 1)
+    })
+
+    it('stops when the rerolls run out, and never works on an empty slot', () => {
+      let state = fullTeam()
+      for (let i = 0; i < MATCH_RULES.championRerolls; i++) {
+        state = gameReducer(state, { type: 'rerollChampion', role: 'TOP', champion: makeChampion({ id: `New${i}` }) })
+      }
+      expect(canRerollChampion(state, 'TOP')).toBe(false)
+      expect(canRerollChampion(initialGameState(MATCH_RULES), 'TOP')).toBe(false)
+    })
+
+    it('is not part of the Classic rules', () => {
+      const classic = gameReducer(rollAndReveal(initialGameState()), { type: 'place', role: 'TOP' })
+      expect(canRerollChampion(classic, 'TOP')).toBe(false)
+    })
+  })
+
+  describe('shop rolls', () => {
+    const shopOpen = () => apply(fullTeam(), { type: 'startItems', items: itemsFrom('a', SHOP_ROLL_SIZE) }, { type: 'revealItems' })
+
+    it('lets the player keep any items and roll again; the rest are gone', () => {
+      const state = apply(
+        shopOpen(),
+        { type: 'assignItem', itemId: 'a0', role: 'TOP' },
+        { type: 'nextItemRound', items: itemsFrom('b', SHOP_ROLL_SIZE) },
+        { type: 'revealItems' },
+      )
+      expect(currentRoundItems(state).map(({ id }) => id)).toEqual(['b0', 'b1', 'b2', 'b3', 'b4'])
+      expect(isItemMovable(state, 'a0')).toBe(false)
+      expect(isItemMovable(state, 'a1')).toBe(false)
+      expect(getTeamMembers(state).find(({ role }) => role === 'TOP')?.items.map(({ id }) => id)).toEqual(['a0'])
+      expect(openItemSlots(state)).toBe(9)
+    })
+
+    it('makes the final roll bring exactly the empty slots, which must all be used', () => {
+      let state = apply(shopOpen(), { type: 'assignItem', itemId: 'a0', role: 'TOP' })
+      state = apply(state, { type: 'nextItemRound', items: itemsFrom('b', nextShopRollSize(state)) }, { type: 'revealItems' })
+      expect(nextShopRollSize(state)).toBe(9)
+      state = apply(state, { type: 'nextItemRound', items: itemsFrom('c', 9) }, { type: 'revealItems' })
+      expect(canStartNextItemRound(state)).toBe(false)
+      expect(canFinish(state)).toBe(false)
+      const slots: Role[] = ['TOP', 'JUNGLE', 'JUNGLE', 'MIDDLE', 'MIDDLE', 'BOTTOM', 'BOTTOM', 'SUPPORT', 'SUPPORT']
+      state = apply(state, ...slots.map((role, i): GameAction => ({ type: 'assignItem', itemId: `c${i}`, role })))
+      expect(canFinish(state)).toBe(true)
+    })
+
+    it('can finish early once every slot is filled', () => {
+      let state = shopOpen()
+      state = apply(state, ...roles.map((role, i): GameAction => ({ type: 'assignItem', itemId: `a${i}`, role })))
+      state = apply(state, { type: 'nextItemRound', items: itemsFrom('b', SHOP_ROLL_SIZE) }, { type: 'revealItems' })
+      state = apply(state, ...roles.map((role, i): GameAction => ({ type: 'assignItem', itemId: `b${i}`, role })))
+      expect(canFinish(state)).toBe(true)
+      expect(canStartNextItemRound(state)).toBe(false)
+    })
+
+    it('keeps the rules when starting over', () => {
+      expect(rulesOf(gameReducer(fullTeam(), { type: 'reset' }))).toEqual(MATCH_RULES)
+    })
   })
 })

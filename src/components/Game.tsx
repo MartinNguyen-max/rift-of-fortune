@@ -11,6 +11,12 @@ import { itemIconUrl } from '../data'
 import type { Champion, Item, Role } from '../data/types'
 import {
   canFinish,
+  canRerollChampion,
+  championRerollsLeft,
+  itemRoundCount,
+  nextShopRollSize,
+  openItemSlots,
+  rulesOf,
   canHandOutItems,
   canPlace,
   canRoll,
@@ -25,6 +31,7 @@ import {
 } from '../game/gameState'
 import { canAssignItem, itemsForRole, ITEMS_PER_CHAMPION, unassignedItems } from '../game/items'
 import { isRole } from '../game/roles'
+import { SHOP_ROLL_SIZE, type GameRules } from '../game/rules'
 import { rateTeam, type TeamRating } from '../game/scoring/rateTeam'
 import { emptyRoles } from '../game/team'
 import { ITEM_POOL_ID, itemIdFromDragId, ROLLED_CHAMPION_ID } from './dragIds'
@@ -44,15 +51,35 @@ interface GameProps {
   nextChampion: (state: GameState) => Champion
   /** The ten items for this game. */
   drawItems: () => Item[]
+  /** Match vs Bots: rerolls and shop rolls. Classic rules when left out. */
+  rules?: GameRules
+  /** Shop rolls: `count` random items, none of them already rolled this game. */
+  rollItems?: (count: number, excludeIds: ReadonlySet<string>) => Item[]
+  /** A random champion to replace a placed one, not already on the team or waiting to be placed. */
+  rerollChampion?: (state: GameState) => Champion
   onStateChange?: (state: GameState) => void
   /** Buttons and extras under the rank, e.g. Play again or Share. `reset` starts a new game. */
   resultActions: (rating: TeamRating, reset: () => void) => ReactNode
 }
 
 /** The map and side panel: draft, items and rating. Shared by every game mode. */
-export function Game({ title, initialState, nextChampion, drawItems, onStateChange, resultActions }: GameProps) {
-  const [state, dispatch] = useReducer(gameReducer, initialState ?? initialGameState())
+export function Game({
+  title,
+  initialState,
+  nextChampion,
+  drawItems,
+  rules,
+  rollItems,
+  rerollChampion,
+  onStateChange,
+  resultActions,
+}: GameProps) {
+  const [state, dispatch] = useReducer(gameReducer, initialState ?? initialGameState(rules))
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
+  /** The placed champion the player tapped to reroll, waiting for confirmation. */
+  const [rerollRole, setRerollRole] = useState<Role | null>(null)
+  const isShop = rulesOf(state).itemRolls === 'pick' && rollItems !== undefined
+  const seenItemIds = () => new Set(state.items.map(({ id }) => id))
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor),
@@ -71,8 +98,15 @@ export function Game({ title, initialState, nextChampion, drawItems, onStateChan
     dispatch({ type: 'place', role })
     if (canRoll(placed)) dispatch({ type: 'roll', champion: nextChampion(placed) })
   }
+  const confirmReroll = () => {
+    if (rerollRole && rerollChampion && canRerollChampion(state, rerollRole)) {
+      dispatch({ type: 'rerollChampion', role: rerollRole, champion: rerollChampion(state) })
+    }
+    setRerollRole(null)
+  }
   const startItems = () => {
-    const items = drawItems()
+    setRerollRole(null)
+    const items = isShop ? rollItems(SHOP_ROLL_SIZE, new Set()) : drawItems()
     for (const item of items) new Image().src = itemIconUrl(item.image)
     dispatch({ type: 'startItems', items })
   }
@@ -82,13 +116,17 @@ export function Game({ title, initialState, nextChampion, drawItems, onStateChan
   }
   const unassignItem = (itemId: string) => dispatch({ type: 'unassignItem', itemId })
   const reset = () => {
+    setRerollRole(null)
     dispatch({ type: 'reset' })
     setSelectedItemId(null)
   }
   const continueItems = () => {
     setSelectedItemId(null)
-    if (canFinish(state)) dispatch({ type: 'finish' })
-    else dispatch({ type: 'nextItemRound' })
+    if (canFinish(state)) return dispatch({ type: 'finish' })
+    if (!isShop) return dispatch({ type: 'nextItemRound' })
+    const items = rollItems(nextShopRollSize(state), seenItemIds())
+    for (const item of items) new Image().src = itemIconUrl(item.image)
+    dispatch({ type: 'nextItemRound', items })
   }
 
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
@@ -112,13 +150,17 @@ export function Game({ title, initialState, nextChampion, drawItems, onStateChan
   const renderSlot = (role: Role) => {
     if (state.phase === 'draft') {
       const placeable = canPlace(state, role)
+      const rerollable = rerollChampion !== undefined && canRerollChampion(state, role)
+      const toggleReroll = () => setRerollRole((current) => (current === role ? null : role))
       return (
         <RoleSlot
           role={role}
           champion={state.team[role]}
           droppable={placeable}
           highlighted={placeable}
-          onActivate={placeable ? () => place(role) : undefined}
+          rerollable={rerollable}
+          selected={rerollable && rerollRole === role}
+          onActivate={placeable ? () => place(role) : rerollable ? toggleReroll : undefined}
         />
       )
     }
@@ -155,6 +197,18 @@ export function Game({ title, initialState, nextChampion, drawItems, onStateChan
               onRoll={roll}
               onRevealed={reveal}
               onStartItems={startItems}
+              rerolls={
+                rerollChampion && rulesOf(state).championRerolls > 0
+                  ? {
+                      left: championRerollsLeft(state),
+                      total: rulesOf(state).championRerolls,
+                      selectedName: rerollRole ? (state.team[rerollRole]?.name ?? null) : null,
+                      hasChampions: emptyRoles(state.team).length < 5,
+                      onConfirm: confirmReroll,
+                      onCancel: () => setRerollRole(null),
+                    }
+                  : undefined
+              }
             />
           )}
           {state.phase === 'items' && !state.itemsRevealed && (
@@ -162,6 +216,7 @@ export function Game({ title, initialState, nextChampion, drawItems, onStateChan
               key={state.itemRound}
               items={currentRoundItems(state)}
               round={state.itemRound}
+              totalRounds={itemRoundCount(state)}
               onDone={revealItems}
             />
           )}
@@ -173,6 +228,17 @@ export function Game({ title, initialState, nextChampion, drawItems, onStateChan
               roundComplete={canStartNextItemRound(state) || canFinish(state)}
               onSelect={setSelectedItemId}
               onContinue={continueItems}
+              shop={
+                isShop
+                  ? {
+                      openSlots: openItemSlots(state),
+                      nextRollSize: nextShopRollSize(state),
+                      nextIsFinal: state.itemRound + 1 === itemRoundCount(state),
+                      canRollAgain: canStartNextItemRound(state),
+                      canFinish: canFinish(state),
+                    }
+                  : undefined
+              }
             />
           )}
           {rating && <ResultsPanel rating={rating} actions={resultActions(rating, reset)} />}
