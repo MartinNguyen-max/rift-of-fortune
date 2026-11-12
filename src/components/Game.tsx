@@ -32,7 +32,7 @@ import { canAssignItem, itemsForRole, ITEMS_PER_CHAMPION, unassignedItems } from
 import { isRole } from '../game/roles'
 import type { GameRules } from '../game/rules'
 import { rateTeam, type TeamRating } from '../game/scoring/rateTeam'
-import { playSound, prepareChampionVoice } from '../services/sound'
+import { playSound, playSynth, preloadSounds, prepareChampionVoice } from '../services/sound'
 import { emptyRoles } from '../game/team'
 import { ITEM_POOL_ID, itemIdFromDragId, ROLLED_CHAMPION_ID } from './dragIds'
 import { DraftPanel } from './DraftPanel'
@@ -89,6 +89,8 @@ export function Game({
     onStateChange?.(state)
   }, [state, onStateChange])
 
+  useEffect(() => preloadSounds(), [])
+
   const reveal = useCallback(() => dispatch({ type: 'reveal' }), [])
   const revealItems = useCallback(() => dispatch({ type: 'revealItems' }), [])
   const stopChampionSpin = useCallback(() => setSpinningRole(null), [])
@@ -121,6 +123,7 @@ export function Game({
   const startItems = () => {
     const items = drawItems()
     for (const item of items) new Image().src = itemIconUrl(item.image)
+    playSynth('roll')
     dispatch({ type: 'startItems', items })
   }
   const assignItem = (itemId: string, role: Role) => {
@@ -134,6 +137,7 @@ export function Game({
   }
   const continueItems = () => {
     setSelectedItemId(null)
+    if (!canFinish(state)) playSynth('roll')
     dispatch({ type: canFinish(state) ? 'finish' : 'nextItemRound' })
   }
 

@@ -57,7 +57,7 @@ function TeamCard({ team, side, subtitle, delay }: TeamCardProps) {
       className="@container flex min-w-0 flex-col items-center gap-2 rounded-xl border border-gold/30 bg-panel/70 p-2 text-center shadow-2xl shadow-black/50 backdrop-blur sm:p-4"
     >
       <p className="text-[10px] tracking-widest text-gold/60 uppercase">{subtitle}</p>
-      <h2 className={`max-w-full truncate font-display text-base font-black sm:text-xl ${SIDE_TEXT[side]}`}>{team.name}</h2>
+      <h2 className={`max-w-full leading-tight [overflow-wrap:anywhere] font-display text-base font-black sm:text-xl ${SIDE_TEXT[side]}`}>{team.name}</h2>
       <img src={rankEmblemUrl(rating.rank.tier)} alt="" className="-my-2 size-20 object-contain sm:size-28" />
       {/* Sized by its own length and the card width, so every rank stays on one line on small phones. */}
       <p className="max-w-full font-display font-bold whitespace-nowrap text-gold-light" style={{ fontSize: oneLineFontSize(rankLine) }}>
@@ -78,7 +78,7 @@ function TeamCard({ team, side, subtitle, delay }: TeamCardProps) {
             <li key={role} className="flex items-center gap-2 text-left">
               <img src={championIconUrl(champion.image)} alt="" className="size-7 shrink-0 rounded-full border border-gold/60" />
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm text-gold-light">{champion.name}</span>
+                <span className="block leading-tight [overflow-wrap:anywhere] text-sm text-gold-light">{champion.name}</span>
                 <span className="hidden text-[10px] text-gold-light/50 uppercase sm:block">{ROLE_LABELS[role]}</span>
                 <span className="mt-0.5 flex gap-0.5 sm:hidden">{itemIcons}</span>
               </span>

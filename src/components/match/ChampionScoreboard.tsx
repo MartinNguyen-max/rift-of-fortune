@@ -25,7 +25,7 @@ export function ChampionScoreboard({ teams, stats, best, worst, final }: Champio
         {(['blue', 'red'] as const).map((side) => (
           <ol key={side} className="flex flex-col gap-1">
             <li className={`flex items-end justify-between gap-1 px-1 ${side === 'red' ? 'flex-row-reverse' : ''}`}>
-              <span className={`truncate text-[10px] font-semibold tracking-widest uppercase ${SIDE_TEXT[side]}`}>{teams[side].name}</span>
+              <span className={`leading-tight [overflow-wrap:anywhere] text-[10px] font-semibold tracking-widest uppercase ${SIDE_TEXT[side]}`}>{teams[side].name}</span>
               <span className="shrink-0 text-[10px] text-gold/60" title="Kills / Deaths / Assists">
                 K/D/A
               </span>
@@ -64,7 +64,7 @@ export function ChampionScoreboard({ teams, stats, best, worst, final }: Champio
                       </motion.span>
                     )}
                   </span>
-                  <span className="min-w-0 flex-1 truncate text-xs text-gold-light/80" title={`${champion.champion.name} (${ROLE_LABELS[role]})`}>
+                  <span className="min-w-0 flex-1 leading-tight [overflow-wrap:anywhere] text-xs text-gold-light/80" title={`${champion.champion.name} (${ROLE_LABELS[role]})`}>
                     {champion.champion.name}
                   </span>
                   <span className="shrink-0 font-mono text-xs font-semibold text-gold-light tabular-nums">{formatKda(kda)}</span>

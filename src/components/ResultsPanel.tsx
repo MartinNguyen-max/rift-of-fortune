@@ -94,7 +94,7 @@ function ChampionResult({ rating }: { rating: ChampionRating }) {
       <header className="flex items-center gap-3">
         <img src={championIconUrl(champion.image)} alt="" className="size-10 rounded-full border border-gold" />
         <div className="min-w-0 flex-1">
-          <p className="truncate font-display font-bold text-gold-light">{champion.name}</p>
+          <p className="leading-tight [overflow-wrap:anywhere] font-display font-bold text-gold-light">{champion.name}</p>
           <p className={`text-xs italic ${scoreColor(score)}`}>{verdict}</p>
           <p className="text-xs text-gold-light/60">
             {ROLE_LABELS[role]}

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { gameData, itemIconUrl } from '../data'
 import type { Item } from '../data/types'
 import { ITEM_ROUNDS } from '../game/items'
+import { playSynth } from '../services/sound'
 import { useSpin } from './useSpin'
 
 /** Fewer, faster frames than the champion roll, since there are more items to roll. */
@@ -87,6 +88,10 @@ function SpinningItem({ item, onLanded }: SpinningItemProps) {
     imageUrl: iconUrl,
     onLanded,
   })
+
+  useEffect(() => {
+    if (frame) playSynth(landed ? 'land' : 'tick')
+  }, [frame, landed])
 
   return (
     <div className="flex flex-col items-center gap-2">

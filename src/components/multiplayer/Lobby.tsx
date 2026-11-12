@@ -103,7 +103,7 @@ function PlayerCard({ player, label, side }: { player: PresenceInfo; label: stri
       }`}
     >
       <p className="text-[10px] tracking-widest text-gold/60 uppercase">{label}</p>
-      <p className={`max-w-full truncate font-display text-base font-black sm:text-lg ${side === 'blue' ? 'text-hextech' : 'text-red-400'}`}>
+      <p className={`max-w-full leading-tight [overflow-wrap:anywhere] font-display text-base font-black sm:text-lg ${side === 'blue' ? 'text-hextech' : 'text-red-400'}`}>
         {player.name}
       </p>
       <p className={`text-sm font-semibold ${player.ready ? 'text-gold' : 'text-gold-light/50'}`}>

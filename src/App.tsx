@@ -20,7 +20,7 @@ export default function App() {
     <MotionConfig reducedMotion="user">
       <div className="flex min-h-screen flex-col">
         <header className="relative px-4 pt-3 pb-2 text-center lg:pt-8 lg:pb-6">
-          <SoundToggle />
+          <SoundToggle key={route} hint={route === 'home'} />
           <h1 className="font-display text-xl font-black tracking-wide text-gold drop-shadow-[0_0_12px_rgb(200_170_110/0.35)] sm:text-3xl lg:text-5xl">
             <a href={routeHref('home')}>Rift of Fortune</a>
           </h1>

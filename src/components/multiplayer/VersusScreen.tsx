@@ -81,7 +81,7 @@ function TeamBoard({ team, side, label }: { team: MatchTeam; side: Side; label: 
         <img src={rankEmblemUrl(rating.rank.tier)} alt="" className="-my-2 size-16 shrink-0 object-contain sm:size-20" />
         <div className="min-w-0 text-left">
           <p className="text-[10px] tracking-widest text-gold/60 uppercase">{label}</p>
-          <h2 className={`truncate font-display text-lg font-black sm:text-xl ${SIDE_TEXT[side]}`}>{team.name}</h2>
+          <h2 className={`leading-tight [overflow-wrap:anywhere] font-display text-lg font-black sm:text-xl ${SIDE_TEXT[side]}`}>{team.name}</h2>
           <p className="font-display font-bold whitespace-nowrap text-gold-light">
             {rankLabel(rating.rank)} · {rating.score}
           </p>

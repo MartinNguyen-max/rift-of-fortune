@@ -126,7 +126,7 @@ function TeamColumn({ side, event, teams, dead, scored }: TeamColumnProps) {
               )}
             </motion.span>
             <span className={`flex min-w-0 flex-col leading-tight ${side === 'red' ? 'items-end' : 'items-start'}`}>
-              <span className={`max-w-[5.5rem] truncate text-[11px] font-semibold sm:max-w-[7rem] sm:text-xs ${isDead ? 'text-gold-light/40 line-through' : 'text-gold-light'}`}>
+              <span className={`max-w-[5.5rem] leading-tight [overflow-wrap:anywhere] text-[11px] font-semibold sm:max-w-[7rem] sm:text-xs ${isDead ? 'text-gold-light/40 line-through' : 'text-gold-light'}`}>
                 {champion.champion.name}
               </span>
               {kills > 0 && <span className={`text-[11px] font-bold ${SIDE_TEXT[side]}`}>{'⚔'.repeat(Math.min(kills, 5))}</span>}

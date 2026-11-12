@@ -27,7 +27,7 @@ function TeamScore({ side, name, score }: { side: Side; name: string; score: Sco
   const alignRight = side === 'red'
   return (
     <div className={`flex min-w-0 flex-col ${alignRight ? 'items-end text-right' : 'items-start'}`}>
-      <span className={`max-w-full truncate text-xs font-semibold ${SIDE_TEXT[side]}`}>{name}</span>
+      <span className={`max-w-full leading-tight [overflow-wrap:anywhere] text-xs font-semibold ${SIDE_TEXT[side]}`}>{name}</span>
       <span className={`font-display text-3xl leading-tight font-black tabular-nums ${SIDE_TEXT[side]}`}>{kills}</span>
       <span className={`flex gap-2 text-xs text-gold-light/80 tabular-nums ${alignRight ? 'flex-row-reverse' : ''}`}>
         <span title="Towers" className="flex items-center gap-0.5">

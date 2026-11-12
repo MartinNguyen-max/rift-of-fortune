@@ -62,7 +62,7 @@ export function ItemPanel({ items, round, selectedItemId, roundComplete, onSelec
               onClick={() => onSelect(item.id)}
             />
             <div className="hidden min-w-0 lg:block">
-              <p className="truncate text-sm font-semibold text-gold-light">{item.name}</p>
+              <p className="leading-tight [overflow-wrap:anywhere] text-sm font-semibold text-gold-light">{item.name}</p>
               <p className="truncate text-xs text-gold-light/60">{formatStats(item.stats).join(' · ')}</p>
             </div>
           </li>

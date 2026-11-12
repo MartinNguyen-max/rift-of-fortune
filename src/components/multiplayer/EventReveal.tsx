@@ -63,7 +63,7 @@ export function EventReveal({ kind, result, mySide, opponentName }: EventRevealP
 function Score({ label, value, winner, className }: { label: string; value: number; winner: boolean; className: string }) {
   return (
     <div className="flex min-w-0 flex-col items-center">
-      <span className={`max-w-32 truncate text-xs font-semibold tracking-wider uppercase ${className}`}>{label}</span>
+      <span className={`max-w-40 leading-tight [overflow-wrap:anywhere] text-xs font-semibold tracking-wider uppercase ${className}`}>{label}</span>
       <span className={`font-display text-5xl font-black ${winner ? 'text-gold' : 'text-gold-light/50'}`}>{value}</span>
     </div>
   )

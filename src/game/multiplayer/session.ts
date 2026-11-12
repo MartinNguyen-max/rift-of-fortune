@@ -14,7 +14,7 @@ const COUNTDOWN_SECONDS = 4
 export const TIMINGS = {
   draft: 90,
   draftGrace: 5,
-  versus: 15,
+  versus: 10,
   /** The "Get ready" screen before each mini-game, with one line on what to do. */
   intro: INTRO_SECONDS,
   /** Hiding and guessing in the gank. */
