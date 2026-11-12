@@ -15,7 +15,6 @@
       "Bash(git log:*)",
       "WebFetch(domain:ddragon.leagueoflegends.com)",
       "WebFetch(domain:cdn.merakianalytics.com)"
-    ],
-    "deny": ["Bash(git push:*)"]
+    ]
   }
 }
