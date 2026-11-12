@@ -7,6 +7,9 @@ import { opponent, type ChampionRef, type MapSpot, type MatchEvent, type MatchRe
 /** Two casters: one screams at everything, the other is tired of this team. */
 export type Caster = 'hype' | 'analyst'
 
+/** The player's team name. Lines are written so it reads well, e.g. "Your team takes Baron". */
+export const PLAYER_TEAM_NAME = 'Your team'
+
 export const CASTER_NAMES: Record<Caster, string> = { hype: 'Roary', analyst: 'Mortimer' }
 
 export interface CommentaryLine {
@@ -390,7 +393,8 @@ export function commentate(match: MatchResult, teams: MatchTeams): CommentaryLin
   }
 
   const callback = (event: MatchEvent): CommentaryLine | null => {
-    if (!KILL_KINDS.includes(event.kind) || event.tags.includes('escape') || random() >= CALLBACK_CHANCE) return null
+    // Big moments (first blood, aces) keep their own line.
+    if (!KILL_KINDS.includes(event.kind) || event.big || event.tags.includes('escape') || random() >= CALLBACK_CHANCE) return null
     const candidates = [
       { rating: champion(event.actor), won: true },
       { rating: champion(event.target), won: false },

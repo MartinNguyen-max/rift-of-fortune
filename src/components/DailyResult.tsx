@@ -3,7 +3,7 @@ import { beatenShare, shareText, type DailyStats } from '../game/daily'
 import type { TeamRating } from '../game/scoring/rateTeam'
 import { dailyStatsConfig, fetchDailyStats, submitDailyScore } from '../services/dailyStats'
 import { playerId } from '../services/storage'
-import { Button } from './Button'
+import { ShareButton } from './ShareButton'
 import { Countdown } from './Countdown'
 import { routeHref } from './useHashRoute'
 
@@ -17,7 +17,6 @@ type StatsState = { status: 'off' } | { status: 'loading' } | { status: 'done'; 
 /** Daily results extras: how you compare to today's players, Share, and the countdown. */
 export function DailyResult({ number, rating }: DailyResultProps) {
   const [stats, setStats] = useState<StatsState>(() => (dailyStatsConfig() ? { status: 'loading' } : { status: 'off' }))
-  const [shareStatus, setShareStatus] = useState<'idle' | 'copied' | 'failed'>('idle')
 
   useEffect(() => {
     const config = dailyStatsConfig()
@@ -38,22 +37,10 @@ export function DailyResult({ number, rating }: DailyResultProps) {
     `${window.location.origin}${window.location.pathname}${routeHref('daily')}`,
     stats.status === 'done' ? stats.stats : null,
   )
-  const share = () => {
-    navigator.clipboard.writeText(text).then(
-      () => setShareStatus('copied'),
-      () => setShareStatus('failed'),
-    )
-  }
-
   return (
     <>
       <StatsLine stats={stats} />
-      <Button onClick={share}>{shareStatus === 'copied' ? 'Copied!' : 'Share result'}</Button>
-      {shareStatus === 'failed' && (
-        <pre className="w-full rounded border border-gold/30 bg-abyss/60 p-2 text-left text-xs whitespace-pre-wrap text-gold-light/80 select-all">
-          {text}
-        </pre>
-      )}
+      <ShareButton text={text} />
       <p className="text-sm text-gold-light/70">
         Next Daily in <Countdown />
       </p>

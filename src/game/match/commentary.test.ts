@@ -154,3 +154,12 @@ describe('formatGameTime', () => {
     expect(formatGameTime(1834)).toBe('30:34')
   })
 })
+
+describe('big moments', () => {
+  it('always get their own line, never a draft roast', () => {
+    for (const match of matches) {
+      const lines = commentate(match, teams)
+      for (const [index, event] of match.events.entries()) if (event.big) expect(lines[index]?.callback).toBe(false)
+    }
+  })
+})

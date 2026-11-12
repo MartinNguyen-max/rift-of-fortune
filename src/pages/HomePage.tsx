@@ -61,10 +61,17 @@ export function HomePage() {
         ) : null}
       </ModeCard>
 
-      <ComingSoonCard title="Match vs Bots" icon="⚔️" delay={0.2}>
-        Send your team into a simulated match against level 1–3 bots. Live scoreboard, first blood, stolen Barons and
-        a commentator who has seen too much.
-      </ComingSoonCard>
+      <ModeCard
+        route="match"
+        badge="New"
+        title="Match vs Bots"
+        cta="Fight a bot"
+        art={<img src={rankEmblemUrl('Challenger')} alt="" className="size-56 object-contain opacity-20" />}
+        delay={0.2}
+      >
+        Draft a team, then send it into a simulated match against a level 1–3 bot. Live scoreboard, first blood,
+        stolen Barons and two casters who have seen too much.
+      </ModeCard>
 
       <ComingSoonCard title="Multiplayer" icon="🤝" delay={0.3}>
         Draft against a friend, then watch both teams fight it out on the Rift. Settle who really has fortune on

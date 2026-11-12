@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 
-export type Route = 'home' | 'classic' | 'daily'
+export type Route = 'home' | 'classic' | 'daily' | 'match'
+
+const PAGES: readonly Route[] = ['classic', 'daily', 'match']
 
 /** "#/daily" → "daily". Anything unknown goes to the homepage. */
 export function parseRoute(hash: string): Route {
   const path = hash.replace(/^#\/?/, '')
-  return path === 'classic' || path === 'daily' ? path : 'home'
+  return PAGES.find((page) => page === path) ?? 'home'
 }
 
 export const routeHref = (route: Route): string => (route === 'home' ? '#/' : `#/${route}`)

@@ -4,6 +4,7 @@ import { routeHref, useHashRoute } from './components/useHashRoute'
 import { ClassicPage } from './pages/ClassicPage'
 import { DailyPage } from './pages/DailyPage'
 import { HomePage } from './pages/HomePage'
+import { MatchPage } from './pages/MatchPage'
 
 export default function App() {
   const route = useHashRoute()
@@ -28,6 +29,7 @@ export default function App() {
           {route === 'home' && <HomePage />}
           {route === 'classic' && <ClassicPage />}
           {route === 'daily' && <DailyPage />}
+          {route === 'match' && <MatchPage />}
         </main>
         <Footer />
       </div>
