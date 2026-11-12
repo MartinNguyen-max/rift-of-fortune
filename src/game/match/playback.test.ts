@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   activeBigEvent,
   BEATS,
+  BIG_PAUSE,
   buildTimeline,
   eventsShown,
   gameClock,
@@ -87,5 +88,15 @@ describe('liveScore', () => {
 
   it('starts with the starting gold before any event', () => {
     expect(liveScore(events, 0, 0).red.gold).toBe(2500)
+  })
+})
+
+describe('gameClock on big moments', () => {
+  it('stands still for most of a big moment, so the player can read it', () => {
+    const [, bigStart = 0, nextStart = 0] = timeline.starts
+    const pauseEnd = bigStart + (nextStart - bigStart) * BIG_PAUSE
+    expect(gameClock(events, timeline, bigStart + 0.01)).toBe(200)
+    expect(gameClock(events, timeline, pauseEnd - 0.01)).toBe(200)
+    expect(gameClock(events, timeline, (pauseEnd + nextStart) / 2)).toBeGreaterThan(200)
   })
 })

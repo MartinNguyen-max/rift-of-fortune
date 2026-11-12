@@ -41,7 +41,7 @@ export function EventFeed({ events, lines, teams, shown, limit }: EventFeedProps
             <span aria-hidden="true" className={event.big ? 'text-xl' : ''}>
               {eventIcon(event)}
             </span>
-            <span className={`min-w-0 flex-1 ${event.big ? 'font-bold text-gold' : 'truncate'}`}>
+            <span className={`min-w-0 flex-1 ${event.big ? 'font-bold text-gold' : line ? '' : 'truncate'}`}>
               {line && !line.callback ? line.text : describeEvent(event, teams)}
             </span>
             <span className="shrink-0 font-mono text-[11px] text-gold/60">{formatGameTime(event.time)}</span>

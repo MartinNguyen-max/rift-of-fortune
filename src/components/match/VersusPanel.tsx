@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion'
-import { championIconUrl, rankEmblemUrl } from '../../data'
+import { championIconUrl, itemIconUrl, rankEmblemUrl } from '../../data'
 import type { MatchTeam, MatchTeams, Side } from '../../game/match/types'
 import { ROLE_LABELS } from '../../game/roles'
+import { ITEM_FIT_THRESHOLDS } from '../../game/scoring/config'
 import { rankLabel } from '../../game/scoring/rank'
 import { Button } from '../Button'
 import { SIDE_TEXT } from './matchStyles'
@@ -58,15 +59,28 @@ function TeamCard({ team, side, subtitle, delay }: TeamCardProps) {
         {rankLabel(rating.rank)} · {rating.score}
       </p>
       <ul className="flex w-full flex-col gap-1.5">
-        {rating.champions.map(({ role, champion }) => (
-          <li key={role} className="flex items-center gap-2 text-left">
-            <img src={championIconUrl(champion.image)} alt="" className="size-7 shrink-0 rounded-full border border-gold/60" />
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm text-gold-light">{champion.name}</span>
-              <span className="block text-[10px] text-gold-light/50 uppercase">{ROLE_LABELS[role]}</span>
-            </span>
-          </li>
-        ))}
+        {rating.champions.map(({ role, champion, items }) => {
+          const itemIcons = items.map(({ item, fit }) => (
+            <img
+              key={item.id}
+              src={itemIconUrl(item.image)}
+              alt={item.name}
+              title={item.name}
+              className={`size-5 rounded border sm:size-7 ${fit <= ITEM_FIT_THRESHOLDS.bad ? 'border-red-500' : 'border-gold/40'}`}
+            />
+          ))
+          return (
+            <li key={role} className="flex items-center gap-2 text-left">
+              <img src={championIconUrl(champion.image)} alt="" className="size-7 shrink-0 rounded-full border border-gold/60" />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm text-gold-light">{champion.name}</span>
+                <span className="hidden text-[10px] text-gold-light/50 uppercase sm:block">{ROLE_LABELS[role]}</span>
+                <span className="mt-0.5 flex gap-0.5 sm:hidden">{itemIcons}</span>
+              </span>
+              <span className="hidden shrink-0 gap-0.5 sm:flex">{itemIcons}</span>
+            </li>
+          )
+        })}
       </ul>
     </motion.article>
   )

@@ -53,6 +53,14 @@ export type LineKey =
   | 'baronSteal'
   | 'elder'
   | 'elderSteal'
+  | 'pick'
+  | 'counterGank'
+  | 'gankEscape'
+  | 'dragon'
+  | 'grubs'
+  | 'herald'
+  | 'tower'
+  | 'inhibitor'
   | 'nexus'
   | 'surrender'
 
@@ -118,6 +126,38 @@ export const MATCH_LINES: Record<LineKey, Record<Caster, Lines>> = {
     hype: ({ actor }) => [`${actor} STEALS ELDER! THIS ISN'T OVER!`],
     analyst: ({ actor }) => [`${actor} steals Elder. Deleting my recap.`],
   },
+  pick: {
+    hype: ({ actor, target }) => [`${actor} catches ${target}! HUGE pick!`, `${actor} DELETES ${target}! That changes everything!`],
+    analyst: ({ actor, target }) => [`${target} walked into ${actor}. Expensive mistake.`, `${actor} finds ${target} alone. That's the game shifting.`],
+  },
+  counterGank: {
+    hype: ({ actor, target }) => [`COUNTER! ${actor} turns it around on ${target}!`],
+    analyst: ({ actor, target }) => [`${target} came to gank. ${actor} disagreed.`],
+  },
+  gankEscape: {
+    hype: ({ actor }) => [`${actor} ESCAPES by a pixel!`],
+    analyst: ({ actor, target }) => [`${actor} walks away from ${target}'s gank. Wasted trip.`],
+  },
+  dragon: {
+    hype: ({ team, dragon }) => [`${team} secures the ${dragon} Drake!`, `${dragon} Drake down! ${team} stacks up!`],
+    analyst: ({ team, enemy, dragon }) => [`${dragon} Drake to ${team}. ${enemy} let it go.`],
+  },
+  grubs: {
+    hype: ({ team }) => [`Grubs to ${team}! Towers are getting NERVOUS!`],
+    analyst: ({ team }) => [`Void Grubs to ${team}. Small bugs, big tower damage.`],
+  },
+  herald: {
+    hype: ({ team }) => [`${team} takes Herald and CHARGES a tower!`],
+    analyst: ({ team }) => [`Herald to ${team}. That tower has seconds to live.`],
+  },
+  tower: {
+    hype: ({ team, lane }) => [`${team} cracks the ${lane} tower!`, `CRUMBLE! ${team} takes the ${lane} tower!`],
+    analyst: ({ team, enemy }) => [`Tower to ${team}. ${enemy} was not there, again.`],
+  },
+  inhibitor: {
+    hype: ({ team }) => [`INHIBITOR DOWN! Super minions for ${team}!`],
+    analyst: ({ enemy }) => [`Inhibitor down. ${enemy}'s base is an open house now.`],
+  },
   nexus: {
     hype: ({ team }) => [`THE NEXUS FALLS! ${team} WINS!`, `GG! ${team} destroys the Nexus!`],
     analyst: ({ team, enemy }) => [`That's the Nexus. GG, ${team}.`, `GG. ${enemy} can start blaming each other.`],
@@ -166,29 +206,29 @@ export function formatGameTime(seconds: number): string {
   return `${minutes}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`
 }
 
-/** The caster line for a big moment, or null for small events. */
+/** The caster line for a big moment or first blood, or null for other small events. */
 export function lineKey({ kind, tags, big }: MatchEvent): LineKey | null {
-  if (!big) return null
   const has = (tag: MatchEvent['tags'][number]) => tags.includes(tag)
+  if (has('firstBlood')) return 'firstBlood'
+  if (!big) return null
   switch (kind) {
     case 'soloKill':
+      return 'pick'
     case 'gank':
-      return 'firstBlood'
+      if (has('escape')) return 'gankEscape'
+      return has('counterGank') ? 'counterGank' : 'pick'
     case 'teamfight':
       if (has('pentakill')) return 'pentakill'
       if (has('ace')) return 'ace'
       return has('upset') ? 'teamfightUpset' : 'teamfight'
     case 'dragon':
-      return has('steal') ? 'dragonSteal' : 'soul'
+      return has('steal') ? 'dragonSteal' : has('soul') ? 'soul' : 'dragon'
     case 'baron':
       return has('steal') ? 'baronSteal' : 'baron'
     case 'elder':
       return has('steal') ? 'elderSteal' : 'elder'
-    case 'nexus':
-    case 'surrender':
-      return kind
     default:
-      return null
+      return kind
   }
 }
 
@@ -319,16 +359,27 @@ export function lineContext(event: MatchEvent, teams: MatchTeams): LineContext {
 /** The big stamp shown over the fight scene, e.g. "ACE!". Seen from the player's side for the end. */
 export function momentTitle({ kind, tags, side }: MatchEvent): string {
   const has = (tag: MatchEvent['tags'][number]) => tags.includes(tag)
+  if (has('firstBlood')) return 'First blood!'
   switch (kind) {
     case 'soloKill':
+      return 'Solo kill!'
     case 'gank':
-      return 'First blood!'
+      if (has('escape')) return 'Escaped!'
+      return has('counterGank') ? 'Counter-gank!' : 'Gank!'
     case 'teamfight':
       if (has('pentakill')) return 'Pentakill!'
       if (has('ace')) return 'Ace!'
       return has('upset') ? 'Upset!' : 'Teamfight!'
     case 'dragon':
-      return has('steal') ? 'Stolen!' : 'Dragon Soul!'
+      return has('steal') ? 'Stolen!' : has('soul') ? 'Dragon Soul!' : 'Dragon!'
+    case 'grubs':
+      return 'Void Grubs!'
+    case 'herald':
+      return 'Rift Herald!'
+    case 'tower':
+      return 'Tower down!'
+    case 'inhibitor':
+      return 'Inhibitor down!'
     case 'baron':
       return has('steal') ? 'Baron stolen!' : 'Baron!'
     case 'elder':
@@ -336,7 +387,42 @@ export function momentTitle({ kind, tags, side }: MatchEvent): string {
     case 'nexus':
     case 'surrender':
       return side === 'blue' ? 'Victory!' : 'Defeat'
-    default:
-      return ''
   }
+}
+
+/** The analyst's verdict on whoever died the most. */
+export const WORST_PLAYER_LINES = {
+  plain: (name: string, kda: string, deaths: number) => [
+    `${name} went ${kda}. The enemy should send a thank-you card.`,
+    `${deaths} deaths for ${name}. A personal best, probably.`,
+    `${name}, ${kda}. Grey screen was the main role today.`,
+    `${name} spent more time dead than alive. ${kda}.`,
+    `${name} died ${deaths} times. I assume most were on purpose.`,
+  ],
+  offRole: (name: string, kda: string, role: string) => [
+    `${name} ${role}, ${kda}. I did warn you about that pick.`,
+    `${name} ${role} went ${kda}. Shocking to nobody.`,
+  ],
+  badItem: (name: string, kda: string, item: string) => [
+    `${name} with ${item}, ${kda}. The build did the feeding.`,
+    `${kda} for ${name}. ${item} was a cry for help.`,
+  ],
+} as const
+
+/** A roast of the champion who died the most, or null when nobody died. */
+export function roastWorstPlayer(match: MatchResult, teams: MatchTeams, worst: ChampionRef | null): CommentaryLine | null {
+  if (!worst) return null
+  const rating = teams[worst.side].rating.champions.find(({ role }) => role === worst.role)
+  if (!rating) return null
+  const { kills, deaths, assists } = match.stats[worst.side][worst.role]
+  const kda = `${kills}/${deaths}/${assists}`
+  const name = rating.champion.name
+  const issue = draftIssues(rating)[0]
+  const lines = !issue
+    ? WORST_PLAYER_LINES.plain(name, kda, deaths)
+    : issue.kind === 'offRole'
+      ? WORST_PLAYER_LINES.offRole(name, kda, issue.role)
+      : WORST_PLAYER_LINES.badItem(name, kda, issue.item)
+  const random = seededRandom(match.seed ^ 0x2545f491)
+  return { caster: 'analyst', text: lines[Math.floor(random() * lines.length)] ?? '', callback: true }
 }

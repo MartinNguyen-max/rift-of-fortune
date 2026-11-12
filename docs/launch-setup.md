@@ -17,7 +17,7 @@ What the project owner needs to set up (accounts can't be created from code). Ea
 - **Next for Claude,** once it's live:
   1. Add Open Graph link previews, which need the final URL.
   2. Verify the Daily stats end to end.
-  3. ~~Build Match vs Bots~~ (done, reworked after the first playtest: 20 s matches, win-chance bar, K/D/A, fight scenes). Next: playtest again, then Multiplayer (async first, no Skip, see [match-simulation.md](match-simulation.md)).
+  3. ~~Build Match vs Bots~~ (done, reworked after the first playtest: 14 s highlight reel with 3 key moments, win-chance bar, K/D/A, fight scenes, worst-player roast). Next: playtest again, then Multiplayer (async first, no Skip, see [match-simulation.md](match-simulation.md)).
 - **Other ideas** are in [ideas.md](ideas.md). Decisions and their reasons are in [DECISIONS.md](../DECISIONS.md).
 - **Never change** the localStorage prefix or the Daily seed (`rift-of-fortune:`) after launch.
 

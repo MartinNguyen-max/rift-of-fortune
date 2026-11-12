@@ -6,6 +6,7 @@ import {
   commentate,
   describeEvent,
   momentTitle,
+  roastWorstPlayer,
   draftIssues,
   formatGameTime,
   lineContext,
@@ -16,6 +17,7 @@ import {
   type LineContext,
 } from './commentary'
 import { simulateMatch } from './simulateMatch'
+import { mostDeaths } from './summary'
 import { makeEvent, sampleTeams } from './testUtils'
 
 const teams = sampleTeams()
@@ -74,11 +76,16 @@ describe('lineKey', () => {
     expect(lineKey(makeEvent({ kind: 'dragon', big: true, tags: ['soul'] }))).toBe('soul')
     expect(lineKey(makeEvent({ kind: 'baron', big: true, tags: ['steal'] }))).toBe('baronSteal')
     expect(lineKey(makeEvent({ kind: 'nexus', big: true }))).toBe('nexus')
+    expect(lineKey(makeEvent({ kind: 'soloKill', big: true }))).toBe('pick')
+    expect(lineKey(makeEvent({ kind: 'tower', big: true }))).toBe('tower')
+    expect(lineKey(makeEvent({ kind: 'dragon', big: true }))).toBe('dragon')
   })
 
-  it('gives small events no caster line', () => {
+  it('gives small events no caster line, except first blood', () => {
+    expect(lineKey(makeEvent({ kind: 'soloKill', tags: ['firstBlood'] }))).toBe('firstBlood')
     expect(lineKey(makeEvent({ kind: 'tower', tags: ['firstTower'] }))).toBeNull()
     expect(lineKey(makeEvent({ kind: 'soloKill' }))).toBeNull()
+    expect(lineKey(makeEvent({ kind: 'gank', tags: ['escape'] }))).toBeNull()
     expect(lineKey(makeEvent({ kind: 'teamfight', tags: ['upset'] }))).toBeNull()
   })
 })
@@ -124,8 +131,8 @@ describe('commentate', () => {
   it('stays quiet on small events, apart from a few roasts', () => {
     for (const [index, match] of matches.entries()) {
       const lines = allLines[index] ?? []
-      const small = match.events.flatMap((event, eventIndex) => (event.big ? [] : [lines[eventIndex]]))
-      expect(small.every((line) => !line || line.callback)).toBe(true)
+      const quiet = match.events.flatMap((event, eventIndex) => (event.big || event.tags.includes('firstBlood') ? [] : [lines[eventIndex]]))
+      expect(quiet.every((line) => !line || line.callback)).toBe(true)
       expect(lines.filter((line) => line?.callback).length).toBeLessThanOrEqual(ROASTS_PER_MATCH)
     }
   })
@@ -214,6 +221,7 @@ describe('momentTitle', () => {
     expect(momentTitle(makeEvent({ kind: 'teamfight', tags: ['ace'] }))).toBe('Ace!')
     expect(momentTitle(makeEvent({ kind: 'baron', tags: ['steal'] }))).toBe('Baron stolen!')
     expect(momentTitle(makeEvent({ kind: 'gank', tags: ['firstBlood'] }))).toBe('First blood!')
+    expect(momentTitle(makeEvent({ kind: 'tower' }))).toBe('Tower down!')
   })
 
   it('shows the end from the player side', () => {
@@ -221,9 +229,38 @@ describe('momentTitle', () => {
     expect(momentTitle(makeEvent({ kind: 'surrender', side: 'red' }))).toBe('Defeat')
   })
 
-  it('has a title for every big moment in real matches', () => {
-    for (const match of matches) {
-      for (const event of match.events) if (event.big) expect(momentTitle(event)).not.toBe('')
+})
+
+describe('momentTitle for key moments', () => {
+  it('has a title for every kind of event', () => {
+    for (const match of matches) for (const event of match.events) expect(momentTitle(event)).not.toBe('')
+  })
+})
+
+describe('lines for key moments', () => {
+  it('has a caster line for every event when it is a key moment', () => {
+    for (const match of matches.slice(0, 20)) {
+      const allBig = { ...match, events: match.events.map((event) => ({ ...event, big: true })) }
+      for (const line of commentate(allBig, teams)) expect(line?.text).toBeTruthy()
     }
+  })
+})
+
+describe('roastWorstPlayer', () => {
+  it('names the champion who died the most, with their K/D/A', () => {
+    for (const match of matches.slice(0, 20)) {
+      const worst = mostDeaths(match.stats)
+      const roast = roastWorstPlayer(match, teams, worst)
+      if (!worst) continue
+      const name = teams[worst.side].rating.champions.find(({ role }) => role === worst.role)?.champion.name ?? ''
+      expect(roast?.text).toContain(name)
+      expect(roast?.text.length).toBeLessThanOrEqual(80)
+      expect(roast?.caster).toBe('analyst')
+      expect(roastWorstPlayer(match, teams, worst)).toEqual(roast)
+    }
+  })
+
+  it('says nothing when nobody died', () => {
+    expect(roastWorstPlayer(matches[0] ?? simulateMatch(teams, 0), teams, null)).toBeNull()
   })
 })

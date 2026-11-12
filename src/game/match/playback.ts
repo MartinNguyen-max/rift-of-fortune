@@ -2,13 +2,16 @@ import { GOLD } from './config'
 import type { MatchEvent, Scoreboard } from './types'
 
 /** Every match takes this many real seconds to watch, however long it ran in game time. */
-export const MATCH_SECONDS = 20
+export const MATCH_SECONDS = 14
 
 /** Real seconds before the first event, so the screen can settle. */
 export const LEAD_IN = 1
 
-/** How much watch time each event gets, relative to each other. Big moments get time for the fight scene. */
-export const BEATS = { small: 1, big: 3.5 } as const
+/** How much watch time each event gets, relative to each other. Big moments get time for the fight scene and the caster line. */
+export const BEATS = { small: 1, big: 3.2 } as const
+
+/** The game clock stands still for this share of a big moment, so the player can take it in. */
+export const BIG_PAUSE = 0.75
 
 /** Game time shown when the clock starts, this long before the first event. */
 const CLOCK_LEAD_IN = 60
@@ -49,13 +52,21 @@ export function activeBigEvent(events: readonly MatchEvent[], timeline: Timeline
   return elapsed < end ? index : null
 }
 
-/** The game clock at `elapsed`, moving smoothly from one event's time to the next. */
+/** The game clock at `elapsed`, moving smoothly from one event's time to the next, and pausing on big moments. */
 export function gameClock(events: readonly MatchEvent[], timeline: Timeline, elapsed: number): number {
   const first = events[0]
   if (!first) return 0
   const points = [
     { at: 0, time: Math.max(0, first.time - CLOCK_LEAD_IN) },
-    ...events.map(({ time }, index) => ({ at: timeline.starts[index] ?? 0, time })),
+    ...events.flatMap(({ time, big }, index) => {
+      const start = timeline.starts[index] ?? 0
+      if (!big) return [{ at: start, time }]
+      const end = timeline.starts[index + 1] ?? timeline.total
+      return [
+        { at: start, time },
+        { at: start + (end - start) * BIG_PAUSE, time },
+      ]
+    }),
   ]
   const next = points.findIndex(({ at }) => at > elapsed)
   if (next === -1) return points[points.length - 1]?.time ?? 0

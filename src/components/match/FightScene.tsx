@@ -1,23 +1,26 @@
 import { motion } from 'framer-motion'
 import { championIconUrl } from '../../data'
-import { momentTitle } from '../../game/match/commentary'
+import { CASTER_NAMES, momentTitle, type CommentaryLine } from '../../game/match/commentary'
 import type { MatchEvent, MatchTeams, Side } from '../../game/match/types'
 import { ROLES } from '../../game/roles'
 import { eventIcon, SIDE_TEXT } from './matchStyles'
 
 interface FightSceneProps {
   event: MatchEvent
+  /** The caster line for this moment, shown under the stamp. */
+  line: CommentaryLine | null
   teams: MatchTeams
   /** How far the scene has played, 0–1. */
   progress: number
 }
 
-/** Kills land one by one in the first part of the scene, then the title stamps down. */
-const KILLS_END = 0.6
-const TITLE_AT = 0.35
+/** Kills land one by one in the first part of the scene, then the title stamps down and the caster speaks. */
+const KILLS_END = 0.4
+const TITLE_AT = 0.25
+const LINE_AT = 0.4
 
 /** A big moment played out over the map: both teams, the kills landing one by one, then a big stamp. */
-export function FightScene({ event, teams, progress }: FightSceneProps) {
+export function FightScene({ event, line, teams, progress }: FightSceneProps) {
   const killsLanded = event.kills.length === 0 ? 0 : Math.ceil((progress / KILLS_END) * event.kills.length)
   const landed = event.kills.slice(0, killsLanded)
   const dead = (side: Side, role: string) => landed.some(({ victim }) => victim.side === side && victim.role === role)
@@ -30,7 +33,7 @@ export function FightScene({ event, teams, progress }: FightSceneProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="absolute inset-0 flex flex-col items-center justify-center bg-abyss/80 p-3 pb-[22%] backdrop-blur-[2px]"
+      className="absolute inset-0 flex flex-col items-center justify-center bg-abyss/85 p-2 backdrop-blur-[2px] sm:p-3"
     >
       {event.kills.length > 0 ? (
         <div className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-2">
@@ -49,7 +52,7 @@ export function FightScene({ event, teams, progress }: FightSceneProps) {
           transition={{ duration: 0.6 }}
           className="flex flex-col items-center gap-1"
         >
-          <span className="text-6xl" aria-hidden="true">
+          <span className="text-5xl sm:text-6xl" aria-hidden="true">
             {eventIcon(event)}
           </span>
           {!isEnd && <span className={`font-display text-lg font-bold ${SIDE_TEXT[event.side]}`}>{teams[event.side].name}</span>}
@@ -61,11 +64,20 @@ export function FightScene({ event, teams, progress }: FightSceneProps) {
           initial={{ scale: 2.4, opacity: 0, rotate: -8 }}
           animate={{ scale: 1, opacity: 1, rotate: -4 }}
           transition={{ type: 'spring', stiffness: 380, damping: 14 }}
-          className={`pointer-events-none absolute inset-x-0 bottom-[8%] text-center font-display text-2xl font-black tracking-wider uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)] sm:text-4xl ${
+          className={`mt-2 text-center font-display text-2xl font-black tracking-wider uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)] sm:text-4xl ${
             isEnd ? (event.side === 'blue' ? 'text-gold' : 'text-red-400') : SIDE_TEXT[event.side]
           }`}
         >
           {momentTitle(event)}
+        </motion.p>
+      )}
+      {line && progress >= LINE_AT && (
+        <motion.p
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-1 max-w-[95%] text-center text-xs font-semibold text-gold-light sm:text-sm"
+        >
+          “{line.text}” <span className="font-normal text-gold/60">— {CASTER_NAMES[line.caster]}</span>
         </motion.p>
       )}
     </motion.div>
@@ -83,7 +95,7 @@ interface TeamColumnProps {
 function TeamColumn({ side, event, teams, dead, scored }: TeamColumnProps) {
   const won = event.side === side
   return (
-    <ul className={`flex flex-col gap-1 ${side === 'red' ? 'items-end' : 'items-start'}`}>
+    <ul className={`flex flex-col gap-0.5 sm:gap-1 ${side === 'red' ? 'items-end' : 'items-start'}`}>
       {ROLES.filter((role) => event.kind === 'teamfight' || involved(event, side, role)).map((role) => {
         const champion = teams[side].rating.champions.find((entry) => entry.role === role)
         if (!champion) return null
@@ -99,7 +111,7 @@ function TeamColumn({ side, event, teams, dead, scored }: TeamColumnProps) {
               <img
                 src={championIconUrl(champion.champion.image)}
                 alt={champion.champion.name}
-                className={`size-8 rounded-full border-2 transition sm:size-9 ${
+                className={`size-7 rounded-full border-2 transition sm:size-9 ${
                   isDead ? 'border-abyss opacity-40 grayscale' : won ? 'border-gold' : side === 'blue' ? 'border-hextech' : 'border-red-400'
                 }`}
               />

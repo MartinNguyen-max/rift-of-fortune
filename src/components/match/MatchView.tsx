@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion'
 import { useMemo, useState } from 'react'
 import { BOT_PROFILES, type BotLevel } from '../../game/match/bots'
-import { commentate } from '../../game/match/commentary'
+import { CASTER_NAMES, commentate, roastWorstPlayer } from '../../game/match/commentary'
+import { buildHighlightReel } from '../../game/match/highlights'
 import { activeBigEvent, buildTimeline, eventsShown, gameClock, liveScore } from '../../game/match/playback'
 import { simulateMatch } from '../../game/match/simulateMatch'
 import { statsAfter } from '../../game/match/stats'
@@ -26,36 +27,38 @@ interface MatchViewProps {
   onNewTeam: () => void
 }
 
-/** How many kill-feed entries stay on screen while the match plays. */
-const FEED_LIMIT = 5
 
-/** Versus screen, then the match played back in about 20 seconds, then the result. */
+/** Versus screen, then the highlights of the match in about 14 seconds, then the result. */
 export function MatchView({ teams, level, seed, onRematch, onNewTeam }: MatchViewProps) {
   const match = useMemo(() => simulateMatch(teams, seed), [teams, seed])
-  const lines = useMemo(() => commentate(match, teams), [match, teams])
-  const timeline = useMemo(() => buildTimeline(match.events), [match])
+  const reel = useMemo(() => buildHighlightReel(match, teams), [match, teams])
+  const reelMatch = useMemo(() => ({ ...match, events: reel.events }), [match, reel])
+  const lines = useMemo(() => commentate(reelMatch, teams), [reelMatch, teams])
+  const timeline = useMemo(() => buildTimeline(reel.events), [reel])
   const chances = useMemo(() => winChanceTimeline(match, teams), [match, teams])
   const [started, setStarted] = useState(false)
-  const [showFullFeed, setShowFullFeed] = useState(false)
+
   const { elapsed, skip } = usePlaybackClock(timeline.total, started)
 
   if (!started) return <VersusPanel teams={teams} botLabel={BOT_PROFILES[level].label} onStart={() => setStarted(true)} />
 
   const shown = eventsShown(timeline, elapsed)
   const ended = elapsed >= timeline.total
-  const clock = gameClock(match.events, timeline, elapsed)
-  const score = liveScore(match.events, shown, clock)
-  const stats = statsAfter(match.events, shown)
-  const shownEvents = match.events.slice(0, shown)
+  const clock = gameClock(reel.events, timeline, elapsed)
+  const score = liveScore(reel.events, shown, clock)
+  const stats = statsAfter(match.events, shown === 0 ? 0 : (reel.sources[shown - 1] ?? 0) + 1)
+  const history = [chances[0] ?? 0.5, ...reel.sources.slice(0, shown).map((source) => chances[source + 1] ?? 0.5)]
+  const shownEvents = reel.events.slice(0, shown)
   const lastBig = shownEvents.findLastIndex(({ big }) => big)
-  const summary = ended ? summarizeMatch(match, lines) : null
+  const summary = ended ? summarizeMatch(reelMatch, lines) : null
+  const worstRoast = summary && roastWorstPlayer(match, teams, summary.feeder)
 
-  const fightIndex = activeBigEvent(match.events, timeline, elapsed)
-  const fightEvent = fightIndex === null ? undefined : match.events[fightIndex]
+  const fightIndex = activeBigEvent(reel.events, timeline, elapsed)
+  const fightEvent = fightIndex === null ? undefined : reel.events[fightIndex]
   const fightStart = fightIndex === null ? 0 : (timeline.starts[fightIndex] ?? 0)
   const fightEnd = fightIndex === null ? 1 : (timeline.starts[fightIndex + 1] ?? timeline.total)
   const fight = fightEvent && (
-    <FightScene key={fightIndex} event={fightEvent} teams={teams} progress={(elapsed - fightStart) / (fightEnd - fightStart)} />
+    <FightScene key={fightIndex} event={fightEvent} line={fightIndex === null ? null : (lines[fightIndex] ?? null)} teams={teams} progress={(elapsed - fightStart) / (fightEnd - fightStart)} />
   )
 
   return (
@@ -68,7 +71,7 @@ export function MatchView({ teams, level, seed, onRematch, onNewTeam }: MatchVie
           className="flex flex-col gap-3"
         >
           <MatchScoreboard teams={teams} score={score} clock={clock} />
-          <WinChanceBar history={chances.slice(0, shown + 1)} />
+          <WinChanceBar history={history} />
         </motion.div>
         <div className="mx-auto w-full max-w-[17rem] sm:max-w-sm lg:max-w-none">
           <MatchMap events={shownEvents} overlay={fight} />
@@ -87,7 +90,7 @@ export function MatchView({ teams, level, seed, onRematch, onNewTeam }: MatchVie
       <div className="flex w-full flex-col gap-3 lg:flex-1">
         {summary && (
           <MatchEndPanel
-            match={match}
+            match={reelMatch}
             teams={teams}
             lines={lines}
             summary={summary}
@@ -97,18 +100,19 @@ export function MatchView({ teams, level, seed, onRematch, onNewTeam }: MatchVie
           />
         )}
         <ChampionScoreboard teams={teams} stats={stats} awards={summary ? { mvp: summary.mvp, feeder: summary.feeder } : undefined} />
-        <EventFeed
-          events={match.events}
-          lines={lines}
-          teams={teams}
-          shown={shown}
-          limit={ended && showFullFeed ? undefined : FEED_LIMIT}
-        />
-        {ended && !showFullFeed && match.events.length > FEED_LIMIT && (
-          <button type="button" onClick={() => setShowFullFeed(true)} className="text-sm text-hextech underline-offset-4 hover:underline">
-            Show the whole match ({match.events.length} events)
-          </button>
+        {worstRoast && (
+          <motion.p
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="rounded-lg border border-red-400/30 bg-red-950/30 px-3 py-2 text-sm text-gold-light/90"
+          >
+            <span aria-hidden="true">💀 </span>
+            <span className="italic">“{worstRoast.text}”</span>
+            <span className="text-xs text-gold/60 not-italic"> — {CASTER_NAMES[worstRoast.caster]}</span>
+          </motion.p>
         )}
+        <EventFeed events={reel.events} lines={lines} teams={teams} shown={shown} />
       </div>
     </div>
   )
