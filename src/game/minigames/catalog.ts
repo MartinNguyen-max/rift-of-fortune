@@ -111,8 +111,8 @@ export const MINI_GAMES: Record<MiniGameId, MiniGameInfo> = {
     champion: 'Darius',
     botChampion: 'Draven',
     botName: 'Draven',
-    tagline: 'Five enemies, low on health, up for a moment. Dunk them all for the penta.',
-    tutorial: { solo: ['Enemies pop up for a moment', 'Tap one to execute it', 'Kills in a row score more. Penta = 15'] },
+    tagline: 'Eight enemies, up for a blink. Dunk the low ones, never the tank. Chain the penta.',
+    tutorial: { solo: ['8 enemies, each up for a blink', 'Tap the low one. Never the full-health tank', 'In a row: +1, +2… up to +5 a kill'] },
   },
   shadows: {
     id: 'shadows',
@@ -120,8 +120,11 @@ export const MINI_GAMES: Record<MiniGameId, MiniGameInfo> = {
     champion: 'Zed',
     botChampion: 'Akali',
     botName: 'Akali',
-    tagline: 'One Zed, two shadows. Follow the real one through the shuffle.',
-    tutorial: { solo: ['Watch the real Zed', 'The shadows swap, faster each round', 'Tap Zed. Most found wins, then speed'] },
+    tagline: 'One Zed, two shadows, a blur of swaps. Find the real one first.',
+    tutorial: {
+      solo: ['Watch the real Zed', 'The shadows swap fast. Follow him', 'Tap Zed first. Fastest right pick wins'],
+      live: ['Watch the real Zed', 'The same shuffle for both of you', 'Tap Zed first. Fastest right pick wins'],
+    },
   },
   smite: {
     id: 'smite',

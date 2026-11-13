@@ -7,6 +7,7 @@ import {
   executeScore,
   executeWave,
   finalScores,
+  killPoints,
   MISSED,
   type EnemyResult,
   type ExecuteEnemy,
@@ -25,7 +26,7 @@ const GUILLOTINE = spellIconUrl('DariusExecute.png')
 /** How long the last call and the final scores stay up before Victory or Defeat. */
 const LAST_CALL_MS = 2800
 
-/** Darius vs Draven: five low-health enemies pop up one by one. Tap each before it escapes. */
+/** Darius vs Draven: eight low-health enemies pop up one by one, fast. Tap each before it escapes. */
 export function ExecuteGame({ setup, me, moves, sendMove, onShown, players }: MiniGameViewProps) {
   const them = other(me)
   const wave = useMemo(() => executeWave(setup.seed), [setup.seed])
@@ -78,7 +79,11 @@ export function ExecuteGame({ setup, me, moves, sendMove, onShown, players }: Mi
         {done && <WaveSummary mine={executeScore(mine)} final={final} me={me} players={players} />}
       </div>
 
-      {done && !final ? <Waiting name={players[them].name} /> : <p className="text-sm text-gold-light/60">Tap the enemy before it escapes!</p>}
+      {done && !final ? (
+        <Waiting name={players[them].name} />
+      ) : (
+        <p className="text-center text-sm text-gold-light/60">Tap the low-health enemy before it escapes. Never the full-health tank!</p>
+      )}
     </div>
   )
 }
@@ -153,6 +158,7 @@ function Hunt({ enemy, onResult }: { enemy: ExecuteEnemy; onResult: (move: numbe
   return (
     <>
       <div className="absolute inset-0" onPointerDown={whiff} aria-hidden="true" />
+      {up && enemy.decoy && <Tank champion={enemy.decoy.champion} spot={enemy.decoy.spot} onTap={whiff} />}
       {up && (
         <button
           type="button"
@@ -174,17 +180,42 @@ function Hunt({ enemy, onResult }: { enemy: ExecuteEnemy; onResult: (move: numbe
               draggable={false}
               className="size-16 rounded-full border-2 border-red-500 shadow-[0_0_18px_rgb(239_68_68/0.8)] sm:size-[4.5rem]"
             />
-            <span className="mt-1 h-1.5 w-14 overflow-hidden rounded-full bg-abyss ring-1 ring-black">
-              <motion.span
-                animate={{ opacity: [1, 0.4, 1] }}
-                transition={{ duration: 0.3, repeat: Infinity }}
-                className="block h-full w-[14%] bg-red-500"
-              />
-            </span>
+            <HealthBar low />
           </motion.span>
         </button>
       )}
     </>
+  )
+}
+
+/** A full-health tank next to the enemy: the Guillotine can't execute it, so tapping it is a miss. */
+function Tank({ champion, spot, onTap }: { champion: string; spot: number; onTap: () => void }) {
+  return (
+    <button
+      type="button"
+      aria-label={`${champion} at full health: don't tap`}
+      onPointerDown={onTap}
+      className="absolute z-10 flex size-24 -translate-x-1/2 -translate-y-1/2 cursor-crosshair items-center justify-center rounded-full"
+      style={spotPosition(spot)}
+    >
+      <motion.span initial={{ scale: 0.7 }} animate={{ scale: 1 }} transition={{ duration: 0.06 }} className="flex flex-col items-center">
+        <img src={championIconById(champion)} alt="" draggable={false} className="size-16 rounded-full border-2 border-red-500 sm:size-[4.5rem]" />
+        <HealthBar low={false} />
+      </motion.span>
+    </button>
+  )
+}
+
+/** Under each champion: a red sliver blinking (execute it!) or a full green bar (not this one). */
+function HealthBar({ low }: { low: boolean }) {
+  return (
+    <span className="mt-1 h-1.5 w-14 overflow-hidden rounded-full bg-abyss ring-1 ring-black">
+      {low ? (
+        <motion.span animate={{ opacity: [1, 0.4, 1] }} transition={{ duration: 0.3, repeat: Infinity }} className="block h-full w-[14%] bg-red-500" />
+      ) : (
+        <span className="block h-full w-full bg-emerald-500" />
+      )}
+    </span>
   )
 }
 
@@ -238,7 +269,7 @@ function Aftermath({ enemy, result }: { enemy: ExecuteEnemy; result: EnemyResult
             transition={{ duration: 0.8 }}
             className="absolute -top-2 left-1/2 -translate-x-1/2 font-display text-2xl font-black text-gold"
           >
-            +{result.streak}
+            +{killPoints(result.streak)}
           </motion.span>
         </div>
       ) : (
@@ -263,7 +294,7 @@ interface WaveSummaryProps {
   players: readonly [Contestant, Contestant]
 }
 
-/** After your fifth enemy: your kills and points, then both side by side. */
+/** After your last enemy: your kills and points, then both side by side. */
 function WaveSummary({ mine, final, me, players }: WaveSummaryProps) {
   const theirs = final?.[other(me)]
   const samePoints = theirs !== undefined && theirs.points === mine.points
@@ -342,22 +373,25 @@ export function ExecuteTutorialArt({ step }: TutorialArtProps) {
   }
   if (step === 1) {
     return (
-      <div className={`relative flex size-full items-center justify-center ${backdrop}`}>
-        <img src={championIconById('Lux')} alt="" className="size-[42%] rounded-full border-2 border-red-500" />
-        <motion.img
-          src={GUILLOTINE}
-          alt=""
-          animate={{ y: ['-120%', '0%', '0%'], rotate: [-40, 0, 0], opacity: [0, 1, 0] }}
-          transition={{ duration: 1.4, repeat: Infinity, times: [0, 0.3, 1] }}
-          className="absolute size-[30%] rounded border border-gold"
-        />
-        <motion.span
-          animate={{ scale: [1, 0.85, 1] }}
-          transition={{ duration: 1.4, repeat: Infinity }}
-          className="absolute right-[14%] bottom-[8%] text-2xl sm:text-4xl"
-        >
-          👆
-        </motion.span>
+      <div className={`relative flex size-full items-center justify-center gap-[8%] ${backdrop}`}>
+        <span className="relative flex w-[36%] flex-col items-center gap-[6%]">
+          <img src={championIconById('Lux')} alt="" className="aspect-square w-full rounded-full border-2 border-red-500" />
+          <span className="h-1 w-3/4 rounded-full bg-abyss ring-1 ring-black sm:h-1.5">
+            <span className="block h-full w-[14%] bg-red-500" />
+          </span>
+          <motion.img
+            src={GUILLOTINE}
+            alt=""
+            animate={{ y: ['-120%', '0%', '0%'], rotate: [-40, 0, 0], opacity: [0, 1, 0] }}
+            transition={{ duration: 1.4, repeat: Infinity, times: [0, 0.3, 1] }}
+            className="absolute top-[10%] size-[70%] rounded border border-gold"
+          />
+        </span>
+        <span className="relative flex w-[36%] flex-col items-center gap-[6%] opacity-80">
+          <img src={championIconById('Malphite')} alt="" className="aspect-square w-full rounded-full border-2 border-red-500" />
+          <span className="h-1 w-3/4 rounded-full bg-emerald-500 sm:h-1.5" />
+          <span className="absolute top-[18%] font-display text-2xl font-black text-red-500 sm:text-4xl">✕</span>
+        </span>
       </div>
     )
   }

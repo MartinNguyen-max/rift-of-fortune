@@ -3,8 +3,9 @@ import { stepSeed, type BothMoves, type GameSetup, type MiniGameRules, type Owed
 
 /**
  * Zed and two Living Shadows stand in a row. The real Zed is pointed out, then all three turn
- * alike and swap places. Tap the real Zed. Three rounds, each with more and faster swaps (and
- * feints from round 2). Most right picks wins; on a tie, the faster picks.
+ * alike and swap places, fast, with feints. Tap the real Zed. Three rounds, each faster. Each
+ * round goes to the fastest right pick (a right pick always beats a wrong one; both wrong, nobody
+ * wins it). Most rounds won wins; on a tie, the faster right picks.
  */
 
 /** The three spots in the row, left to right. */
@@ -26,21 +27,24 @@ export interface ShadowRound {
   swapMs: number
 }
 
-/** Each round: real swaps, how fast, and how many feints are mixed in. */
+/**
+ * Each round: real swaps, how fast, and how many feints are mixed in. Tuned so most people find
+ * Zed about 1.5 times in 3 rounds: usually in the first, a coin flip in the second, rarely in the last.
+ */
 export const SHADOW_ROUNDS = [
-  { swaps: 5, swapMs: 600, feints: 0 },
-  { swaps: 7, swapMs: 460, feints: 1 },
-  { swaps: 9, swapMs: 360, feints: 2 },
+  { swaps: 7, swapMs: 380, feints: 1 },
+  { swaps: 9, swapMs: 300, feints: 2 },
+  { swaps: 11, swapMs: 240, feints: 3 },
 ] as const
 
 export const SHADOW_TIMING = {
   /** The real Zed is pointed out this long (longer in the first round, to get ready)... */
-  showMs: 1700,
-  firstShowMs: 2600,
+  showMs: 1300,
+  firstShowMs: 2200,
   /** ...then he turns into a shadow like the others. */
-  blendMs: 650,
-  /** Time to pick once the shuffle stops. */
-  pickMs: 5000,
+  blendMs: 500,
+  /** Time to pick once the shuffle stops. Speed wins rounds, so it is short. */
+  pickMs: 4000,
   /** A finished round stays up this long before the next one. */
   betweenMs: 2600,
 } as const
@@ -130,34 +134,60 @@ export const NO_PICK = pickMove(null, PICK_CAP_MS)
 
 export const isRightPick = (round: ShadowRound, move: number): boolean => readPick(move).spot === realSpot(round)
 
-// ── Scores: right picks first, then speed ─────────
+export interface ShadowPickResult extends ShadowPick {
+  right: boolean
+}
 
-/** A score is `right × SCORE_BASE` plus a bonus for speed, so higher is always better. */
+// ── Rounds: the fastest right pick wins ─────────
+
+/** Who wins a round: the only right pick, or the faster of two. Null when both were wrong (or exactly as fast). */
+export function roundWinner(mine: ShadowPickResult, theirs: ShadowPickResult): Player | null {
+  if (mine.right !== theirs.right) return mine.right ? 0 : 1
+  if (!mine.right || mine.ms === theirs.ms) return null
+  return mine.ms < theirs.ms ? 0 : 1
+}
+
+// ── Scores: rounds won, then speed ─────────
+
+/** A score is a count × SCORE_BASE plus a bonus for speed on the right picks, so higher is always better. */
 export const SCORE_BASE = 100_000
 
-/** Right picks, then the time spent on them: faster is better. No right pick scores 0. */
-export function shadowScore(picks: readonly { right: boolean; ms: number }[]): number {
+type Pick = { right: boolean; ms: number }
+
+/** Faster right picks give a bigger bonus; no right pick gives none. */
+function speedBonus(picks: readonly Pick[]): number {
   const right = picks.filter((pick) => pick.right)
   if (right.length === 0) return 0
   const ms = Math.min(
     SCORE_BASE - 1,
     right.reduce((total, pick) => total + pick.ms, 0),
   )
-  return right.length * SCORE_BASE + (SCORE_BASE - 1 - ms)
+  return SCORE_BASE - 1 - ms
 }
 
-export const rightOfScore = (score: number): number => Math.floor(score / SCORE_BASE)
-export const msOfScore = (score: number): number => (score === 0 ? 0 : SCORE_BASE - 1 - (score % SCORE_BASE))
+/** The match score: rounds won, then the time spent on right picks. */
+export const shadowScore = (roundsWon: number, picks: readonly Pick[]): number => roundsWon * SCORE_BASE + speedBonus(picks)
 
-/** "2/3 · 1.9 s": right picks, and the time they took. */
+/** The personal best: how often you found Zed, then how fast. */
+export const foundScore = (picks: readonly Pick[]): number => picks.filter((pick) => pick.right).length * SCORE_BASE + speedBonus(picks)
+
+const countOfScore = (score: number): number => Math.floor(score / SCORE_BASE)
+const secondsOfScore = (score: number): string | null =>
+  score % SCORE_BASE === 0 ? null : `${((SCORE_BASE - 1 - (score % SCORE_BASE)) / 1000).toFixed(1)} s`
+
+/** "2 rounds · 1.9 s": rounds won, and the time the right picks took. */
 export function formatShadowScore(score: number): string {
-  const right = rightOfScore(score)
-  const found = `${right}/${SHADOW_ROUNDS.length}`
-  return right === 0 ? found : `${found} · ${(msOfScore(score) / 1000).toFixed(1)} s`
+  const won = countOfScore(score)
+  const rounds = `${won} ${won === 1 ? 'round' : 'rounds'}`
+  const seconds = secondsOfScore(score)
+  return seconds ? `${rounds} · ${seconds}` : rounds
 }
 
-export interface ShadowPickResult extends ShadowPick {
-  right: boolean
+/** "2/3 found · 1.9 s": right picks, and how long they took. */
+export function formatFound(score: number): string {
+  const found = `${countOfScore(score)}/${SHADOW_ROUNDS.length} found`
+  const seconds = secondsOfScore(score)
+  return seconds ? `${found} · ${seconds}` : found
 }
 
 /** Each player's picks so far, right or wrong, by round. */
@@ -173,11 +203,22 @@ export function shadowPicks(moves: BothMoves, setup: GameSetup): [ShadowPickResu
   return picks
 }
 
+/** The winner of each round both players have picked in, in order. */
+export function roundWinners(moves: BothMoves, setup: GameSetup): (Player | null)[] {
+  const [mine, theirs] = shadowPicks(moves, setup)
+  return mine.flatMap((pick, round) => {
+    const their = theirs[round]
+    return their ? [roundWinner(pick, their)] : []
+  })
+}
+
 function settle(moves: BothMoves, setup: GameSetup): Settled | null {
   const rounds = shadowRoundCount()
   const [mine, theirs] = shadowPicks(moves, setup)
   if (mine.length < rounds || theirs.length < rounds) return null
-  const scores: [number, number] = [shadowScore(mine), shadowScore(theirs)]
+  const winners = roundWinners(moves, setup)
+  const won = (player: Player) => winners.filter((winner) => winner === player).length
+  const scores: [number, number] = [shadowScore(won(0), mine), shadowScore(won(1), theirs)]
   const winner: Player | null = scores[0] === scores[1] ? null : scores[0] > scores[1] ? 0 : 1
   return { winner, scores }
 }
@@ -190,8 +231,11 @@ function owed(moves: BothMoves): Owed[] {
   })
 }
 
-/** The bot follows well at first, worse as the shuffle speeds up. */
-export const BOT_SHADOWS = { accuracy: [0.9, 0.72, 0.52], pickMs: { min: 650, max: 1700 } } as const
+/**
+ * Akali, the bot: like most people she finds Zed about 1.5 times a game (usually in the first
+ * round, rarely in the last), picking in 0.5–1.2 s like a quick human.
+ */
+export const BOT_SHADOWS = { accuracy: [0.72, 0.5, 0.3], pickMs: { min: 500, max: 1200 }, slowerPerRound: 80 } as const
 
 export function botPick(round: ShadowRound, step: number, seed: number): number {
   const random = seededRandom(seed ^ 0x2c1b3c6d)
@@ -199,7 +243,7 @@ export function botPick(round: ShadowRound, step: number, seed: number): number 
   const right = realSpot(round)
   const wrong = SPOTS.filter((spot) => spot !== right)
   const spot = random() < accuracy ? right : (wrong[Math.floor(random() * wrong.length)] ?? right)
-  const ms = BOT_SHADOWS.pickMs.min + random() * (BOT_SHADOWS.pickMs.max - BOT_SHADOWS.pickMs.min) + step * 150
+  const ms = BOT_SHADOWS.pickMs.min + random() * (BOT_SHADOWS.pickMs.max - BOT_SHADOWS.pickMs.min) + step * BOT_SHADOWS.slowerPerRound
   return pickMove(spot, ms)
 }
 
@@ -218,5 +262,9 @@ export const SHADOW_RULES: MiniGameRules = {
   botMove: (step, _moves, setup) =>
     step < shadowRoundCount() ? botPick(roundOfStep(setup, step), step, stepSeed(setup.seed, step, 73)) : undefined,
   formatScore: (score) => formatShadowScore(score),
-  best: { of: (moves, setup) => settle(moves, setup)?.scores[0] ?? null, lowerIsBetter: false, format: formatShadowScore },
+  best: {
+    of: (moves, setup) => (settle(moves, setup) ? foundScore(shadowPicks(moves, setup)[0]) : null),
+    lowerIsBetter: false,
+    format: formatFound,
+  },
 }

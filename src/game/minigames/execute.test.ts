@@ -4,6 +4,7 @@ import {
   BOT_EXECUTE,
   botExecute,
   compareScores,
+  DECOY_TANKS,
   packScore,
   enemyResults,
   EXECUTE,
@@ -25,12 +26,28 @@ const play = (pattern: string): number[] => [...pattern].map((mark) => (mark ===
 const score = (pattern: string) => executeScore(enemyResults(play(pattern), wave))
 
 describe('the wave', () => {
-  it('is the same for both players and has five different real champions', () => {
+  it('is the same for both players and has eight different real champions', () => {
     expect(executeWave(SEED)).toEqual(wave)
-    expect(wave).toHaveLength(EXECUTE.enemies)
+    expect(wave).toHaveLength(8)
     expect(new Set(wave.map(({ champion }) => champion)).size).toBe(EXECUTE.enemies)
     const ids = new Set(gameData.champions.map(({ id }) => id))
-    for (const id of EXECUTE_TARGETS) expect(ids).toContain(id)
+    for (const id of [...EXECUTE_TARGETS, ...DECOY_TANKS]) expect(ids).toContain(id)
+  })
+
+  it('sometimes puts a full-health tank next to an enemy, from the third one on', () => {
+    let decoys = 0
+    for (let seed = 0; seed < 300; seed++) {
+      executeWave(seed).forEach((enemy, index) => {
+        if (!enemy.decoy) return
+        decoys += 1
+        expect(index).toBeGreaterThanOrEqual(EXECUTE.decoy.from)
+        expect(enemy.decoy.spot).not.toBe(enemy.spot)
+        expect(DECOY_TANKS).toContain(enemy.decoy.champion)
+      })
+    }
+    // About 45% of the six enemies that can have one.
+    expect(decoys / 300).toBeGreaterThan(2.2)
+    expect(decoys / 300).toBeLessThan(3.2)
   })
 
   it('never shows two enemies in a row on the same spot, and each is up a little shorter', () => {
@@ -68,11 +85,20 @@ describe('kills and streaks', () => {
     expect(enemyResults([300, undefined, 300], wave)).toHaveLength(1)
   })
 
-  it('scores each kill by its streak: a pentakill is 15', () => {
-    expect(score('KKKKK')).toMatchObject({ points: 15, kills: 5, bestStreak: 5 })
-    expect(score('KKKKM')).toMatchObject({ points: 10, kills: 4, bestStreak: 4 })
-    expect(score('KMKMK')).toMatchObject({ points: 3, kills: 3, bestStreak: 1 })
-    expect(score('MMMMM')).toMatchObject({ points: 0, kills: 0, bestStreak: 0, time: 0 })
+  it('scores each kill by its streak, at most 5 a kill: a pentakill is 15, all eight 30', () => {
+    expect(score('KKKKKMMM')).toMatchObject({ points: 15, kills: 5, bestStreak: 5 })
+    expect(score('KKKKKKKK')).toMatchObject({ points: 30, kills: 8, bestStreak: 8 })
+    expect(score('KKKKMKKM')).toMatchObject({ points: 13, kills: 6, bestStreak: 4 })
+    expect(score('KMKMKMMM')).toMatchObject({ points: 3, kills: 3, bestStreak: 1 })
+    expect(score('MMMMMMMM')).toMatchObject({ points: 0, kills: 0, bestStreak: 0, time: 0 })
+  })
+
+  it('is tuned so a 0.5 s tapper gets 4 and only a 0.37 s tapper all eight', () => {
+    const steady = (ms: number) => executeScore(enemyResults(Array<number>(EXECUTE.enemies).fill(ms), wave)).kills
+    expect(steady(500)).toBe(4)
+    expect(steady(450)).toBe(5)
+    expect(steady(400)).toBe(7)
+    expect(steady(370)).toBe(8)
   })
 
   it('adds up the reaction times of the kills only', () => {
@@ -91,9 +117,9 @@ describe('the winner', () => {
     expect(compareScores(s(6, 3, 1200), s(6, 3, 1200))).toBeNull()
   })
 
-  it('settles once both played all five, with points, kills and speed in one score', () => {
-    const moves: BothMoves = [play('KKKKM'), play('KMKKK')]
-    expect(EXECUTE_RULES.settle([play('KKKKM'), play('KMKK')], live)).toBeNull()
+  it('settles once both played all eight, with points, kills and speed in one score', () => {
+    const moves: BothMoves = [play('KKKKMMMM'), play('KMKKKMMM')]
+    expect(EXECUTE_RULES.settle([play('KKKKMMMM'), play('KMKKKMM')], live)).toBeNull()
     const settled = EXECUTE_RULES.settle(moves, live)
     expect(settled?.winner).toBe(0)
     expect(settled?.scores.map((score) => EXECUTE_RULES.formatScore(score, live).split(' · ')[0])).toEqual(['10 pts', '7 pts'])
@@ -109,15 +135,15 @@ describe('the winner', () => {
   })
 
   it('calls equal waves a tie', () => {
-    expect(EXECUTE_RULES.settle([play('MMMMM'), play('MMMMM')], live)?.winner).toBeNull()
+    expect(EXECUTE_RULES.settle([play('MMMMMMMM'), play('MMMMMMMM')], live)?.winner).toBeNull()
   })
 
-  it('owes each player their next enemy until all five are played', () => {
+  it('owes each player their next enemy until all eight are played', () => {
     expect(EXECUTE_RULES.owed([[], play('KK')], live)).toEqual([
       { player: 0, step: 0 },
       { player: 1, step: 2 },
     ])
-    expect(EXECUTE_RULES.owed([play('KKKKK'), play('KKKKK')], live)).toEqual([])
+    expect(EXECUTE_RULES.owed([play('KKKKKKKK'), play('KKKKKKKK')], live)).toEqual([])
   })
 
   it('fills in a miss for a player who never answers', () => {
@@ -126,7 +152,7 @@ describe('the winner', () => {
 
   it('keeps your points (then speed) as the personal best', () => {
     const setup = soloSetup(SEED)
-    const best = EXECUTE_RULES.best?.of([play('KKKMK'), play('MMMMM')], setup) ?? 0
+    const best = EXECUTE_RULES.best?.of([play('KKKMKMMM'), play('MMMMMMMM')], setup) ?? 0
     expect(EXECUTE_RULES.best?.format(best)).toMatch(/^7 pts · \d\.\d s$/)
     expect(EXECUTE_RULES.formatScore(packScore(s(1, 1, 500)), setup)).toBe('1 pt · 0.5 s')
   })
@@ -148,14 +174,18 @@ describe('the bot', () => {
     }
   })
 
-  it('gets about 3 to 4 kills a game', () => {
+  it('gets about 4 kills of 8 a game, and very rarely all eight', () => {
     let kills = 0
-    const games = 400
+    let allEight = 0
+    const games = 1000
     for (let seed = 0; seed < games; seed++) {
       const moves = Array.from({ length: EXECUTE.enemies }, (_, step) => botExecute(seed, step))
-      kills += executeScore(enemyResults(moves, executeWave(seed))).kills
+      const score = executeScore(enemyResults(moves, executeWave(seed)))
+      kills += score.kills
+      if (score.kills === EXECUTE.enemies) allEight += 1
     }
-    expect(kills / games).toBeGreaterThan(3)
-    expect(kills / games).toBeLessThan(4.2)
+    expect(kills / games).toBeGreaterThan(3.6)
+    expect(kills / games).toBeLessThan(4.6)
+    expect(allEight / games).toBeLessThan(0.01)
   })
 })
