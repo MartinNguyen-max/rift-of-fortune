@@ -193,7 +193,7 @@ describe('hostMessages: live events', () => {
     const round = opened(gankIndex)
     expect(hostMessages(round, context({ now: 1000 }))).toEqual([])
     const gankSetup = eventSetup(SEED, gankIndex, false, settings.bothRoles)
-    const limit = (TIMINGS.intro + MINI_GAME_RULES.gank.liveSeconds(gankSetup) + TIMINGS.eventGrace) * 1000
+    const limit = (TIMINGS.intro + TIMINGS.opening + MINI_GAME_RULES.gank.liveSeconds(gankSetup) + TIMINGS.eventGrace) * 1000
     const [message] = hostMessages(round, context({ now: limit }))
     expect(message).toMatchObject({ type: 'move', event: gankIndex, step: 0, value: 1 })
   })

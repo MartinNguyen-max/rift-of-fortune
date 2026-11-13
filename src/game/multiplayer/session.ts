@@ -13,6 +13,8 @@ export const TIMINGS = {
   versus: 10,
   /** The intro before each live event: it ends when both press Ready, or after this. */
   intro: 10,
+  /** The face-off (both champions, VS) before each mini-game. */
+  opening: 2.5,
   /** How long the host waits past a mini-game's time limit before filling in missing moves. */
   eventGrace: 6,
   /** A player gone this long gets poor moves filled in, so the other never waits for nothing. */
@@ -263,7 +265,7 @@ function eventMessages(round: RoundState, index: number, event: LiveEventState, 
     return [{ type: 'eventResult', round: round.id, event: index, result }]
   }
 
-  const timeUp = context.now >= start + seconds(rules.liveSeconds(setup) + TIMINGS.eventGrace)
+  const timeUp = context.now >= start + seconds(TIMINGS.opening + rules.liveSeconds(setup) + TIMINGS.eventGrace)
   return rules.owed(event.moves, setup).flatMap((owed) => {
     const player = round.players[owed.player]
     if (!player || !(timeUp || goneFor(player.id, TIMINGS.offline, context))) return []

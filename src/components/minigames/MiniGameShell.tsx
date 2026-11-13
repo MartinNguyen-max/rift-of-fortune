@@ -9,6 +9,7 @@ import { saveOutcome } from '../../services/miniGameRecords'
 import { playSound, prepareChampionVoice } from '../../services/sound'
 import { Button } from '../Button'
 import { routeHref } from '../useHashRoute'
+import { GameOpening } from './GameOpening'
 import { MiniGameIntro } from './MiniGameIntro'
 import { championIconById } from './miniGameArt'
 import type { Contestant } from './types'
@@ -79,7 +80,9 @@ function SoloGame({ info, seed, players, onRematch }: SoloGameProps) {
   const bot = useMemo(() => botMoves(rules, mine, setup), [rules, mine, setup])
   const moves = useMemo<BothMoves>(() => [mine, bot], [mine, bot])
   const [outcome, setOutcome] = useState<Outcome | null>(null)
+  const [opened, setOpened] = useState(false)
   const saved = useRef(false)
+  const open = useCallback(() => setOpened(true), [])
 
   const sendMove = useCallback((step: number, value: number) => setMine((current) => withMove(current, step, value)), [])
 
@@ -95,6 +98,7 @@ function SoloGame({ info, seed, players, onRematch }: SoloGameProps) {
     setOutcome({ settled, update, moves })
   }, [rules, moves, setup, info.id])
 
+  if (!opened) return <GameOpening info={info} you={players[0]} them={players[1]} onDone={open} />
   return (
     <>
       <div className={outcome ? 'pointer-events-none opacity-30 blur-[2px]' : ''} aria-hidden={outcome !== null}>

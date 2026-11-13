@@ -7,8 +7,9 @@ import { MINI_GAME_RULES } from '../../game/minigames/registry'
 import { other } from '../../game/minigames/versus'
 import { eventSetup, type LiveEvent } from '../../game/multiplayer/liveEvents'
 import type { Emote, EventResult, PlayerId, RoomMessage } from '../../game/multiplayer/protocol'
-import { playerIndex, playerOn, TIMINGS, type LiveEventState, type RoundState } from '../../game/multiplayer/session'
+import { eventStart, playerIndex, playerOn, TIMINGS, type LiveEventState, type RoundState } from '../../game/multiplayer/session'
 import { Button } from '../Button'
+import { GameOpening } from '../minigames/GameOpening'
 import { MiniGameIntro } from '../minigames/MiniGameIntro'
 import { BigCall } from '../minigames/parts'
 import { useTimeout } from '../minigames/timing'
@@ -55,6 +56,12 @@ export function LiveEventStage({ round, index, live, myId, mySide, send, sendEmo
   }, [info, opponentName, me])
 
   const [introOver, setIntroOver] = useState(false)
+  // A player who rejoins after the game began skips the face-off.
+  const [opened, setOpened] = useState(() => {
+    const start = event ? eventStart(event) : null
+    return start !== null && Date.now() > start + TIMINGS.opening * 1000
+  })
+  const open = useCallback(() => setOpened(true), [])
   const [shown, setShown] = useState(false)
   const [resultWaited, setResultWaited] = useState(false)
   const result = event?.result ?? null
@@ -94,7 +101,8 @@ export function LiveEventStage({ round, index, live, myId, mySide, send, sendEmo
             <ReadyButton event={event} myId={myId} opponentName={opponentName} onReady={ready} />
           </MiniGameIntro>
         )}
-        {phase === 'game' && event && (
+        {phase === 'game' && event && !opened && <GameOpening info={info} you={players[me]} them={players[other(me)]} onDone={open} />}
+        {phase === 'game' && event && opened && (
           <Game setup={setup} me={me} moves={event.moves} sendMove={sendMove} onShown={markShown} players={players} />
         )}
         {phase === 'reveal' && event && result && (
