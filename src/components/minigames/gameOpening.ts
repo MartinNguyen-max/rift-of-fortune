@@ -6,10 +6,16 @@ import { SKINS } from './miniGameArt'
 /** The skin of a champion's finisher animation, so the art matches the clip after the game. */
 const finisherSkin = (champion: string) => finisherFor(champion)?.skin ?? 0
 
-/** Games with a theme of their own keep their skins (yours, then the opponent's). */
-const OPENING_SKINS: Partial<Record<MiniGameId, readonly [number, number]>> = {
-  duel: [SKINS.sheriffCaitlyn, SKINS.highNoonJhin],
-  cleaver: [0, SKINS.elMachoMundo],
+/** Games with a look of their own keep their skins: by champion, or in a mirror match the opponent's. */
+const THEMED_SKINS: Partial<Record<MiniGameId, { byChampion?: Readonly<Record<string, number>>; opponent?: number }>> = {
+  duel: { byChampion: { Caitlyn: SKINS.sheriffCaitlyn, Jhin: SKINS.highNoonJhin } },
+  cleaver: { opponent: SKINS.elMachoMundo },
+}
+
+function skinOf(game: MiniGameId, champion: string, opponent: boolean): number {
+  const themed = THEMED_SKINS[game]
+  if (!themed) return finisherSkin(champion)
+  return themed.byChampion?.[champion] ?? (opponent ? (themed.opponent ?? 0) : 0)
 }
 
 export interface OpeningArt {
@@ -21,7 +27,8 @@ export interface OpeningArt {
 
 /** The loading-screen art of both champions for a mini-game's opening. */
 export function openingArt(game: MiniGameId, champion: string, opponentChampion: string): OpeningArt {
-  const [yourSkin, theirSkin] = OPENING_SKINS[game] ?? [finisherSkin(champion), finisherSkin(opponentChampion)]
+  const yourSkin = skinOf(game, champion, false)
+  const theirSkin = skinOf(game, opponentChampion, true)
   return {
     you: championLoadingUrl(champion, yourSkin),
     them: championLoadingUrl(opponentChampion, theirSkin),
