@@ -54,9 +54,10 @@ Put the clips in **`public/finishers/`** with exactly these names. MP4 (H.264), 
 | Unstoppable Force | Malphite | Chibi Mecha Malphite (1:22) | `mecha-malphite.mp4` |
 | Unstoppable Force | Amumu | Chibi Surprise Party Amumu (8:18) | `surprise-party-amumu.mp4` |
 | Baron Steal | Lee Sin | Chibi Prestige Dragon Fist Lee Sin (3:18) | `dragon-fist-lee-sin.mp4` |
-| Zed shadows | Zed | Chibi PROJECT: Zed (1:12) | `project-zed.mp4` |
-NEW_GAME_ROWS
-**Only if you say yes to a swap below:** `dawnbringer-riven.mp4`, `battle-academia-ezreal.mp4`, `cafe-cuties-gwen.mp4`, `battle-academia-katarina.mp4`, `kda-all-out-akali.mp4`, `arcane-warwick.mp4`, `spirit-blossom-lillia.mp4`, `god-king-garen.mp4`. The file names of every other clip in the list are in `src/game/finishers.ts`.
+| Shadow Shuffle | Zed | Chibi PROJECT: Zed (1:12) | `project-zed.mp4` |
+| Shadow Shuffle | Akali | Chibi KDA ALL OUT Akali (2:37) | `kda-all-out-akali.mp4` |
+
+**Only if you say yes to a swap below:** `dawnbringer-riven.mp4`, `battle-academia-ezreal.mp4`, `cafe-cuties-gwen.mp4`, `battle-academia-katarina.mp4`, `arcane-warwick.mp4`, `spirit-blossom-lillia.mp4`, `god-king-garen.mp4`, `project-vayne.mp4`. The file names of every other clip in the list are in `src/game/finishers.ts`.
 
 ## Questions for the owner: champions without an animation
 
@@ -70,8 +71,8 @@ These champions have no clip in the list. Switch? (Nothing has been switched yet
 | Mundo Goes Where He Pleases | Mundo vs Mundo | Dr. Mundo | **Katarina** (Battle Academia) | Throwing and dodging daggers instead of cleavers. |
 | I Was Hiding | Shaco vs Rengar | both | **Akali** (K/DA ALL OUT) hides, **Warwick** (Arcane) hunts | Akali vanishes in her shroud; Warwick hunts by scent. |
 | Baron Steal | Lee Sin vs Nunu | Nunu | **Lillia** (Spirit Blossom) | Another jungler. |
-| Darius, five ults | Darius | Darius | **Garen** (God-King) | Garen's ult also executes ("Demacian Justice"). |
-NEW_GAME_QUESTIONS
+| Noxian Guillotine | Darius vs Draven | both | **Garen** (God-King) vs **Vayne** (PROJECT) | Garen's ult also executes ("Demacian Justice"); Vayne is a hunter with an Unbound clip. |
+
 Skins: the game art uses the clip's skin where League has the same skin (Mecha Malphite, PROJECT: Zed...). **Headshot at High Noon** keeps Sheriff Caitlyn and High Noon Jhin for now, because the game is themed "High Noon" and the clips are Arcane Caitlyn and Dark Cosmic Jhin. Switch the art to the clip skins anyway?
 
 ## Later: fast mode, five lanes ("no champ select")

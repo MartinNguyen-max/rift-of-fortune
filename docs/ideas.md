@@ -7,8 +7,8 @@ Ideas collected while building, so they're not lost. Nothing here is approved un
 | Mode | What it is | Size | Status |
 |---|---|---|---|
 | **Match vs Bots** | Your team plays a simulated match against a level 1–3 bot, with a live play-by-play. See [match-simulation.md](match-simulation.md). | Medium | **Approved**, "Coming soon" card |
-| **Mini-games** | Six quick games vs a bot (quick draw, hook, combo, shrooms, forge, cleaver). See [minigames.md](minigames.md). | Medium | **Built** (beta, vs bot) |
-| **Multiplayer** | Two players draft, then their teams play each other, with four live mini-games (gank guess, ult bar, Baron and Elder smite). | Large | **Built** (real time, see DECISIONS.md) |
+| **Mini-games** | Eleven quick games vs a bot, also the live events of Multiplayer. See [minigames.md](minigames.md). | Medium | **Built** |
+| **Multiplayer** | Two players draft, then their teams play each other; the host picks which mini-games are the live events. | Large | **Built** (real time, see DECISIONS.md) |
 | **Challenge a Friend** | Share a link and your friend gets the exact same rolls; compare results. No server needed (seeded rolls already exist). | Small | Idea |
 | **ARAM** | Howling Abyss: 5 random champions, no roles, rated on team comp and items only. | Small–medium | Idea |
 | **Blind Pick** | Choose the slot *before* the roll, so you never know who's coming. | Small | Idea |
