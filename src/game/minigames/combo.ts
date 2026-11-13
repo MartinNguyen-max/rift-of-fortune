@@ -73,8 +73,15 @@ export function comboCheer(length: number): string {
 
 export const COMBO_RULES: MiniGameRules = {
   chances: 1,
+  // A 3-2-1, then per spam: the get-ready moment, the flashes (the first key longer), typing and the cheer.
   liveSeconds: () =>
-    LIVE_COMBO_LENGTHS.reduce((total, length) => total + 1.5 + length * (flashSeconds(length) + 0.14) + inputSeconds(length) + 1.5, 0),
+    3 +
+    LIVE_COMBO_LENGTHS.reduce(
+      (total, length) =>
+        total + 1.5 + (length + FIRST_KEY_FACTOR - 1) * (flashSeconds(length) + 0.14) + inputSeconds(length) + 1.5,
+      0,
+    ) +
+    2,
   owed: owedScores,
   settle: (moves) => settleScores(moves),
   fallback: () => 0,

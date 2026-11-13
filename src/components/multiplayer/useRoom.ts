@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { gameData } from '../../data'
 import { lobbyPlayers, type Emote, type PlayerId, type PresenceInfo, type RoomMessage } from '../../game/multiplayer/protocol'
-import { hostMessages, roundReducer, TIMINGS, type RoundState } from '../../game/multiplayer/session'
+import { hostMessages, roundReducer, type RoundState } from '../../game/multiplayer/session'
+import { defaultSettings, DRAFT_SECONDS, type LobbySettings } from '../../game/multiplayer/settings'
 import { randomEncodedTeam } from '../../game/multiplayer/teamCode'
 import { randomTeamName } from '../../game/multiplayer/teamNames'
 import { joinRoom, type ConnectionStatus, type RoomConnection } from '../../services/realtime'
@@ -20,8 +21,12 @@ const EMOTE_COOLDOWN_MS = 180
 const EMOTE_LIFETIME_MS = 2200
 
 /** Remembers which host messages were sent, so a slow echo never makes the host send one twice. */
-const messageKey = (message: RoomMessage) =>
-  `${message.type}:${'round' in message ? message.round : ''}:${'event' in message ? message.event : ''}`
+function messageKey(message: RoomMessage): string {
+  const round = 'round' in message ? message.round : ''
+  const event = 'event' in message ? message.event : ''
+  const move = message.type === 'move' ? `:${message.player}:${message.step}` : ''
+  return `${message.type}:${round}:${event}${move}`
+}
 
 /**
  * One multiplayer lobby: the connection, who is in it, the current game (built from the messages)
@@ -35,6 +40,7 @@ export function useRoom(code: string) {
     joinedAt: Date.now(),
     ready: false,
     playing: false,
+    settings: defaultSettings(),
   }))
   const [status, setStatus] = useState<ConnectionStatus>('connecting')
   const [present, setPresent] = useState<PresenceInfo[]>([])
@@ -49,6 +55,8 @@ export function useRoom(code: string) {
   const sent = useRef(new Set<string>())
   const starting = useRef(false)
   const finishedRounds = useRef(new Set<string>())
+  /** When each player of the current round was first missed (host only). */
+  const goneSince = useRef(new Map<PlayerId, number>())
   const lastEmote = useRef(0)
   const emoteKey = useRef(0)
 
@@ -92,6 +100,8 @@ export function useRoom(code: string) {
   const opponent = players.find(({ id }) => id !== me.id) ?? null
   const isPlayer = players.some(({ id }) => id === me.id)
   const isHost = players[0]?.id === me.id
+  /** The host's settings are the lobby's settings. */
+  const settings: LobbySettings = players[0]?.settings ?? me.settings ?? defaultSettings()
 
   // Two players never share a team name: the one who joined later picks another.
   useEffect(() => {
@@ -111,20 +121,30 @@ export function useRoom(code: string) {
         // Both stay "ready" until the start message reaches them, so start only once.
         if (!starting.current) {
           starting.current = true
+          const lobbySettings = host.settings ?? meRef.current.settings ?? defaultSettings()
           send({
             type: 'startDraft',
             round: crypto.randomUUID().slice(0, 8),
-            seconds: TIMINGS.draft,
+            seconds: DRAFT_SECONDS[lobbySettings.pace],
             players: [host, guest].map(({ id, name }) => ({ id, name })),
+            settings: lobbySettings,
           })
         }
         return
       }
       starting.current = false
-      if (!current) return
+      // A finished game needs no referee (a player leaving afterwards is no surrender).
+      if (!current || finishedRounds.current.has(current.id)) return
+      const now = Date.now()
+      const online = lobby.map(({ id }) => id)
+      for (const { id } of current.players) {
+        if (online.includes(id)) goneSince.current.delete(id)
+        else if (!goneSince.current.has(id)) goneSince.current.set(id, now)
+      }
       const messages = hostMessages(current, {
-        now: Date.now(),
-        online: lobby.map(({ id }) => id),
+        now,
+        online,
+        goneSince: Object.fromEntries(goneSince.current),
         random: Math.random,
         randomTeam: () => randomEncodedTeam(gameData, Math.random),
       })
@@ -140,6 +160,9 @@ export function useRoom(code: string) {
   }, [isHost, send])
 
   const setReady = useCallback((ready: boolean) => updateMe({ ready }), [updateMe])
+
+  /** The host changes the lobby settings; both players see them. */
+  const changeSettings = useCallback((next: LobbySettings) => updateMe({ settings: next }), [updateMe])
 
   const sendEmote = useCallback(
     (emote: Emote) => {
@@ -168,7 +191,24 @@ export function useRoom(code: string) {
     updateMe({ playing: false, ready: false })
   }, [updateMe])
 
-  return { status, me, players, opponent, isPlayer, isHost, round, emotes, wins, send, setReady, sendEmote, finishRound, leaveRound }
+  return {
+    status,
+    me,
+    players,
+    opponent,
+    isPlayer,
+    isHost,
+    settings,
+    round,
+    emotes,
+    wins,
+    send,
+    setReady,
+    changeSettings,
+    sendEmote,
+    finishRound,
+    leaveRound,
+  }
 }
 
 export type Room = ReturnType<typeof useRoom>

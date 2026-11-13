@@ -166,7 +166,8 @@ function botMove(step: number, moves: BothMoves, setup: GameSetup): number | und
 
 export const CLEAVER_RULES: MiniGameRules = {
   chances: 1,
-  liveSeconds: () => MAX_TURNS.live * (TURN_SECONDS.live + 2.5),
+  // Each turn: the choice, plus about 2.5 s of banner and throw animation, with some slack.
+  liveSeconds: () => MAX_TURNS.live * (TURN_SECONDS.live + 3) + 3,
   owed,
   settle,
   fallback,

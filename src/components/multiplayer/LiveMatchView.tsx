@@ -1,15 +1,16 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { CASTER_NAMES, commentate, roastWorstPlayer } from '../../game/match/commentary'
+import { commentate, roastWorstPlayer } from '../../game/match/commentary'
 import { activeBigEvent, eventsShown, gameClock, liveScore } from '../../game/match/playback'
 import { finishedMatch, simulateLiveMatch } from '../../game/match/simulateMatch'
 import { statsAfter } from '../../game/match/stats'
 import { matchStory, standouts, summarizeMatch } from '../../game/match/summary'
-import type { MatchTeams } from '../../game/match/types'
-import { liveScript } from '../../game/multiplayer/liveEvents'
+import type { MatchTeams, Side } from '../../game/match/types'
 import { buildLiveReel, liveChances, liveTimeline, mirrorMatch } from '../../game/multiplayer/liveReel'
 import { teamsFor } from '../../game/multiplayer/roundTeams'
-import { decidedWinners, sideOf, type RoundState } from '../../game/multiplayer/session'
+import { decidedWinners, roundEvents, sideOf, type RoundState } from '../../game/multiplayer/session'
+import { Collapsible } from '../Collapsible'
+import { CasterStack } from '../match/CasterStack'
 import { ChampionScoreboard } from '../match/ChampionScoreboard'
 import { EventFeed } from '../match/EventFeed'
 import { FightScene } from '../match/FightScene'
@@ -19,8 +20,9 @@ import { MatchSounds } from '../match/MatchSounds'
 import { usePlaybackClock } from '../match/usePlaybackClock'
 import { WinChanceBar } from '../match/WinChanceBar'
 import { EmoteBar } from './Emotes'
-import { LiveEndPanel } from './LiveEndPanel'
+import { LiveEndPanel, MatchStory } from './LiveEndPanel'
 import { LiveEventStage } from './LiveEventStage'
+import { SurrenderButton } from './SurrenderButton'
 import type { Room } from './useRoom'
 
 interface LiveMatchViewProps {
@@ -33,7 +35,7 @@ interface LiveMatchViewProps {
 /**
  * The match, played back like against bots, but it stops at each live event for a mini-game.
  * Both players run the same simulation, so they see the same match. Each sees their own team on
- * blue side.
+ * blue side. Kept calm: the details (champion scores, the full feed) are folded away.
  */
 export function LiveMatchView({ room, round, teams }: LiveMatchViewProps) {
   const { me, opponent, send, sendEmote, finishRound } = room
@@ -41,15 +43,16 @@ export function LiveMatchView({ room, round, teams }: LiveMatchViewProps) {
   const mySide = sideOf(round, me.id)
   const opponentInfo = round.players.find(({ id }) => id !== me.id)
   const viewTeams = useMemo(() => teamsFor(teams, mySide), [teams, mySide])
-  const script = useMemo(() => liveScript(seed), [seed])
+  const { match: roundMatch, settings } = round
+  const events = useMemo(() => roundEvents({ match: roundMatch, settings }), [roundMatch, settings])
 
   /** Live events whose result has been shown. The match only plays past those. */
   const [shownResults, setShownResults] = useState(0)
   const winnersKey = decidedWinners(round).slice(0, shownResults).join(',')
   const sim = useMemo(() => {
-    const winners = winnersKey === '' ? [] : (winnersKey.split(',') as ('blue' | 'red')[])
-    return simulateLiveMatch(teams, seed, { events: script, winners })
-  }, [teams, seed, script, winnersKey])
+    const winners = winnersKey === '' ? [] : (winnersKey.split(',') as Side[])
+    return simulateLiveMatch(teams, seed, { events, winners })
+  }, [teams, seed, events, winnersKey])
   const match = useMemo(() => (mySide === 'blue' ? sim : mirrorMatch(sim)), [sim, mySide])
   const reel = useMemo(() => buildLiveReel(match, viewTeams), [match, viewTeams])
   const timeline = useMemo(() => liveTimeline(reel.events), [reel])
@@ -60,6 +63,7 @@ export function LiveMatchView({ room, round, teams }: LiveMatchViewProps) {
   const { elapsed } = usePlaybackClock(timeline.total, surrendered === null)
   const caughtUp = elapsed >= timeline.total
   const pendingEvent = caughtUp && surrendered === null ? match.pendingEvent : null
+  const pendingLive = pendingEvent === null ? undefined : events[pendingEvent]
   const finished = useMemo(() => finishedMatch(match), [match])
   const ended = finished !== null && caughtUp
 
@@ -105,25 +109,28 @@ export function LiveMatchView({ room, round, teams }: LiveMatchViewProps) {
   )
   const over = surrendered !== null || ended
   const opponentGone = opponentInfo !== undefined && opponent?.id !== opponentInfo.id
+  const surrender = () => send({ type: 'surrender', round: round.id, player: me.id })
 
   return (
     <div className="flex w-full max-w-5xl flex-col gap-3 lg:flex-row lg:items-start lg:gap-6">
       <MatchSounds fightIndex={fightIndex} ended={over} won={winnerId === me.id} />
-      {pendingEvent !== null && (
+      {pendingEvent !== null && pendingLive && (
         <LiveEventStage
           key={pendingEvent}
           round={round}
           index={pendingEvent}
+          live={pendingLive}
           myId={me.id}
           mySide={mySide}
           send={send}
+          sendEmote={sendEmote}
           onDone={nextEventShown}
         />
       )}
       <div className="flex w-full flex-col gap-3 lg:sticky lg:top-4 lg:w-[26rem] lg:shrink-0">
         {opponentGone && !over && (
           <p role="status" className="rounded-lg border border-red-400/40 bg-red-950/40 px-3 py-2 text-center text-sm text-gold-light/90">
-            {opponentInfo.name} left the game. The match plays on without them.
+            {opponentInfo.name} left. If they don't come back within 30 seconds, they surrender.
           </p>
         )}
         <motion.div
@@ -132,7 +139,7 @@ export function LiveMatchView({ room, round, teams }: LiveMatchViewProps) {
           transition={{ duration: 0.4 }}
           className="flex flex-col gap-3"
         >
-          <MatchScoreboard teams={viewTeams} score={score} clock={clock} />
+          <MatchScoreboard teams={viewTeams} score={score} clock={clock} compact />
           <WinChanceBar history={history} />
         </motion.div>
         <div className="relative w-full">
@@ -141,68 +148,29 @@ export function LiveMatchView({ room, round, teams }: LiveMatchViewProps) {
           </div>
           <AnimatePresence>{fight}</AnimatePresence>
         </div>
-        <EmoteBar onEmote={sendEmote} />
-        {!over && <SurrenderButton onSurrender={() => send({ type: 'surrender', round: round.id, player: me.id })} />}
+        {!over && <CasterStack events={reel.events} lines={lines} shown={shown} />}
+        {!over && <EmoteBar onEmote={sendEmote} />}
+        {!over && <SurrenderButton onSurrender={surrender} />}
       </div>
 
       <div className="flex w-full flex-col gap-3 lg:flex-1">
         {over && (
-          <LiveEndPanel
-            room={room}
-            round={round}
-            mySide={mySide}
-            won={winnerId === me.id}
-            match={reelMatch && ended ? reelMatch : null}
+          <LiveEndPanel room={room} round={round} events={events} mySide={mySide} won={winnerId === me.id} match={reelMatch && ended ? reelMatch : null} />
+        )}
+        <Collapsible title="Champion scores">
+          <ChampionScoreboard
             teams={viewTeams}
-            lines={lines}
-            summary={summary}
-            story={story}
+            stats={stats}
+            best={summary ? summary.mvp : live.best}
+            worst={summary ? summary.feeder : live.worst}
+            final={summary !== null}
           />
-        )}
-        <ChampionScoreboard
-          teams={viewTeams}
-          stats={stats}
-          best={summary ? summary.mvp : live.best}
-          worst={summary ? summary.feeder : live.worst}
-          final={summary !== null}
-        />
-        {worstRoast && (
-          <motion.p
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            className="rounded-lg border border-red-400/30 bg-red-950/30 px-3 py-2 text-sm text-gold-light/90"
-          >
-            <span aria-hidden="true">💀 </span>
-            <span className="italic">“{worstRoast.text}”</span>
-            <span className="text-xs text-gold/60 not-italic"> — {CASTER_NAMES[worstRoast.caster]}</span>
-          </motion.p>
-        )}
-        <EventFeed events={reel.events} lines={lines} teams={viewTeams} shown={shown} />
+        </Collapsible>
+        <Collapsible title="All commentary">
+          <EventFeed events={reel.events} lines={lines} teams={viewTeams} shown={shown} />
+        </Collapsible>
+        {summary && <MatchStory teams={viewTeams} summary={summary} story={story} won={winnerId === me.id} roast={worstRoast ?? null} />}
       </div>
     </div>
-  )
-}
-
-/** Two taps, so nobody gives up by accident. */
-function SurrenderButton({ onSurrender }: { onSurrender: () => void }) {
-  const [confirming, setConfirming] = useState(false)
-
-  useEffect(() => {
-    if (!confirming) return
-    const id = window.setTimeout(() => setConfirming(false), 3000)
-    return () => window.clearTimeout(id)
-  }, [confirming])
-
-  return (
-    <button
-      type="button"
-      onClick={() => (confirming ? onSurrender() : setConfirming(true))}
-      className={`self-center rounded-md border px-4 py-1 text-sm font-semibold transition ${
-        confirming ? 'border-red-400 bg-red-950/60 text-red-300' : 'border-gold/30 text-gold-light/60 hover:border-red-400'
-      }`}
-    >
-      {confirming ? 'Tap again to surrender' : 'Surrender 🏳️'}
-    </button>
   )
 }

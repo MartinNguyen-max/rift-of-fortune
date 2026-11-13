@@ -1,39 +1,37 @@
 import { motion } from 'framer-motion'
 import { useEffect, useRef } from 'react'
-import { championIconUrl, endOfGameIconUrl, mapIconUrl } from '../../data'
-import { formatGameTime, type MatchLines } from '../../game/match/commentary'
+import { championIconUrl, endOfGameIconUrl } from '../../data'
+import { CASTER_NAMES, formatGameTime, type CommentaryLine } from '../../game/match/commentary'
 import { formatKda, type MatchSummary } from '../../game/match/summary'
 import type { MatchResult, MatchTeams, Side } from '../../game/match/types'
-import { LIVE_EVENTS, LIVE_EVENT_TITLES } from '../../game/multiplayer/liveEvents'
+import { MINI_GAMES } from '../../game/minigames/catalog'
+import { MINI_GAME_RULES } from '../../game/minigames/registry'
+import { eventSetup, type LiveEvent } from '../../game/multiplayer/liveEvents'
 import type { RoundState } from '../../game/multiplayer/session'
 import { ROLE_LABELS } from '../../game/roles'
 import { Button } from '../Button'
+import { championIconById } from '../minigames/miniGameArt'
 import { routeHref } from '../useHashRoute'
+import { EmoteBar } from './Emotes'
 import { SeriesScore } from './SeriesScore'
 import type { Room } from './useRoom'
 
 interface LiveEndPanelProps {
   room: Room
   round: RoundState
+  events: readonly LiveEvent[]
   mySide: Side
   won: boolean
   /** The finished match as watched (reel events), or null after a surrender. */
   match: MatchResult | null
-  /** Your team on blue. */
-  teams: MatchTeams
-  lines: MatchLines
-  summary: MatchSummary | null
-  story: string
 }
 
 /** On phones the result is below the map: scroll to it once the ending has played. */
 const SCROLL_DELAY_MS = 1200
 
-const EVENT_ICONS = { gank: '🗡️', teamfight: '💥', baron: 'baron', elder: 'elder' } as const
-
-/** Victory or Defeat, how the mini-games went, and a rematch with new teams. */
-export function LiveEndPanel({ room, round, mySide, won, match, teams, summary, story }: LiveEndPanelProps) {
-  const { me, opponent, setReady, leaveRound, wins } = room
+/** Victory or Defeat, the live events, the series, Rematch and emotes. Nothing else. */
+export function LiveEndPanel({ room, round, events, mySide, won, match }: LiveEndPanelProps) {
+  const { me, opponent, setReady, leaveRound, wins, sendEmote } = room
   const panel = useRef<HTMLElement>(null)
   useEffect(() => {
     if (!window.matchMedia('(max-width: 1023px)').matches) return
@@ -43,14 +41,13 @@ export function LiveEndPanel({ room, round, mySide, won, match, teams, summary, 
   const opponentInfo = round.players.find(({ id }) => id !== me.id)
   const opponentHere = opponent !== null && opponent.id === opponentInfo?.id
   const last = match?.events[match.events.length - 1]
-  const mvp = summary && teams[summary.mvp.side].rating.champions.find(({ role }) => role === summary.mvp.role)
 
   const howItEnded = round.surrendered
     ? round.surrendered === me.id
       ? 'You surrendered.'
       : `${opponentInfo?.name ?? 'Your opponent'} surrendered.`
     : last?.kind === 'surrender'
-      ? `${teams[last.side === 'blue' ? 'red' : 'blue'].name} surrendered at ${formatGameTime(match?.duration ?? 0)}`
+      ? `${last.side === 'blue' ? 'Their team' : 'Your team'} surrendered at ${formatGameTime(match?.duration ?? 0)}`
       : `Nexus destroyed at ${formatGameTime(match?.duration ?? 0)}`
 
   return (
@@ -76,27 +73,7 @@ export function LiveEndPanel({ room, round, mySide, won, match, teams, summary, 
         <p className="text-sm text-gold-light/70">{howItEnded}</p>
       </div>
 
-      <LiveEventsSummary round={round} mySide={mySide} />
-
-      {story && (
-        <div className="rounded-lg border border-gold/30 bg-abyss/50 p-3 text-left">
-          <p className="mb-1 text-[10px] tracking-widest text-gold/70 uppercase">How it went</p>
-          <p className="text-sm leading-relaxed text-gold-light/90">{story}</p>
-        </div>
-      )}
-
-      {summary && mvp && (
-        <div className="flex items-center justify-center gap-3">
-          <img src={championIconUrl(mvp.champion.image)} alt="" className="size-12 rounded-full border-2 border-gold" />
-          <div className="text-left">
-            <p className="text-[10px] tracking-widest text-gold/70 uppercase">{won ? 'MVP' : 'Enemy MVP'}</p>
-            <p className="font-display font-bold text-gold-light">
-              {mvp.champion.name} <span className="text-xs text-gold-light/60">{ROLE_LABELS[mvp.role]}</span>
-            </p>
-            <p className="font-mono text-sm text-gold-light/80">{formatKda(summary.mvp.kda)}</p>
-          </div>
-        </div>
-      )}
+      <LiveEventsSummary round={round} events={events} mySide={mySide} />
 
       {opponentInfo && <SeriesScore me={me} opponent={opponentInfo} wins={wins} />}
 
@@ -122,18 +99,22 @@ export function LiveEndPanel({ room, round, mySide, won, match, teams, summary, 
             <Button onClick={leaveRound}>Back to lobby</Button>
           </>
         )}
-        <a href={routeHref('play')} className="text-sm text-hextech underline-offset-4 hover:underline">
-          Leave lobby
-        </a>
       </div>
+
+      <EmoteBar onEmote={sendEmote} />
+
+      <a href={routeHref('play')} className="text-sm text-hextech underline-offset-4 hover:underline">
+        Leave lobby
+      </a>
     </motion.section>
   )
 }
 
-function LiveEventsSummary({ round, mySide }: { round: RoundState; mySide: Side }) {
-  const played = LIVE_EVENTS.flatMap(({ kind }, index) => {
+function LiveEventsSummary({ round, events, mySide }: { round: RoundState; events: readonly LiveEvent[]; mySide: Side }) {
+  const seed = round.match?.seed ?? 0
+  const played = events.flatMap((live, index) => {
     const result = round.events[index]?.result
-    return result ? [{ kind, result }] : []
+    return result ? [{ live, index, result }] : []
   })
   if (played.length === 0) return null
   const theirSide: Side = mySide === 'blue' ? 'red' : 'blue'
@@ -141,28 +122,65 @@ function LiveEventsSummary({ round, mySide }: { round: RoundState; mySide: Side 
   return (
     <ul className="flex flex-col gap-1 rounded-lg border border-hextech/30 bg-hextech/5 p-2 text-left text-sm">
       <li className="px-1 text-[10px] tracking-widest text-hextech uppercase">Live events</li>
-      {played.map(({ kind, result }) => {
-        const icon = EVENT_ICONS[kind]
+      {played.map(({ live, index, result }) => {
         const won = result.winner === mySide
+        const info = MINI_GAMES[live.game]
+        const setup = eventSetup(seed, index, live.late, round.settings.bothRoles)
+        const format = (score: number) => MINI_GAME_RULES[live.game].formatScore(score, setup)
         return (
-          <li key={kind} className="flex items-center gap-2 px-1">
-            {icon === 'baron' || icon === 'elder' ? (
-              <img src={mapIconUrl(icon)} alt="" className="size-5 object-contain" />
-            ) : (
-              <span aria-hidden="true" className="w-5 text-center">
-                {icon}
-              </span>
-            )}
-            <span className="flex-1 text-gold-light/90">{LIVE_EVENT_TITLES[kind].replace('!', '')}</span>
-            {result.scores && (
-              <span className="font-mono text-xs text-gold-light/60">
-                {result.scores[mySide]}–{result.scores[theirSide]}
-              </span>
-            )}
-            <span className={`w-12 text-right font-bold ${won ? 'text-hextech' : 'text-red-400'}`}>{won ? 'Won' : 'Lost'}</span>
+          <li key={index} className="flex items-center gap-2 px-1">
+            <img src={championIconById(info.champion)} alt="" className="size-6 shrink-0 rounded-full" />
+            <span className="min-w-0 flex-1 text-gold-light/90 [overflow-wrap:anywhere]">{info.name}</span>
+            <span className="text-right font-mono text-[11px] text-gold-light/60">
+              {format(result.scores[mySide])} – {format(result.scores[theirSide])}
+            </span>
+            <span className={`w-11 shrink-0 text-right font-bold ${won ? 'text-hextech' : 'text-red-400'}`}>{won ? 'Won' : 'Lost'}</span>
           </li>
         )
       })}
     </ul>
+  )
+}
+
+interface MatchStoryProps {
+  /** Your team on blue. */
+  teams: MatchTeams
+  summary: MatchSummary
+  story: string
+  won: boolean
+  roast: CommentaryLine | null
+}
+
+/** How the match went, the MVP and the casters' roast: further down, for whoever wants to read it. */
+export function MatchStory({ teams, summary, story, won, roast }: MatchStoryProps) {
+  const mvp = teams[summary.mvp.side].rating.champions.find(({ role }) => role === summary.mvp.role)
+  return (
+    <section className="flex flex-col gap-3 rounded-xl border border-gold/20 bg-abyss/50 p-3" aria-label="How it went">
+      {story && (
+        <div className="text-left">
+          <p className="mb-1 text-[10px] tracking-widest text-gold/70 uppercase">How it went</p>
+          <p className="text-sm leading-relaxed text-gold-light/90">{story}</p>
+        </div>
+      )}
+      {mvp && (
+        <div className="flex items-center gap-3">
+          <img src={championIconUrl(mvp.champion.image)} alt="" className="size-12 rounded-full border-2 border-gold" />
+          <div className="text-left">
+            <p className="text-[10px] tracking-widest text-gold/70 uppercase">{won ? 'MVP' : 'Enemy MVP'}</p>
+            <p className="font-display font-bold text-gold-light">
+              {mvp.champion.name} <span className="text-xs text-gold-light/60">{ROLE_LABELS[mvp.role]}</span>
+            </p>
+            <p className="font-mono text-sm text-gold-light/80">{formatKda(summary.mvp.kda)}</p>
+          </div>
+        </div>
+      )}
+      {roast && (
+        <p className="rounded-lg border border-red-400/30 bg-red-950/30 px-3 py-2 text-sm text-gold-light/90">
+          <span aria-hidden="true">💀 </span>
+          <span className="italic">“{roast.text}”</span>
+          <span className="text-xs text-gold/60 not-italic"> — {CASTER_NAMES[roast.caster]}</span>
+        </p>
+      )}
+    </section>
   )
 }

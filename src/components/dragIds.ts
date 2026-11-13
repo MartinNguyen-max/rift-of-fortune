@@ -10,3 +10,13 @@ export function itemIdFromDragId(dragId: string | number): string | null {
   const id = String(dragId)
   return id.startsWith(ITEM_PREFIX) ? id.slice(ITEM_PREFIX.length) : null
 }
+
+const OFFER_PREFIX = 'offer:'
+
+/** Fast pace: an offered champion being dragged onto a role. */
+export const offerDragId = (championId: string) => `${OFFER_PREFIX}${championId}`
+
+export function championIdFromOfferDragId(dragId: string | number): string | null {
+  const id = String(dragId)
+  return id.startsWith(OFFER_PREFIX) ? id.slice(OFFER_PREFIX.length) : null
+}

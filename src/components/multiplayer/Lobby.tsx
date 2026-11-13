@@ -1,16 +1,17 @@
 import { motion } from 'framer-motion'
 import { useState } from 'react'
 import type { PresenceInfo } from '../../game/multiplayer/protocol'
-import { TIMINGS } from '../../game/multiplayer/session'
+import { DRAFT_SECONDS } from '../../game/multiplayer/settings'
 import { Button } from '../Button'
 import { inviteLink, routeHref } from '../useHashRoute'
 import { EmoteBar } from './Emotes'
+import { LobbySettingsPanel } from './LobbySettingsPanel'
 import { SeriesScore } from './SeriesScore'
 import type { Room } from './useRoom'
 
 /** Share the code, wait for a friend, both press Ready: the draft starts. */
 export function Lobby({ room, code }: { room: Room; code: string }) {
-  const { me, opponent, setReady, sendEmote, wins } = room
+  const { me, opponent, setReady, sendEmote, wins, settings, isHost, players, changeSettings } = room
   const bothReady = me.ready && opponent?.ready === true
 
   return (
@@ -39,6 +40,8 @@ export function Lobby({ room, code }: { room: Room; code: string }) {
 
       {opponent && <SeriesScore me={me} opponent={opponent} wins={wins} />}
 
+      <LobbySettingsPanel settings={settings} editable={isHost} hostName={players[0]?.name ?? 'the host'} onChange={changeSettings} />
+
       <div className="flex flex-col items-center gap-2">
         <Button onClick={() => setReady(!me.ready)} disabled={!opponent} className={me.ready ? 'bg-gold/20' : ''}>
           {me.ready ? 'Ready ✓' : 'Ready'}
@@ -52,7 +55,7 @@ export function Lobby({ room, code }: { room: Room; code: string }) {
                 ? 'Both ready. Starting the draft…'
                 : me.ready
                   ? 'Waiting for your opponent to press Ready.'
-                  : `When you are both ready, you get ${TIMINGS.draft} seconds to draft your team.`}
+                  : `When you are both ready, you get ${DRAFT_SECONDS[settings.pace]} seconds to draft your team.`}
         </p>
       </div>
 

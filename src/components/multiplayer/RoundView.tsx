@@ -16,12 +16,13 @@ export function RoundView({ room, round }: { room: Room; round: RoundState }) {
   const mySide = sideOf(round, room.me.id)
 
   if (!match || !teams) return <DraftStage room={room} round={round} />
-  if (!versusDone) {
+  if (!versusDone && !round.surrendered) {
     return (
       <VersusScreen
         teams={teamsFor(teams, mySide)}
         deadline={match.startedAt + TIMINGS.versus * 1000}
         onDone={() => setVersusDone(true)}
+        onSurrender={() => room.send({ type: 'surrender', round: round.id, player: room.me.id })}
       />
     )
   }

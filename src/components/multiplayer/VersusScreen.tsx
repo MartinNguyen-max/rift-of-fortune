@@ -9,6 +9,7 @@ import { SIDE_TEXT } from '../match/matchStyles'
 import { RiftMap } from '../RiftMap'
 import { RoleSlot } from '../RoleSlot'
 import { useCountdown } from '../useCountdown'
+import { SurrenderButton } from './SurrenderButton'
 
 interface VersusScreenProps {
   /** Your team on blue. */
@@ -16,10 +17,12 @@ interface VersusScreenProps {
   /** When the match starts (a Date.now() timestamp). */
   deadline: number
   onDone: () => void
+  /** Bad draft? Give up before the match even starts. */
+  onSurrender: () => void
 }
 
 /** Both drafted teams on their maps, with ranks and ratings, then a countdown into the match. */
-export function VersusScreen({ teams, deadline, onDone }: VersusScreenProps) {
+export function VersusScreen({ teams, deadline, onDone, onSurrender }: VersusScreenProps) {
   const remaining = useCountdown(deadline)
   const seconds = Math.ceil(remaining)
   const done = remaining <= 0
@@ -64,6 +67,7 @@ export function VersusScreen({ teams, deadline, onDone }: VersusScreenProps) {
           <TeamBoard team={teams.red} side="red" label="Opponent" />
         </div>
       </DndContext>
+      <SurrenderButton onSurrender={onSurrender} />
     </section>
   )
 }

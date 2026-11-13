@@ -2,7 +2,6 @@ import { motion, useReducedMotion } from 'framer-motion'
 import { useCallback, useEffect, useState } from 'react'
 import { gameData, itemIconUrl } from '../data'
 import type { Item } from '../data/types'
-import { ITEM_ROUNDS } from '../game/items'
 import { playSynth } from '../services/sound'
 import { useSpin } from './useSpin'
 
@@ -17,11 +16,12 @@ const iconUrl = (item: Item) => itemIconUrl(item.image)
 interface ItemRollProps {
   items: Item[]
   round: number
+  rounds: number
   onDone: () => void
 }
 
 /** Rolls a round's items one at a time, each with its own short slot-machine spin. */
-export function ItemRoll({ items, round, onDone }: ItemRollProps) {
+export function ItemRoll({ items, round, rounds, onDone }: ItemRollProps) {
   const [current, setCurrent] = useState(0)
   const [landed, setLanded] = useState(false)
   const reduceMotion = useReducedMotion() === true
@@ -46,7 +46,7 @@ export function ItemRoll({ items, round, onDone }: ItemRollProps) {
   return (
     <section className="flex flex-col items-center gap-3 text-center lg:gap-5">
       <h2 className="text-sm font-semibold tracking-widest text-gold/80 uppercase">
-        Round {round} of {ITEM_ROUNDS} · Item {Math.min(current + 1, items.length)} of {items.length}
+        Round {round} of {rounds} · Item {Math.min(current + 1, items.length)} of {items.length}
       </h2>
       {item && <SpinningItem key={item.id} item={item} onLanded={markLanded} />}
       <ul className="grid w-full grid-cols-5 gap-2" aria-label="Rolled items">

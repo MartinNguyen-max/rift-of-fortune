@@ -1,18 +1,18 @@
 import { motion } from 'framer-motion'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { gameData } from '../../data'
 import type { GameState } from '../../game/gameState'
 import { completeTeam } from '../../game/multiplayer/completeTeam'
 import type { RoundState } from '../../game/multiplayer/session'
+import { draftRules } from '../../game/multiplayer/settings'
 import { encodeTeam } from '../../game/multiplayer/teamCode'
-import { MATCH_RULES } from '../../game/rules'
 import type { TeamRating } from '../../game/scoring/rateTeam'
 import type { TeamMember } from '../../game/scoring/teamBalance'
 import { Button } from '../Button'
 import { Game } from '../Game'
-import { nextChampion, randomItems, rerollChampion, rerollItem } from '../matchDraft'
-import type { Room } from './useRoom'
+import { nextChampion, offerChampions, randomItems, rerollChampion, rerollItem } from '../matchDraft'
 import { useCountdown } from '../useCountdown'
+import type { Room } from './useRoom'
 
 /** The last seconds of the draft timer turn red. */
 const HURRY_SECONDS = 15
@@ -21,7 +21,7 @@ const membersOf = (rating: TeamRating): TeamMember[] =>
   rating.champions.map(({ role, champion, items }) => ({ role, champion, items: items.map(({ item }) => item) }))
 
 /**
- * Both players draft at the same time with the vs-bots rules (rerolls included). Pressing Ready
+ * Both players draft at the same time with the lobby's rules (pace and rerolls). Pressing Ready
  * locks the team in; when the timer runs out, whatever is missing is filled in at random.
  */
 export function DraftStage({ room, round }: { room: Room; round: RoundState }) {
@@ -32,6 +32,7 @@ export function DraftStage({ room, round }: { room: Room; round: RoundState }) {
   const opponent = round.players.find(({ id }) => id !== me.id)
   const opponentLocked = opponent !== undefined && round.teams[opponent.id] !== undefined
   const timeUp = remaining <= 0
+  const rules = useMemo(() => draftRules(round.settings), [round.settings])
 
   const lockIn = useCallback(
     (members: TeamMember[]) => {
@@ -54,12 +55,13 @@ export function DraftStage({ room, round }: { room: Room; round: RoundState }) {
       <DraftTimer remaining={remaining} total={round.draftSeconds} opponentLocked={opponentLocked} />
       <div className="relative w-full">
         <Game
-          title="Multiplayer draft"
+          title={round.settings.pace === 'fast' ? 'Multiplayer draft · fast' : 'Multiplayer draft'}
           nextChampion={nextChampion}
           drawItems={randomItems}
-          rules={MATCH_RULES}
-          rerollChampion={rerollChampion}
-          rerollItem={rerollItem}
+          rules={rules}
+          rerollChampion={rules.championRerolls > 0 ? rerollChampion : undefined}
+          rerollItem={rules.itemRerolls > 0 ? rerollItem : undefined}
+          offerChampions={offerChampions}
           onStateChange={remember}
           resultActions={(rating) => (
             <Button onClick={() => lockIn(membersOf(rating))} disabled={lockedIn} className="text-lg">
