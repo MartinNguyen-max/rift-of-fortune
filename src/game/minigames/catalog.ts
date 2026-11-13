@@ -1,5 +1,5 @@
 /** The mini-games, in the order they are shown. Each is played against a bot, or as a live event in Multiplayer. */
-export const MINI_GAME_IDS = ['duel', 'hook', 'combo', 'shrooms', 'forge', 'cleaver', 'gank', 'ult', 'smite'] as const
+export const MINI_GAME_IDS = ['duel', 'hook', 'combo', 'shrooms', 'forge', 'cleaver', 'gank', 'ult', 'execute', 'smite'] as const
 export type MiniGameId = (typeof MINI_GAME_IDS)[number]
 
 /** Three short captions, one under each tutorial picture. */
@@ -104,6 +104,15 @@ export const MINI_GAMES: Record<MiniGameId, MiniGameInfo> = {
       solo: ['The marker sweeps the bar', 'Tap ULT in the gold zone', 'Center = 100. Best of 3 bars'],
       live: ['The marker sweeps the bar', 'Tap ULT in the gold zone', 'Center = 100. Higher wins'],
     },
+  },
+  execute: {
+    id: 'execute',
+    name: 'Noxian Guillotine',
+    champion: 'Darius',
+    botChampion: 'Draven',
+    botName: 'Draven',
+    tagline: 'Five enemies, low on health, up for a moment. Dunk them all for the penta.',
+    tutorial: { solo: ['Enemies pop up for a moment', 'Tap one to execute it', 'Kills in a row score more. Penta = 15'] },
   },
   smite: {
     id: 'smite',

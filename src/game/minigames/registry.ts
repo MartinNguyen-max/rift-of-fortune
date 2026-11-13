@@ -3,6 +3,7 @@ import type { MiniGameId } from './catalog'
 import { CLEAVER_RULES } from './cleaver'
 import { COMBO_RULES } from './combo'
 import { DUEL_RULES } from './duel'
+import { EXECUTE_RULES } from './execute'
 import { forgeRules } from './forge'
 import { GANK_RULES } from './gank'
 import { hookRules } from './hook'
@@ -21,5 +22,6 @@ export const MINI_GAME_RULES: Record<MiniGameId, MiniGameRules> = {
   cleaver: CLEAVER_RULES,
   gank: GANK_RULES,
   ult: ULT_RULES,
+  execute: EXECUTE_RULES,
   smite: SMITE_RULES,
 }

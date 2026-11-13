@@ -2,6 +2,7 @@ import type { MiniGameId } from '../../game/minigames/catalog'
 import { CleaverGame, CleaverTutorialArt } from './CleaverGame'
 import { ComboGame, ComboTutorialArt } from './ComboGame'
 import { DuelGame, DuelTutorialArt } from './DuelGame'
+import { ExecuteGame, ExecuteTutorialArt } from './ExecuteGame'
 import { ForgeGame, ForgeTutorialArt } from './ForgeGame'
 import { GankGame, GankReveal, GankTutorialArt } from './GankGame'
 import { HookGame, HookTutorialArt } from './HookGame'
@@ -20,5 +21,6 @@ export const MINI_GAME_VIEWS: Record<MiniGameId, MiniGameView> = {
   cleaver: { Game: CleaverGame, TutorialArt: CleaverTutorialArt },
   gank: { Game: GankGame, TutorialArt: GankTutorialArt, Reveal: GankReveal },
   ult: { Game: UltGame, TutorialArt: UltTutorialArt },
+  execute: { Game: ExecuteGame, TutorialArt: ExecuteTutorialArt },
   smite: { Game: SmiteGame, TutorialArt: SmiteTutorialArt, Reveal: SmiteReveal },
 }
