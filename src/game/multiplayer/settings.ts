@@ -10,6 +10,7 @@ import type { GameRules } from '../rules'
  * - events: 3 or 5 random mini-games, or a custom list. They are rolled in the lobby, so both
  *   players see which games they will play.
  * - bothRoles: in role games (hide/guess, plant/walk) each player plays each role. Still one event.
+ * - animations: the winner's finisher animation after each live event.
  */
 export type Pace = 'normal' | 'fast'
 export type EventMode = 'random3' | 'random5' | 'custom'
@@ -21,6 +22,7 @@ export interface LobbySettings {
   /** The mini-games of the match, in the order chosen. */
   games: MiniGameId[]
   bothRoles: boolean
+  animations: boolean
 }
 
 export const RANDOM_EVENT_COUNT: Record<Exclude<EventMode, 'custom'>, number> = { random3: 3, random5: 5 }
@@ -30,9 +32,9 @@ export const DRAFT_SECONDS: Record<Pace, number> = { normal: 90, fast: 60 }
 
 export const randomGames = (count: number, random?: RandomFn): MiniGameId[] => sample(MINI_GAME_IDS, count, random)
 
-/** Normal pace, rerolls on, 3 random mini-games, one role each. */
+/** Normal pace, rerolls on, 3 random mini-games, one role each, finisher animations on. */
 export function defaultSettings(random?: RandomFn): LobbySettings {
-  return { pace: 'normal', rerolls: true, eventMode: 'random3', games: randomGames(3, random), bothRoles: false }
+  return { pace: 'normal', rerolls: true, eventMode: 'random3', games: randomGames(3, random), bothRoles: false, animations: true }
 }
 
 /** The settings after choosing an event mode: random modes roll new games, custom keeps the current ones. */
@@ -61,10 +63,10 @@ const EVENT_MODES: readonly EventMode[] = ['random3', 'random5', 'custom']
 /** Checks settings from the network: anything malformed is dropped. */
 export function parseSettings(value: unknown): LobbySettings | null {
   if (typeof value !== 'object' || value === null) return null
-  const { pace, rerolls, eventMode, games, bothRoles } = value as Record<string, unknown>
+  const { pace, rerolls, eventMode, games, bothRoles, animations = true } = value as Record<string, unknown>
   if (!PACES.includes(pace as Pace) || !EVENT_MODES.includes(eventMode as EventMode)) return null
-  if (typeof rerolls !== 'boolean' || typeof bothRoles !== 'boolean') return null
+  if (typeof rerolls !== 'boolean' || typeof bothRoles !== 'boolean' || typeof animations !== 'boolean') return null
   if (!Array.isArray(games) || games.length === 0 || games.length > MINI_GAME_IDS.length || !games.every(isMiniGameId)) return null
   if (new Set(games).size !== games.length) return null
-  return { pace: pace as Pace, rerolls, eventMode: eventMode as EventMode, games, bothRoles }
+  return { pace: pace as Pace, rerolls, eventMode: eventMode as EventMode, games, bothRoles, animations }
 }

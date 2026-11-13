@@ -3,12 +3,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { endOfGameIconUrl } from '../../data'
 import type { MiniGameInfo } from '../../game/minigames/catalog'
 import type { RecordUpdate } from '../../game/minigames/records'
+import { finisherFor } from '../../game/finishers'
 import { MINI_GAME_RULES } from '../../game/minigames/registry'
 import { botMoves, soloSetup, withMove, type BothMoves, type Moves, type Settled } from '../../game/minigames/versus'
 import { saveOutcome } from '../../services/miniGameRecords'
 import { playSound, prepareChampionVoice } from '../../services/sound'
 import { Button } from '../Button'
 import { routeHref } from '../useHashRoute'
+import { FinisherVideo } from './FinisherVideo'
 import { GameOpening } from './GameOpening'
 import { MiniGameIntro } from './MiniGameIntro'
 import { championIconById } from './miniGameArt'
@@ -81,8 +83,10 @@ function SoloGame({ info, seed, players, onRematch }: SoloGameProps) {
   const moves = useMemo<BothMoves>(() => [mine, bot], [mine, bot])
   const [outcome, setOutcome] = useState<Outcome | null>(null)
   const [opened, setOpened] = useState(false)
+  const [finished, setFinished] = useState(false)
   const saved = useRef(false)
   const open = useCallback(() => setOpened(true), [])
+  const finish = useCallback(() => setFinished(true), [])
 
   const sendMove = useCallback((step: number, value: number) => setMine((current) => withMove(current, step, value)), [])
 
@@ -99,15 +103,26 @@ function SoloGame({ info, seed, players, onRematch }: SoloGameProps) {
   }, [rules, moves, setup, info.id])
 
   if (!opened) return <GameOpening info={info} you={players[0]} them={players[1]} onDone={open} />
+  const finisher = outcome && !finished ? finisherOf(outcome.settled, players) : null
   return (
     <>
       <div className={outcome ? 'pointer-events-none opacity-30 blur-[2px]' : ''} aria-hidden={outcome !== null}>
         <Game setup={setup} me={0} moves={moves} sendMove={sendMove} onShown={showResult} players={players} />
       </div>
-      {outcome && <ResultOverlay info={info} outcome={outcome} players={players} seed={seed} onRematch={onRematch} />}
+      {outcome && finisher ? (
+        <div className="absolute inset-0 z-30 flex items-center justify-center rounded-xl bg-abyss/85 p-3">
+          <FinisherVideo finisher={finisher} won={outcome.settled.winner === 0} onDone={finish} />
+        </div>
+      ) : (
+        outcome && <ResultOverlay info={info} outcome={outcome} players={players} seed={seed} onRematch={onRematch} />
+      )}
     </>
   )
 }
+
+/** The winner's finisher animation, if their champion has one (a draw has none). */
+const finisherOf = ({ winner }: Settled, players: readonly [Contestant, Contestant]) =>
+  winner === null ? null : finisherFor(players[winner].champion)
 
 const VERDICTS = {
   win: { title: 'Victory', color: 'text-gold' },

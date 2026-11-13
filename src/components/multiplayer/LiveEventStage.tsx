@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { mapIconUrl } from '../../data'
 import type { Side } from '../../game/match/types'
+import { finisherFor } from '../../game/finishers'
 import { MINI_GAMES } from '../../game/minigames/catalog'
 import { MINI_GAME_RULES } from '../../game/minigames/registry'
 import { other } from '../../game/minigames/versus'
@@ -9,6 +10,7 @@ import { eventSetup, type LiveEvent } from '../../game/multiplayer/liveEvents'
 import type { Emote, EventResult, PlayerId, RoomMessage } from '../../game/multiplayer/protocol'
 import { eventStart, playerIndex, playerOn, TIMINGS, type LiveEventState, type RoundState } from '../../game/multiplayer/session'
 import { Button } from '../Button'
+import { FinisherVideo } from '../minigames/FinisherVideo'
 import { GameOpening } from '../minigames/GameOpening'
 import { MiniGameIntro } from '../minigames/MiniGameIntro'
 import { BigCall } from '../minigames/parts'
@@ -36,7 +38,7 @@ interface LiveEventStageProps {
   onDone: () => void
 }
 
-type Phase = 'intro' | 'game' | 'reveal'
+type Phase = 'intro' | 'game' | 'finisher' | 'reveal'
 
 /**
  * One live event over the match: the tutorial until both press Ready (or time runs out), the
@@ -49,10 +51,14 @@ export function LiveEventStage({ round, index, live, myId, mySide, send, sendEmo
   const me = playerIndex(round, myId) ?? 0
   const info = MINI_GAMES[live.game]
   const opponentName = playerOn(round, mySide === 'blue' ? 'red' : 'blue')?.name ?? 'Opponent'
-  const players = useMemo(() => {
-    const you: Contestant = { name: 'You', champion: info.champion, isBot: false }
-    const them: Contestant = { name: opponentName, champion: info.botChampion, isBot: false }
-    return (me === 0 ? [you, them] : [them, you]) as [Contestant, Contestant]
+  // The host plays the game's champion and the guest the other one (Caitlyn vs Jhin), so both
+  // see the same matchup and the same winner's finisher.
+  const players = useMemo<[Contestant, Contestant]>(() => {
+    const name = (player: 0 | 1) => (player === me ? 'You' : opponentName)
+    return [
+      { name: name(0), champion: info.champion, isBot: false },
+      { name: name(1), champion: info.botChampion, isBot: false },
+    ]
   }, [info, opponentName, me])
 
   const [introOver, setIntroOver] = useState(false)
@@ -64,9 +70,12 @@ export function LiveEventStage({ round, index, live, myId, mySide, send, sendEmo
   const open = useCallback(() => setOpened(true), [])
   const [shown, setShown] = useState(false)
   const [resultWaited, setResultWaited] = useState(false)
+  const [finisherDone, setFinisherDone] = useState(false)
   const result = event?.result ?? null
+  const finisher = result && round.settings.animations ? finisherFor(players[result.winner === 'blue' ? 0 : 1].champion) : null
   const bothReady = event?.readyAt !== null && event?.readyAt !== undefined
-  const phase: Phase = result && (shown || resultWaited) ? 'reveal' : introOver || bothReady ? 'game' : 'intro'
+  const resultPhase: Phase = finisher && !finisherDone ? 'finisher' : 'reveal'
+  const phase: Phase = result && (shown || resultWaited) ? resultPhase : introOver || bothReady ? 'game' : 'intro'
 
   useEffect(() => {
     send({ type: 'arrived', round: round.id, event: index, player: myId })
@@ -81,6 +90,7 @@ export function LiveEventStage({ round, index, live, myId, mySide, send, sendEmo
     [send, round.id, index, myId],
   )
   const markShown = useCallback(() => setShown(true), [])
+  const endFinisher = useCallback(() => setFinisherDone(true), [])
   const { Game } = MINI_GAME_VIEWS[live.game]
 
   return (
@@ -105,6 +115,7 @@ export function LiveEventStage({ round, index, live, myId, mySide, send, sendEmo
         {phase === 'game' && event && opened && (
           <Game setup={setup} me={me} moves={event.moves} sendMove={sendMove} onShown={markShown} players={players} />
         )}
+        {phase === 'finisher' && finisher && result && <FinisherVideo finisher={finisher} won={result.winner === mySide} onDone={endFinisher} />}
         {phase === 'reveal' && event && result && (
           <EventResultView live={live} event={event} result={result} setup={setup} me={me} mySide={mySide} players={players} sendEmote={sendEmote} />
         )}

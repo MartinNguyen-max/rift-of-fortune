@@ -103,6 +103,20 @@ export function LobbySettingsPanel({ settings, editable, hostName, onChange }: L
           </span>
         </span>
       </label>
+
+      <label className={`flex items-start gap-2 text-sm ${editable ? 'cursor-pointer' : 'opacity-80'}`}>
+        <input
+          type="checkbox"
+          checked={settings.animations}
+          disabled={!editable}
+          onChange={(event) => change({ animations: event.target.checked })}
+          className="mt-0.5 size-4 accent-hextech"
+        />
+        <span>
+          <span className="font-semibold text-gold-light">Finisher animations</span>
+          <span className="block text-xs text-gold-light/60">After each live event, the winner's champion plays a finisher.</span>
+        </span>
+      </label>
     </section>
   )
 }
