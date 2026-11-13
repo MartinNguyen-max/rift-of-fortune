@@ -40,6 +40,8 @@ After a game, show a short animation, like Mortal Kombat: something cool for the
 
 ## Files to add (for the owner)
 
+The short checklist is in [finisher_clips.md](finisher_clips.md).
+
 Put the clips in **`public/finishers/`** with exactly these names. MP4 (H.264), cut to just the animation (about 10 s), 720p is plenty; around 1–2 MB each keeps the site fast.
 
 **Needed now** (the champions the mini-games use today):
