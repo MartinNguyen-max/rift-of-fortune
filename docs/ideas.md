@@ -18,6 +18,19 @@ Ideas collected while building, so they're not lost. Nothing here is approved un
 | **Async PvP** | Your saved team fights other players' saved teams. From SPEC.md. | Large | Idea |
 | **Ultimate Team campaign** | Starter team, win matches to earn currency, open packs, upgrade with duplicates, climb a ladder of bot teams to a final boss. From SPEC.md. | Large | Idea |
 
+## Mini-game ideas (saved in round 3, not now)
+
+From the owner's notes. Nothing here is approved.
+
+| Idea | What it is | Priority |
+|---|---|---|
+| **Tahm Kench: Devour** | Eat an ally just before a Jinx ult (or a similar big ult) lands, to save them. Too early and the ult is not coming yet, too late and they are dead. The owner thinks it is not so strong. | Low |
+| **Twisted Fate: Destiny** | Guess which lane TF teleports to: top, mid or bot. Like the bushes in "I Was Hiding", but with a lane layout, and TF can bluff. | Medium |
+| **Nocturne: Paranoia** | The same lane guess, but the screen goes dark. Use the finisher animations where they exist. | Medium |
+| **Yasuo: Wind Wall** | Yasuo stands in the middle; champions fire from the left, right, top and bottom. Put the wall up on the right side before the shot lands. Rules still open. | Medium |
+| **Shaco: Hallucinate** | The shell game ("Zed shadows") with Shaco and his clone instead. Decide after the animation feature. | Low |
+| **Race: hold to speed up** | See [race_proposal.md](race_proposal.md). Waiting for the owner's decision. | Owner decides |
+
 ## Features for every mode
 
 - **Chemistry:** bonuses and jokes for real synergies and lore pairs (Xayah + Rakan, Lucian + Senna). From SPEC.md. It fits nicely into Coach's notes.
