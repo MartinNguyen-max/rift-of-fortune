@@ -12,6 +12,17 @@ Written 2026-11-13 for the next Claude session (the owner switched accounts). Re
 - Never change the localStorage prefix `rift-of-fortune:` or the Daily seed.
 - No new dependencies without asking (none are needed for this work).
 
+## IMPORTANT: git identity (work PC)
+
+The owner may run this session on a work PC that is logged into a different (work) account. **The work account must never appear in this project**: not as a commit author and not as the account that pushes.
+
+- Before any commit, set this repo's identity (local only, never `--global`):
+  `git config user.name "martin"` and `git config user.email "martintn09@gmail.com"`.
+- Check every commit before pushing: `git log --format="%an <%ae>" origin/main..HEAD` must show only `martin <martintn09@gmail.com>`. If anything else shows, fix it (e.g. `git commit --amend --reset-author --no-edit`, or rebase with `--exec`) before pushing.
+- Push only as the owner's personal GitHub account (`MartinNguyen-max`). The remote should be `https://MartinNguyen-max@github.com/MartinNguyen-max/rift-of-fortune.git`, so Git asks for that login. If the push is refused or would use another account, stop and tell the owner. Don't try other credentials.
+- If the owner asks for it, don't push at all: hand over the branch as a bundle, `git bundle create rift-of-fortune.bundle wip/minigames-v2`, and tell the owner where the file is.
+- Never add Co-Authored-By or any Claude attribution.
+
 ## The task
 
 The owner wrote two feedback files: **`docs/feedback/mini_games_feedback.md`** and **`docs/feedback/overall_feedback.md`**. Read both carefully; they share one vision. Do everything in them, then push.
