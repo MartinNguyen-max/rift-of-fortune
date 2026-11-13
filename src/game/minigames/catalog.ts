@@ -1,5 +1,5 @@
 /** The mini-games, in the order they are shown. Each is played against a bot, or as a live event in Multiplayer. */
-export const MINI_GAME_IDS = ['duel', 'hook', 'combo', 'shrooms', 'forge', 'cleaver', 'gank', 'ult', 'execute', 'smite'] as const
+export const MINI_GAME_IDS = ['duel', 'hook', 'combo', 'shrooms', 'forge', 'cleaver', 'gank', 'ult', 'execute', 'shadows', 'smite'] as const
 export type MiniGameId = (typeof MINI_GAME_IDS)[number]
 
 /** Three short captions, one under each tutorial picture. */
@@ -113,6 +113,15 @@ export const MINI_GAMES: Record<MiniGameId, MiniGameInfo> = {
     botName: 'Draven',
     tagline: 'Five enemies, low on health, up for a moment. Dunk them all for the penta.',
     tutorial: { solo: ['Enemies pop up for a moment', 'Tap one to execute it', 'Kills in a row score more. Penta = 15'] },
+  },
+  shadows: {
+    id: 'shadows',
+    name: 'Shadow Shuffle',
+    champion: 'Zed',
+    botChampion: 'Akali',
+    botName: 'Akali',
+    tagline: 'One Zed, two shadows. Follow the real one through the shuffle.',
+    tutorial: { solo: ['Watch the real Zed', 'The shadows swap, faster each round', 'Tap Zed. Most found wins, then speed'] },
   },
   smite: {
     id: 'smite',
