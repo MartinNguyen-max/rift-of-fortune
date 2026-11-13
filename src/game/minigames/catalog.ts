@@ -132,10 +132,10 @@ export const MINI_GAMES: Record<MiniGameId, MiniGameInfo> = {
     champion: 'LeeSin',
     botChampion: 'Nunu',
     botName: 'Nunu & Willump',
-    tagline: 'The health drains, the pace changes. Smite as low as you dare.',
+    tagline: 'Smite deals 1,600. The moment Baron drops that low, steal it first.',
     tutorial: {
-      solo: ['Health drains, the pace changes', 'Smite in the gold zone', 'Lower = more points. Baron, then Elder'],
-      live: ['Health drains, the pace changes', 'Smite in the gold zone', 'Lower = more points. Too late = 0'],
+      solo: ['Baron loses health in small hits', 'Smite deals 1,600: hit it at 1,600 or less', 'First smite steals it. Baron, then Elder'],
+      live: ['Baron loses health in small hits', 'Smite deals 1,600: hit it at 1,600 or less', 'First smite steals it. Too early = no steal'],
     },
   },
 }
