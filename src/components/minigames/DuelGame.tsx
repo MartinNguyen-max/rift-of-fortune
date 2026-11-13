@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { championLoadingUrl } from '../../data'
+import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent, type ReactNode } from 'react'
+import { championLoadingUrl, mapIconUrl } from '../../data'
 import {
   drawTimes,
   DUEL_MAX_ROUNDS,
@@ -8,26 +8,35 @@ import {
   duelWinner,
   NO_SHOT,
   SHOT_WINDOW,
+  targetSpots,
   type DuelRoundResult,
+  type TargetSpot,
 } from '../../game/minigames/duel'
 import { other, type Player } from '../../game/minigames/versus'
 import { championIconById, SKINS } from './miniGameArt'
 import { BigCall, ContestantTag, Waiting } from './parts'
 import { useShownWhen } from './timing'
 import type { Contestant, MiniGameViewProps, TutorialArtProps } from './types'
-import { usePressKey, useStopwatch } from './useStopwatch'
+import { useStopwatch } from './useStopwatch'
 
 /** Seconds the round result stays up before the next standoff. */
 const BETWEEN_ROUNDS = 2.4
-/** "Ready..." shows for this long, then "Steady..." until DRAW. */
+/** "Ready..." shows for this long, then "Steady..." until the Baron shows. */
 const READY_SECONDS = 1
+/** How many missed taps stay marked at once. */
+const MISS_MARKS = 4
 
 const formatMs = (ms: number | null) => (ms === null ? '—' : `${ms} ms`)
 
-/** Sheriff Caitlyn vs High Noon Jhin: wait for DRAW, then shoot first. Best of 3. */
+/**
+ * Sheriff Caitlyn vs High Noon Jhin: "Ready... Steady..." then a Baron pops up somewhere in the
+ * arena. Tap it first. A tap before it shows loses the round; a tap that misses it just costs
+ * time. Best of 3. No keyboard shot: aiming is the game, so a key would beat every tap.
+ */
 export function DuelGame({ setup, me, moves, sendMove, onShown, players }: MiniGameViewProps) {
   const them = other(me)
   const draws = useMemo(() => drawTimes(setup.seed), [setup.seed])
+  const spots = useMemo(() => targetSpots(setup.seed), [setup.seed])
   const results = useMemo(() => duelResults(moves, setup.seed), [moves, setup.seed])
   const over = duelWinner(results) !== null
   /** Rounds whose result has been shown. */
@@ -43,6 +52,7 @@ export function DuelGame({ setup, me, moves, sendMove, onShown, players }: MiniG
 
   const round = seen
   const drawAt = draws[round]
+  const spot = spots[round]
   const myShot = moves[me][round]
   const shoot = useCallback((ms: number) => sendMove(round, ms), [sendMove, round])
 
@@ -54,14 +64,16 @@ export function DuelGame({ setup, me, moves, sendMove, onShown, players }: MiniG
         <ContestantTag contestant={players[them]} you={false} value={`${seenWins(results, seen, them)}`} />
       </div>
       {showing ? (
-        <Arena call={null} drawn={false} result={showing} me={me} them={players[them]} onShoot={() => {}} />
-      ) : drawAt !== undefined && !over && myShot === undefined ? (
-        <Standoff key={round} drawAt={drawAt} theirShot={moves[them][round]} me={me} them={players[them]} onShoot={shoot} />
+        <Arena result={showing} me={me} them={players[them]} />
+      ) : drawAt !== undefined && spot && !over && myShot === undefined ? (
+        <Standoff key={round} drawAt={drawAt} spot={spot} theirShot={moves[them][round]} me={me} them={players[them]} onShoot={shoot} />
       ) : (
-        <Arena call={null} drawn={false} result={null} me={me} them={players[them]} onShoot={() => {}} />
+        <Arena result={null} me={me} them={players[them]} />
       )}
       {!showing && !over && myShot !== undefined && <Waiting name={players[them].name} />}
-      <p className="text-sm text-gold-light/60">Click, tap or press Space to shoot. Only after DRAW!</p>
+      <p className="text-center text-sm text-gold-light/70">
+        Tap the <span className="font-semibold text-gold-light">Baron</span> the moment it shows. Too early = round lost.
+      </p>
     </div>
   )
 }
@@ -71,6 +83,8 @@ const seenWins = (results: readonly DuelRoundResult[], seen: number, player: Pla
 
 interface StandoffProps {
   drawAt: number
+  /** Where the Baron shows this round. */
+  spot: TargetSpot
   /** The opponent's shot this round, once known (the bot's is known up front). */
   theirShot: number | undefined
   me: Player
@@ -78,10 +92,18 @@ interface StandoffProps {
   onShoot: (ms: number) => void
 }
 
-/** One round, from "Ready..." until you shoot. Mounted fresh each round so its clock starts at 0. */
-function Standoff({ drawAt, theirShot, me, them, onShoot }: StandoffProps) {
+/** A tap that missed the Baron, marked where it landed (as fractions of the arena). */
+interface Miss {
+  key: number
+  x: number
+  y: number
+}
+
+/** One round, from "Ready..." until you tap. Mounted fresh each round so its clock starts at 0. */
+function Standoff({ drawAt, spot, theirShot, me, them, onShoot }: StandoffProps) {
   const { seconds, read } = useStopwatch(true)
   const fired = useRef(false)
+  const [misses, setMisses] = useState<Miss[]>([])
   const fire = useCallback(
     (ms: number) => {
       if (fired.current) return
@@ -90,8 +112,20 @@ function Standoff({ drawAt, theirShot, me, them, onShoot }: StandoffProps) {
     },
     [onShoot],
   )
-  const shoot = useCallback(() => fire(Math.round(read() * 1000)), [fire, read])
-  usePressKey(shoot, true)
+  const now = useCallback(() => Math.round(read() * 1000), [read])
+
+  // A tap on the arena: too early before the Baron shows, a miss after it (that only costs time).
+  const tapArena = useCallback(
+    (event: PointerEvent<HTMLDivElement>) => {
+      const ms = now()
+      if (ms < drawAt) return fire(ms)
+      const box = event.currentTarget.getBoundingClientRect()
+      const miss = { key: ms, x: (event.clientX - box.left) / box.width, y: (event.clientY - box.top) / box.height }
+      setMisses((current) => [...current.slice(1 - MISS_MARKS), miss])
+    },
+    [now, drawAt, fire],
+  )
+  const hit = useCallback(() => fire(Math.max(drawAt, now())), [fire, drawAt, now])
 
   // Too slow: the round is over once the opponent has shot (or jumped the gun), or the window closes.
   const deadline = Math.min(drawAt + SHOT_WINDOW * 1000, theirShot ?? Infinity)
@@ -101,28 +135,83 @@ function Standoff({ drawAt, theirShot, me, them, onShoot }: StandoffProps) {
   }, [deadline, read, fire])
 
   const drawn = seconds * 1000 >= drawAt
-  const call = drawn ? 'DRAW!' : seconds < READY_SECONDS ? 'Ready...' : 'Steady...'
-  return <Arena call={call} drawn={drawn} result={null} me={me} them={them} onShoot={shoot} />
+  const call = drawn ? null : seconds < READY_SECONDS ? 'Ready...' : 'Steady...'
+  return (
+    <Arena result={null} me={me} them={them} call={call} drawn={drawn} onTap={tapArena}>
+      {drawn && <Target spot={spot} onHit={hit} />}
+      {misses.map((miss) => (
+        <MissMark key={miss.key} miss={miss} />
+      ))}
+    </Arena>
+  )
+}
+
+/** The Baron to shoot: pops up big with a pulsing red ring, so nobody can miss that it's there. */
+function Target({ spot, onHit }: { spot: TargetSpot; onHit: () => void }) {
+  return (
+    <div className="absolute z-10 -translate-x-1/2 -translate-y-1/2" style={{ left: `${spot.x * 100}%`, top: `${spot.y * 100}%` }}>
+      <motion.button
+        type="button"
+        aria-label="Shoot the Baron"
+        onPointerDown={(event) => {
+          event.stopPropagation()
+          onHit()
+        }}
+        initial={{ scale: 0.2, opacity: 0, rotate: -20 }}
+        animate={{ scale: 1, opacity: 1, rotate: 0 }}
+        transition={{ type: 'spring', stiffness: 700, damping: 16 }}
+        className="relative flex cursor-crosshair touch-manipulation items-center justify-center rounded-full p-2"
+      >
+        <motion.span
+          animate={{ scale: [1, 1.3, 1], opacity: [0.9, 0.4, 0.9] }}
+          transition={{ duration: 0.5, repeat: Infinity }}
+          className="absolute inset-0 rounded-full border-4 border-red-500"
+          aria-hidden="true"
+        />
+        <img
+          src={mapIconUrl('baron')}
+          alt=""
+          draggable={false}
+          className="size-16 rounded-full bg-abyss/85 p-1 shadow-[0_0_24px_6px_rgb(239_68_68/0.7)] sm:size-20"
+        />
+      </motion.button>
+    </div>
+  )
+}
+
+function MissMark({ miss }: { miss: Miss }) {
+  return (
+    <motion.span
+      initial={{ scale: 0.4, opacity: 1 }}
+      animate={{ scale: 1.2, opacity: 0 }}
+      transition={{ duration: 0.7 }}
+      className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-1/2 font-display text-3xl font-black text-red-400 drop-shadow-[0_1px_3px_black]"
+      style={{ left: `${miss.x * 100}%`, top: `${miss.y * 100}%` }}
+      aria-hidden="true"
+    >
+      ✕
+    </motion.span>
+  )
 }
 
 interface ArenaProps {
-  call: string | null
-  drawn: boolean
   /** The round just played, shown between rounds. */
   result: DuelRoundResult | null
   me: Player
   them: Contestant
-  onShoot: () => void
+  call?: string | null
+  /** The Baron is up. */
+  drawn?: boolean
+  onTap?: (event: PointerEvent<HTMLDivElement>) => void
+  /** The Baron and the missed taps, drawn over the duelists. */
+  children?: ReactNode
 }
 
-function Arena({ call, drawn, result, me, them, onShoot }: ArenaProps) {
+function Arena({ result, me, them, call = null, drawn = false, onTap, children }: ArenaProps) {
   const won = result?.winner === me
   return (
     <motion.div
-      role="button"
-      tabIndex={0}
-      aria-label="Shoot"
-      onPointerDown={onShoot}
+      onPointerDown={onTap}
       animate={result ? { x: [0, -10, 10, -6, 6, 0] } : { x: 0 }}
       transition={{ duration: 0.35 }}
       className={`relative flex h-72 w-full cursor-crosshair touch-manipulation items-end justify-between overflow-hidden rounded-lg border-2 select-none sm:h-80 ${
@@ -136,21 +225,21 @@ function Arena({ call, drawn, result, me, them, onShoot }: ArenaProps) {
         fell={result !== null && !won}
         fired={result !== null && won && result.reason === 'faster'}
       />
-      <div className="absolute inset-x-0 top-1/4 flex flex-col items-center" aria-live="assertive">
+      <div className="pointer-events-none absolute inset-x-0 top-1/4 flex flex-col items-center" aria-live="assertive">
         {call && (
           <motion.span
             key={call}
-            initial={{ scale: drawn ? 2.5 : 1.3, opacity: 0 }}
+            initial={{ scale: 1.3, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: drawn ? 0.08 : 0.3 }}
-            className={`font-display font-black drop-shadow-[0_2px_6px_rgb(0_0_0/0.9)] ${
-              drawn ? 'text-7xl text-red-500 sm:text-8xl' : 'text-4xl text-gold-light'
-            }`}
+            transition={{ duration: 0.3 }}
+            className="font-display text-4xl font-black text-gold-light drop-shadow-[0_2px_6px_rgb(0_0_0/0.9)]"
           >
             {call}
           </motion.span>
         )}
+        {drawn && <span className="sr-only">The Baron is up: tap it!</span>}
       </div>
+      {children}
       {result && <RoundCall result={result} me={me} them={them} />}
       <Duelist
         src={championLoadingUrl('Jhin', SKINS.highNoonJhin)}
@@ -166,7 +255,7 @@ function Arena({ call, drawn, result, me, them, onShoot }: ArenaProps) {
 function Duelist({ src, alt, mirrored = false, fell, fired }: { src: string; alt: string; mirrored?: boolean; fell: boolean; fired: boolean }) {
   return (
     <motion.div
-      className="relative h-full w-[34%] max-w-40"
+      className="pointer-events-none relative h-full w-[34%] max-w-40"
       animate={fell ? { rotate: mirrored ? 14 : -14, y: 30, opacity: 0.45 } : { rotate: 0, y: 0, opacity: 1 }}
       transition={{ type: 'spring', stiffness: 180, damping: 14 }}
     >
@@ -190,7 +279,7 @@ function Duelist({ src, alt, mirrored = false, fell, fired }: { src: string; alt
 }
 
 function reason(result: DuelRoundResult, won: boolean, them: Contestant): string {
-  if (result.reason === 'early') return won ? `${them.name} shot before DRAW!` : 'You shot before DRAW!'
+  if (result.reason === 'early') return won ? `${them.name} shot too early!` : 'Too early! Wait for the Baron.'
   if (won) return 'Bang! Headshot.'
   return them.isBot ? 'Jhin was faster. “And now... four.”' : `${them.name} was faster.`
 }
@@ -229,18 +318,25 @@ function RoundDots({ results, me }: { results: DuelRoundResult[]; me: Player }) 
   )
 }
 
-/** 1: DRAW between the two. 2: a tap and a shot. 3: best of 3. */
+/** 1: the Baron pops up between the two. 2: a finger taps it. 3: a tap too early loses the round. */
 export function DuelTutorialArt({ step }: TutorialArtProps) {
   if (step === 0) {
     return (
-      <div className="flex size-full flex-col items-center justify-center gap-1.5 bg-linear-to-b from-orange-300/30 to-yellow-950/70 px-1">
+      <div className="relative flex size-full flex-col items-center justify-between bg-linear-to-b from-orange-300/30 to-yellow-950/70 px-1 pt-1.5 pb-1">
         <motion.span
-          animate={{ scale: [0.8, 1.15, 1] }}
-          transition={{ duration: 1.4, repeat: Infinity, repeatDelay: 0.6 }}
-          className="font-display text-sm font-black text-red-500 drop-shadow-[0_1px_2px_black] sm:text-xl"
+          animate={{ opacity: [1, 1, 0, 0] }}
+          transition={{ duration: 2.4, times: [0, 0.45, 0.5, 1], repeat: Infinity }}
+          className="font-display text-[10px] font-black text-gold-light drop-shadow-[0_1px_2px_black] sm:text-sm"
         >
-          DRAW!
+          Steady...
         </motion.span>
+        <motion.img
+          src={mapIconUrl('baron')}
+          alt=""
+          animate={{ scale: [0, 0, 1.2, 1, 1], opacity: [0, 0, 1, 1, 1] }}
+          transition={{ duration: 2.4, times: [0, 0.48, 0.56, 0.62, 1], repeat: Infinity }}
+          className="absolute top-1/3 left-[55%] size-9 rounded-full bg-abyss/80 ring-2 ring-red-500 sm:size-12"
+        />
         <div className="flex w-full items-center justify-between px-1">
           <img src={championIconById('Caitlyn')} alt="" className="size-7 rounded-full border-2 border-hextech sm:size-9" />
           <img src={championIconById('Jhin')} alt="" className="size-7 -scale-x-100 rounded-full border-2 border-red-400 sm:size-9" />
@@ -251,22 +347,33 @@ export function DuelTutorialArt({ step }: TutorialArtProps) {
   if (step === 1) {
     return (
       <div className="relative flex size-full items-center justify-center bg-linear-to-b from-orange-300/20 to-yellow-950/60">
+        <img src={mapIconUrl('baron')} alt="" className="size-12 rounded-full bg-abyss/80 ring-2 ring-red-500 sm:size-16" />
         <motion.span
-          animate={{ scale: [1, 1.6, 1], opacity: [0.8, 1, 0.8] }}
-          transition={{ duration: 1.2, repeat: Infinity }}
-          className="absolute size-10 rounded-full bg-yellow-200/60 blur-sm"
+          animate={{ scale: [0.6, 1.6], opacity: [0.9, 0] }}
+          transition={{ duration: 1, repeat: Infinity, repeatDelay: 0.4 }}
+          className="absolute size-12 rounded-full border-4 border-yellow-200 sm:size-16"
         />
-        <span className="relative text-4xl">👆</span>
-        <span className="absolute right-1.5 bottom-1 rounded border border-gold/50 px-1 font-mono text-[10px] text-gold-light">Space</span>
+        <motion.span
+          animate={{ y: [10, 0, 0, 10] }}
+          transition={{ duration: 1.4, times: [0, 0.2, 0.8, 1], repeat: Infinity }}
+          className="absolute right-2 bottom-1 text-3xl sm:text-4xl"
+        >
+          👆
+        </motion.span>
+        <span className="absolute top-1 left-1 rounded bg-abyss/80 px-1 font-mono text-[10px] text-gold-light">0.38 s</span>
       </div>
     )
   }
   return (
-    <div className="flex size-full flex-col items-center justify-center gap-2">
-      <span className="font-display text-sm font-black text-red-500 line-through decoration-2">Ready...</span>
+    <div className="flex size-full flex-col items-center justify-center gap-1.5 px-1">
+      <div className="relative flex items-center gap-1">
+        <span className="font-display text-xs font-black text-gold-light/70 sm:text-sm">Steady...</span>
+        <span className="text-2xl">👆</span>
+        <span className="absolute -top-1 right-0 font-display text-xl font-black text-red-500 drop-shadow-[0_1px_2px_black]">✕</span>
+      </div>
       <div className="flex gap-1.5">
         <span className="size-4 rounded-full border-2 border-gold bg-gold" />
-        <span className="size-4 rounded-full border-2 border-gold bg-gold" />
+        <span className="size-4 rounded-full border-2 border-red-400 bg-red-400" />
         <span className="size-4 rounded-full border-2 border-gold/40" />
       </div>
     </div>

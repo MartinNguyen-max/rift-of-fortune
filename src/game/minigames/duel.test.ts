@@ -9,6 +9,8 @@ import {
   duelResults,
   duelRound,
   NO_SHOT,
+  TARGET_AREA,
+  targetSpots,
 } from './duel'
 import { soloSetup } from './versus'
 
@@ -32,13 +34,44 @@ describe('drawTimes and botShots', () => {
   })
 })
 
+describe('targetSpots', () => {
+  it('puts the Baron in the same spots for both players, one per round', () => {
+    expect(targetSpots(7)).toEqual(targetSpots(7))
+    expect(targetSpots(7)).toHaveLength(3)
+    expect(targetSpots(7)).not.toEqual(targetSpots(8))
+  })
+
+  it('keeps it inside the arena and moves it to the other half each round', () => {
+    const middle = (TARGET_AREA.left + TARGET_AREA.right) / 2
+    for (let seed = 0; seed < 200; seed++) {
+      const spots = targetSpots(seed)
+      for (const { x, y } of spots) {
+        expect(x).toBeGreaterThanOrEqual(TARGET_AREA.left)
+        expect(x).toBeLessThanOrEqual(TARGET_AREA.right)
+        expect(y).toBeGreaterThanOrEqual(TARGET_AREA.top)
+        expect(y).toBeLessThanOrEqual(TARGET_AREA.bottom)
+      }
+      const sides = spots.map(({ x }) => x > middle)
+      expect(sides[0]).not.toBe(sides[1])
+      expect(sides[1]).not.toBe(sides[2])
+    }
+  })
+
+  it('starts on the left about as often as on the right', () => {
+    const middle = (TARGET_AREA.left + TARGET_AREA.right) / 2
+    const right = Array.from({ length: 400 }, (_, seed) => (targetSpots(seed)[0]?.x ?? 0) > middle).filter(Boolean).length
+    expect(right).toBeGreaterThan(150)
+    expect(right).toBeLessThan(250)
+  })
+})
+
 describe('duelRound', () => {
-  it('gives the round to the first shot after DRAW', () => {
+  it('gives the round to the first tap after the Baron shows', () => {
     expect(duelRound(3000, [3200, 3300], 0)).toEqual({ winner: 0, reason: 'faster', reactions: [200, 300] })
     expect(duelRound(3000, [3400, 3300], 0).winner).toBe(1)
   })
 
-  it('makes whoever shoots before DRAW lose, the first one if both did', () => {
+  it('makes whoever taps before the Baron shows lose, the first one if both did', () => {
     expect(duelRound(3000, [2900, 3300], 0)).toMatchObject({ winner: 1, reason: 'early' })
     expect(duelRound(3000, [3500, 2500], 0)).toMatchObject({ winner: 0, reason: 'early' })
     expect(duelRound(3000, [2600, 2800], 0).winner).toBe(1)

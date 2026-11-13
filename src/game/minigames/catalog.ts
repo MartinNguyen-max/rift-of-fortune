@@ -27,8 +27,8 @@ export const MINI_GAMES: Record<MiniGameId, MiniGameInfo> = {
     champion: 'Caitlyn',
     botChampion: 'Jhin',
     botName: 'High Noon Jhin',
-    tagline: 'Wait for DRAW, then shoot. Fastest hands in the West win.',
-    tutorial: { solo: ['Wait for DRAW!', 'Then shoot: tap or Space', 'Too early = round lost. Best of 3'] },
+    tagline: 'A Baron pops up. Shoot it first. Fastest hands in the West win.',
+    tutorial: { solo: ['Wait… a Baron pops up', 'Tap it! Fastest tap wins', 'Too early = round lost. Best of 3'] },
   },
   hook: {
     id: 'hook',
