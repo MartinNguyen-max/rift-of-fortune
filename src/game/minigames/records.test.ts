@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { addOutcome, emptyRecord, parseRecord } from './records'
+import { addOutcome, emptyRecord, parseRecord, scoringVersion } from './records'
 
 describe('addOutcome', () => {
   it('counts games, wins and the win streak', () => {
@@ -38,8 +38,17 @@ describe('parseRecord', () => {
       streak: 0,
       bestStreak: 1,
       best: 240,
+      rules: 1,
     })
     expect(parseRecord({ played: -1, wins: 0, streak: 0, bestStreak: 0, best: null })).toBeNull()
     expect(parseRecord('nope')).toBeNull()
+  })
+
+  it('clears a best set under older scoring rules, keeping wins and streaks', () => {
+    const old = { played: 9, wins: 5, streak: 2, bestStreak: 4, best: 20 }
+    expect(parseRecord(old, 2)).toEqual({ played: 9, wins: 5, streak: 2, bestStreak: 4, best: null, rules: 2 })
+    expect(parseRecord({ ...old, best: 14, rules: 2 }, 2)?.best).toBe(14)
+    expect(scoringVersion('combo')).toBe(2)
+    expect(scoringVersion('hook')).toBe(1)
   })
 })

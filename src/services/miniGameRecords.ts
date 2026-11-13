@@ -1,5 +1,13 @@
 import { MINI_GAME_IDS, type MiniGameId } from '../game/minigames/catalog'
-import { addOutcome, emptyRecord, parseRecord, type GameOutcome, type MiniGameRecord, type RecordUpdate } from '../game/minigames/records'
+import {
+  addOutcome,
+  emptyRecord,
+  parseRecord,
+  scoringVersion,
+  type GameOutcome,
+  type MiniGameRecord,
+  type RecordUpdate,
+} from '../game/minigames/records'
 import { readJson, writeJson } from './storage'
 
 const KEY = 'minigame-bests'
@@ -11,7 +19,7 @@ export function readRecords(): MiniGameRecords {
   const stored = readJson<Record<string, unknown>>(KEY) ?? {}
   const records: MiniGameRecords = {}
   for (const id of MINI_GAME_IDS) {
-    const record = parseRecord(stored[id])
+    const record = parseRecord(stored[id], scoringVersion(id))
     if (record) records[id] = record
   }
   return records
@@ -20,7 +28,7 @@ export function readRecords(): MiniGameRecords {
 /** Saves a finished game against the bot and tells what improved. */
 export function saveOutcome(id: MiniGameId, outcome: GameOutcome): RecordUpdate {
   const records = readRecords()
-  const update = addOutcome(records[id] ?? emptyRecord(), outcome)
+  const update = addOutcome(records[id] ?? emptyRecord(scoringVersion(id)), outcome)
   writeJson(KEY, { ...records, [id]: update.record })
   return update
 }
