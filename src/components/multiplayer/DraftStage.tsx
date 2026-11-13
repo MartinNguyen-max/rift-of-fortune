@@ -12,6 +12,7 @@ import { Button } from '../Button'
 import { Game } from '../Game'
 import { nextChampion, offerChampions, randomItems, rerollChampion, rerollItem } from '../matchDraft'
 import { useCountdown } from '../useCountdown'
+import { PACE_TEXT } from './paceText'
 import type { Room } from './useRoom'
 
 /** The last seconds of the draft timer turn red. */
@@ -55,7 +56,7 @@ export function DraftStage({ room, round }: { room: Room; round: RoundState }) {
       <DraftTimer remaining={remaining} total={round.draftSeconds} opponentLocked={opponentLocked} />
       <div className="relative w-full">
         <Game
-          title={round.settings.pace === 'fast' ? 'Multiplayer draft · fast' : 'Multiplayer draft'}
+          title={`Multiplayer draft · ${PACE_TEXT[round.settings.pace].label}`}
           nextChampion={nextChampion}
           drawItems={randomItems}
           rules={rules}

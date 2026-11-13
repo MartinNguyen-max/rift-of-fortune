@@ -11,6 +11,7 @@ import {
   type Pace,
 } from '../../game/multiplayer/settings'
 import { championIconById } from '../minigames/miniGameArt'
+import { PACE_TEXT } from './paceText'
 
 interface LobbySettingsPanelProps {
   settings: LobbySettings
@@ -20,10 +21,7 @@ interface LobbySettingsPanelProps {
   onChange: (settings: LobbySettings) => void
 }
 
-const PACES: { value: Pace; label: string; hint: string }[] = [
-  { value: 'normal', label: 'Normal', hint: 'Roll champions and items' },
-  { value: 'fast', label: 'Fast', hint: '5 champs, then 10 items at once' },
-]
+const PACES: { value: Pace; label: string; hint: string }[] = (['normal', 'fast'] as const).map((value) => ({ value, ...PACE_TEXT[value] }))
 
 const EVENT_MODES: { value: EventMode; label: string }[] = [
   { value: 'random3', label: `${RANDOM_EVENT_COUNT.random3} random` },
