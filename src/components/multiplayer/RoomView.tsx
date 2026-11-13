@@ -34,6 +34,14 @@ export function RoomView({ code }: { code: string }) {
   const inRound = round?.players.some(({ id }) => id === me.id) === true
   return (
     <>
+      {status === 'reconnecting' && (
+        <p
+          role="status"
+          className="fixed top-2 left-1/2 z-50 -translate-x-1/2 rounded-full border border-gold/50 bg-abyss/90 px-4 py-1.5 text-sm font-semibold text-gold-light shadow-lg shadow-black/60"
+        >
+          Connection lost. Reconnecting…
+        </p>
+      )}
       <EmoteLayer emotes={emotes} />
       {inRound && round ? <RoundView key={round.id} room={room} round={round} /> : <Lobby room={room} code={code} />}
     </>

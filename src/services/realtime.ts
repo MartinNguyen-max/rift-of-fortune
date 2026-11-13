@@ -1,10 +1,14 @@
-import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { createClient, type RealtimeChannel, type SupabaseClient } from '@supabase/supabase-js'
 import { parsePresence, parseRoomMessage, type PresenceInfo, type RoomMessage } from '../game/multiplayer/protocol'
 import { dailyStatsConfig } from './dailyStats'
 
 /**
  * Multiplayer lobbies over Supabase Realtime: Broadcast passes messages between the two players
  * and Presence shows who is connected. Nothing is stored: a lobby lives only while someone is in it.
+ *
+ * Presence is tracked once per connection and never updated: Supabase closes the channel of a
+ * client that sends more than 5 Presence updates in 30 seconds. Everything that changes (ready,
+ * settings, names) goes over Broadcast instead.
  */
 let client: SupabaseClient | null = null
 
@@ -18,64 +22,107 @@ function supabase(): SupabaseClient | null {
 /** Multiplayer needs the same two env variables as the Daily stats. */
 export const isMultiplayerAvailable = (): boolean => dailyStatsConfig() !== null
 
-export type ConnectionStatus = 'connecting' | 'connected' | 'error'
+/** `error` only when the lobby never connected; a lost connection is `reconnecting` until it is back. */
+export type ConnectionStatus = 'connecting' | 'connected' | 'reconnecting' | 'error'
 
 export interface RoomHandlers {
   onMessage: (message: RoomMessage) => void
   /** Everyone connected to the lobby right now. */
   onPresence: (present: PresenceInfo[]) => void
+  /** `connected` comes again after every reconnect. */
   onStatus: (status: ConnectionStatus) => void
 }
 
 export interface RoomConnection {
+  /** Sends at once, or as soon as the connection is back. */
   send: (message: RoomMessage) => void
-  /** Shares new info about this player (ready, playing) with the lobby. */
-  updatePresence: (presence: PresenceInfo) => void
   leave: () => void
 }
 
 const MESSAGE_EVENT = 'message'
+/** Tries before a lobby that never connected shows an error. */
+const FIRST_ATTEMPTS = 4
+const MAX_RETRY_MS = 8000
+
+const retryDelay = (attempt: number) => Math.min(MAX_RETRY_MS, 500 * 2 ** attempt)
 
 export function joinRoom(code: string, presence: PresenceInfo, handlers: RoomHandlers): RoomConnection | null {
   const realtime = supabase()
   if (!realtime) return null
 
-  let current = presence
+  let channel: RealtimeChannel | null = null
   let subscribed = false
-  const channel = realtime.channel(`rift-room-${code}`, {
-    // Every player, the sender too, applies every message in the same way.
-    config: { broadcast: { self: true }, presence: { key: presence.id } },
-  })
+  let left = false
+  let everConnected = false
+  let attempts = 0
+  let retry: number | undefined
+  const queue: RoomMessage[] = []
 
-  channel
-    .on('broadcast', { event: MESSAGE_EVENT }, ({ payload }: { payload: unknown }) => {
-      const message = parseRoomMessage(payload)
-      if (message) handlers.onMessage(message)
+  const push = (target: RealtimeChannel, message: RoomMessage) => {
+    void target.send({ type: 'broadcast', event: MESSAGE_EVENT, payload: message })
+  }
+
+  const open = () => {
+    const current = realtime.channel(`rift-room-${code}`, {
+      // Every player, the sender too, applies every message in the same way.
+      config: { broadcast: { self: true }, presence: { key: presence.id } },
     })
-    .on('presence', { event: 'sync' }, () => {
-      const present = Object.values(channel.presenceState()).flat()
-      handlers.onPresence(present.flatMap((entry) => parsePresence(entry) ?? []))
+    channel = current
+    subscribed = false
+    current
+      .on('broadcast', { event: MESSAGE_EVENT }, ({ payload }: { payload: unknown }) => {
+        const message = parseRoomMessage(payload)
+        if (message) handlers.onMessage(message)
+      })
+      .on('presence', { event: 'sync' }, () => {
+        const present = Object.values(current.presenceState()).flat()
+        handlers.onPresence(present.flatMap((entry) => parsePresence(entry) ?? []))
+      })
+      .subscribe((state) => {
+        if (left || channel !== current) return
+        if (state === 'SUBSCRIBED') {
+          subscribed = true
+          everConnected = true
+          attempts = 0
+          void current.track({ ...presence })
+          handlers.onStatus('connected')
+          for (const message of queue.splice(0)) push(current, message)
+        } else if (state === 'CHANNEL_ERROR' || state === 'TIMED_OUT' || state === 'CLOSED') {
+          reopen()
+        }
+      })
+  }
+
+  /** A fresh channel after a short wait. The old one is removed first, or Supabase would hand it back. */
+  const reopen = () => {
+    const old = channel
+    channel = null
+    subscribed = false
+    attempts += 1
+    if (!everConnected && attempts > FIRST_ATTEMPTS) {
+      handlers.onStatus('error')
+      if (old) void realtime.removeChannel(old)
+      return
+    }
+    handlers.onStatus(everConnected ? 'reconnecting' : 'connecting')
+    const removed = old ? realtime.removeChannel(old) : Promise.resolve()
+    void removed.finally(() => {
+      if (!left) retry = window.setTimeout(open, retryDelay(attempts))
     })
-    .subscribe((status) => {
-      if (status === 'SUBSCRIBED') {
-        subscribed = true
-        void channel.track({ ...current })
-        handlers.onStatus('connected')
-      } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-        handlers.onStatus('error')
-      }
-    })
+  }
+
+  open()
 
   return {
     send: (message) => {
-      void channel.send({ type: 'broadcast', event: MESSAGE_EVENT, payload: message })
-    },
-    updatePresence: (next) => {
-      current = next
-      if (subscribed) void channel.track({ ...next })
+      if (channel && subscribed) push(channel, message)
+      else queue.push(message)
     },
     leave: () => {
-      void realtime.removeChannel(channel)
+      left = true
+      window.clearTimeout(retry)
+      if (channel) void realtime.removeChannel(channel)
+      channel = null
     },
   }
 }

@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion'
 import { useState } from 'react'
-import type { PresenceInfo } from '../../game/multiplayer/protocol'
+import type { LobbyPlayer } from '../../game/multiplayer/protocol'
 import { DRAFT_SECONDS } from '../../game/multiplayer/settings'
+import { forgetRoomIdentity } from '../../services/roomIdentity'
 import { Button } from '../Button'
 import { inviteLink, routeHref } from '../useHashRoute'
 import { EmoteBar } from './Emotes'
@@ -61,7 +62,7 @@ export function Lobby({ room, code }: { room: Room; code: string }) {
 
       {opponent && <EmoteBar onEmote={sendEmote} />}
 
-      <a href={routeHref('play')} className="text-sm text-hextech underline-offset-4 hover:underline">
+      <a href={routeHref('play')} onClick={() => forgetRoomIdentity(code)} className="text-sm text-hextech underline-offset-4 hover:underline">
         Leave lobby
       </a>
     </div>
@@ -96,7 +97,7 @@ function InviteCard({ code }: { code: string }) {
   )
 }
 
-function PlayerCard({ player, label, side }: { player: PresenceInfo; label: string; side: 'blue' | 'red' }) {
+function PlayerCard({ player, label, side }: { player: LobbyPlayer; label: string; side: 'blue' | 'red' }) {
   return (
     <motion.div
       initial={{ y: 10, opacity: 0 }}

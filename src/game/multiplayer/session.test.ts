@@ -3,13 +3,15 @@ import { drawTimes, NO_SHOT } from '../minigames/duel'
 import { MINI_GAME_RULES } from '../minigames/registry'
 import { seededRandom } from '../random'
 import { eventSetup, liveEvents } from './liveEvents'
-import { lobbyPlayers, parsePresence, parseRoomMessage, type PresenceInfo, type RoomMessage } from './protocol'
+import { lobbyPlayers, parsePresence, parseRoomMessage, type PlayerStatus, type PresenceInfo, type RoomMessage } from './protocol'
 import {
   decidedWinners,
   eventStart,
   hostMessages,
+  mergeRounds,
   roundEvents,
   roundReducer,
+  shiftRound,
   sideOf,
   TIMINGS,
   type HostContext,
@@ -246,17 +248,92 @@ describe('parseRoomMessage', () => {
   })
 })
 
-describe('lobbyPlayers and presence', () => {
-  const player = (id: string, joinedAt: number): PresenceInfo => ({ id, name: id, joinedAt, ready: false, playing: false })
+describe('lobbyPlayers, presence and status', () => {
+  const present = (id: string, joinedAt: number): PresenceInfo => ({ id, joinedAt })
+  const status: PlayerStatus = { name: 'Team A', ready: true, playing: false, settings }
 
   it('puts the earliest player first as the host and leaves out a third', () => {
-    expect(lobbyPlayers([player('c', 3), player('a', 1), player('b', 2)]).map(({ id }) => id)).toEqual(['a', 'b'])
+    expect(lobbyPlayers([present('c', 3), present('a', 1), present('b', 2)]).map(({ id }) => id)).toEqual(['a', 'b'])
   })
 
-  it('parses presence from the network, with the host’s settings', () => {
-    expect(parsePresence({ ...player('a', 1), presence_ref: 'x' })).toEqual(player('a', 1))
-    expect(parsePresence({ ...player('a', 1), settings })).toEqual({ ...player('a', 1), settings })
-    expect(parsePresence({ ...player('a', 1), settings: { pace: 'warp' } })).toBeNull()
+  it('counts a player connected twice (a reload) once', () => {
+    expect(lobbyPlayers([present('a', 1), present('b', 2), present('a', 1)]).map(({ id }) => id)).toEqual(['a', 'b'])
+  })
+
+  it('shows each player with their latest status, or as joining until it arrives', () => {
+    const [a, b] = lobbyPlayers([present('a', 1), present('b', 2)], { a: status })
+    expect(a).toEqual({ id: 'a', joinedAt: 1, ...status })
+    expect(b).toMatchObject({ id: 'b', ready: false, playing: false })
+  })
+
+  it('parses presence: only who is connected and since when', () => {
+    expect(parsePresence({ ...present('a', 1), presence_ref: 'x' })).toEqual(present('a', 1))
     expect(parsePresence({ id: 'a' })).toBeNull()
+  })
+
+  it('parses a status, dropping settings it does not understand but keeping the player', () => {
+    const message = { type: 'status', player: HOST, status, hello: true }
+    expect(parseRoomMessage(JSON.parse(JSON.stringify(message)))).toEqual(message)
+    const odd = parseRoomMessage({ ...message, status: { ...status, settings: { pace: 'warp' } } })
+    expect(odd?.type === 'status' && odd.status).toEqual({ name: 'Team A', ready: true, playing: false })
+    expect(parseRoomMessage({ ...message, status: { name: 'x' } })).toBeNull()
+  })
+})
+
+describe('sync after a reconnect', () => {
+  const result = { winner: 'blue' as const, scores: { blue: 1, red: 0 }, tie: false }
+  const full = play(
+    [
+      startDraft,
+      { type: 'team', round: ROUND, player: HOST, team: teamA },
+      { type: 'team', round: ROUND, player: GUEST, team: teamB },
+      startMatch,
+      arrived(0, HOST),
+      ready(0, HOST),
+      ready(0, GUEST),
+      move(0, HOST, 0, 3),
+      move(0, GUEST, 0, 1),
+      { type: 'eventResult', round: ROUND, event: 0, result },
+      arrived(1, GUEST),
+      move(1, GUEST, 1, 9),
+    ],
+    5000,
+  )
+
+  it('sends a whole round over the network and reads it back the same', () => {
+    const message: RoomMessage = { type: 'sync', to: GUEST, sentAt: 123, state: full }
+    expect(parseRoomMessage(JSON.parse(JSON.stringify(message)))).toEqual(message)
+  })
+
+  it('drops a broken round', () => {
+    const broken = { type: 'sync', to: GUEST, sentAt: 1, state: { ...full, events: [] } }
+    expect(parseRoomMessage(JSON.parse(JSON.stringify(broken)))).toBeNull()
+    const badMove = { ...full, events: full.events.map((event) => ({ ...event, moves: [[-4], []] })) }
+    expect(parseRoomMessage({ type: 'sync', to: GUEST, sentAt: 1, state: badMove })).toBeNull()
+  })
+
+  it('moves every time onto the local clock', () => {
+    const shifted = shiftRound(full, 1000)
+    expect(shifted.startedAt).toBe(6000)
+    expect(shifted.match?.startedAt).toBe(6000)
+    expect(shifted.events[0]).toMatchObject({ openedAt: 6000, readyAt: 6000 })
+    expect(shifted.events[2]).toMatchObject({ openedAt: null, readyAt: null })
+  })
+
+  it('adds what was missed and keeps what this player already had', () => {
+    const missed = play([startDraft, { type: 'team', round: ROUND, player: HOST, team: teamA }, move(1, HOST, 0, 2)], 9000)
+    const merged = mergeRounds(missed, full)
+    expect(merged.teams).toEqual({ [HOST]: teamA, [GUEST]: teamB })
+    expect(merged.match).toEqual(full.match)
+    expect(merged.startedAt).toBe(9000)
+    expect(merged.events[0]?.result).toEqual(result)
+    expect(merged.events[1]?.moves).toEqual([[2], [undefined, 9]])
+    expect(merged.events[1]?.arrived).toEqual([GUEST])
+    expect(mergeRounds(full, play([startDraft], 9000))).toEqual(full)
+  })
+
+  it('never merges two different rounds', () => {
+    const other = play([{ ...startDraft, round: 'round-2' }])
+    expect(mergeRounds(other, full)).toBe(other)
   })
 })

@@ -3,7 +3,7 @@ import { MINI_GAME_RULES } from '../minigames/registry'
 import { withMove, type BothMoves, type Moves } from '../minigames/versus'
 import type { RandomFn } from '../random'
 import { eventSetup, eventWinner, liveEvents, type LiveEvent } from './liveEvents'
-import type { EventResult, PlayerId, PlayerInfo, RoomMessage } from './protocol'
+import type { EventResult, PlayerId, PlayerInfo, RoomMessage, RoundMessage } from './protocol'
 import type { LobbySettings } from './settings'
 import type { EncodedTeam } from './teamCode'
 
@@ -85,6 +85,9 @@ const updateEvent = (round: RoundState, index: number, update: (event: LiveEvent
 
 const isPlayer = (round: RoundState, player: PlayerId) => round.players.some(({ id }) => id === player)
 
+const isRoundMessage = (message: RoomMessage): message is RoundMessage =>
+  message.type !== 'emote' && message.type !== 'status' && message.type !== 'sync'
+
 /**
  * Applies one message. Both players get the same messages, so they end up with the same round.
  * The first answer counts: repeats and late answers are ignored.
@@ -104,7 +107,7 @@ export function roundReducer(round: RoundState | null, message: RoomMessage, now
       surrendered: null,
     }
   }
-  if (!round || message.type === 'emote' || message.round !== round.id) return round
+  if (!round || !isRoundMessage(message) || message.round !== round.id) return round
 
   switch (message.type) {
     case 'team':
@@ -138,6 +141,51 @@ export function roundReducer(round: RoundState | null, message: RoomMessage, now
       return updateEvent(round, message.event, (event) => ({ ...event, result: message.result }))
     case 'surrender':
       return round.surrendered || !isPlayer(round, message.player) ? round : { ...round, surrendered: message.player }
+  }
+}
+
+const shiftTime = (time: number | null, by: number) => (time === null ? null : time + by)
+
+/** A round from another player's clock moved onto this one: every time `by` ms later. */
+export function shiftRound(round: RoundState, by: number): RoundState {
+  return {
+    ...round,
+    startedAt: round.startedAt + by,
+    match: round.match && { ...round.match, startedAt: round.match.startedAt + by },
+    events: round.events.map((event) => ({ ...event, openedAt: shiftTime(event.openedAt, by), readyAt: shiftTime(event.readyAt, by) })),
+  }
+}
+
+const union = <T>(mine: readonly T[], theirs: readonly T[]): T[] => [...mine, ...theirs.filter((entry) => !mine.includes(entry))]
+
+const mergeMoves = (mine: Moves, theirs: Moves): Moves =>
+  Array.from({ length: Math.max(mine.length, theirs.length) }, (_, step) => mine[step] ?? theirs[step])
+
+function mergeEvent(mine: LiveEventState, theirs: LiveEventState | undefined): LiveEventState {
+  if (!theirs) return mine
+  return {
+    openedAt: mine.openedAt ?? theirs.openedAt,
+    arrived: union(mine.arrived, theirs.arrived),
+    ready: union(mine.ready, theirs.ready),
+    readyAt: mine.readyAt ?? theirs.readyAt,
+    moves: [mergeMoves(mine.moves[0], theirs.moves[0]), mergeMoves(mine.moves[1], theirs.moves[1])],
+    result: mine.result ?? theirs.result,
+  }
+}
+
+/**
+ * Adds what another player saw of the same round to this one: messages missed while
+ * reconnecting. Both saw the same messages in the same order, so nothing ever conflicts: the
+ * first answer counts on both sides, and what this player already has stays.
+ */
+export function mergeRounds(mine: RoundState, theirs: RoundState): RoundState {
+  if (mine.id !== theirs.id) return mine
+  return {
+    ...mine,
+    teams: { ...theirs.teams, ...mine.teams },
+    match: mine.match ?? theirs.match,
+    events: mine.events.map((event, index) => mergeEvent(event, theirs.events[index])),
+    surrendered: mine.surrendered ?? theirs.surrendered,
   }
 }
 

@@ -25,6 +25,9 @@ import { LiveEventStage } from './LiveEventStage'
 import { SurrenderButton } from './SurrenderButton'
 import type { Room } from './useRoom'
 
+/** A player who rejoins sees this much of the match before the live event they rejoin at. */
+const REJOIN_LEAD_SECONDS = 2
+
 interface LiveMatchViewProps {
   room: Room
   round: RoundState
@@ -46,8 +49,13 @@ export function LiveMatchView({ room, round, teams }: LiveMatchViewProps) {
   const { match: roundMatch, settings } = round
   const events = useMemo(() => roundEvents({ match: roundMatch, settings }), [roundMatch, settings])
 
-  /** Live events whose result has been shown. The match only plays past those. */
-  const [shownResults, setShownResults] = useState(0)
+  /**
+   * Live events whose result has been shown. The match only plays past those. A player who
+   * rejoins (reload, lost connection) skips what was decided while they were away and lands just
+   * before the live event the other player is waiting at.
+   */
+  const [rejoined] = useState(() => round.events.some(({ openedAt }) => openedAt !== null))
+  const [shownResults, setShownResults] = useState(() => decidedWinners(round).length)
   const winnersKey = decidedWinners(round).slice(0, shownResults).join(',')
   const sim = useMemo(() => {
     const winners = winnersKey === '' ? [] : (winnersKey.split(',') as Side[])
@@ -60,7 +68,7 @@ export function LiveMatchView({ room, round, teams }: LiveMatchViewProps) {
   const chances = useMemo(() => liveChances(match, viewTeams), [match, viewTeams])
 
   const surrendered = round.surrendered
-  const { elapsed } = usePlaybackClock(timeline.total, surrendered === null)
+  const { elapsed } = usePlaybackClock(timeline.total, surrendered === null, rejoined ? Math.max(0, timeline.total - REJOIN_LEAD_SECONDS) : 0)
   const caughtUp = elapsed >= timeline.total
   const pendingEvent = caughtUp && surrendered === null ? match.pendingEvent : null
   const pendingLive = pendingEvent === null ? undefined : events[pendingEvent]
