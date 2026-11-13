@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
+import { seededRandom } from '../random'
 import {
+  BOT_SMITE,
   botSmite,
   duelOfStep,
   hpAt,
@@ -8,9 +10,12 @@ import {
   SMITE_LEAD_IN,
   SMITE_RULES,
   smiteDuel,
+  smiteMood,
   smiteResult,
   smiteTargets,
+  timeAtHp,
   type SmiteDuel,
+  type SmiteMood,
 } from './smite'
 import { soloSetup, type GameSetup } from './versus'
 
@@ -36,11 +41,17 @@ describe('smiteDuel', () => {
     }
   })
 
-  it('drains smoothly: no jumps between two frames', () => {
+  it('drains smoothly: no jumps between two frames, even in a burst', () => {
     for (const duel of duels) {
-      for (let time = 0; time < duel.deathAt; time += 1 / 60) {
-        expect(hpAt(duel, time) - hpAt(duel, time + 1 / 60)).toBeLessThan(0.03)
-      }
+      // The health is straight lines between the points, so the steepest line is the biggest drop per frame.
+      const steepest = Math.max(
+        ...duel.points.slice(1).map((point, index) => {
+          const before = duel.points[index] ?? point
+          return (before.hp - point.hp) / (point.at - before.at)
+        }),
+      )
+      expect(steepest / 60).toBeLessThan(0.03)
+      expect(hpAt(duel, duel.rangeAt / 2) - hpAt(duel, duel.rangeAt / 2 + 1 / 60)).toBeLessThan(0.03)
     }
   })
 
@@ -63,6 +74,33 @@ describe('smiteDuel', () => {
       expect(share).toBeLessThan(0.7)
       expect(duel.deathAt - duel.rangeAt).toBeGreaterThan(2.5)
       expect(duel.deathAt).toBeLessThanOrEqual(LONGEST_SMITE_DUEL)
+    }
+  })
+})
+
+describe('bursts and timeAtHp', () => {
+  const lastPace = (duel: SmiteDuel) => {
+    const [before, last] = duel.points.slice(-2)
+    return before && last ? (before.hp - last.hp) / (last.at - before.at) : 0
+  }
+  const fastestEarlier = (duel: SmiteDuel) => {
+    const inRange = duel.points.filter(({ at }) => at >= duel.rangeAt).slice(0, -1)
+    return Math.max(...inRange.slice(1).map((point, index) => ((inRange[index]?.hp ?? 0) - point.hp) / (point.at - (inRange[index]?.at ?? 0))))
+  }
+
+  it('sometimes ends in a burst faster than anything before it, sometimes not', () => {
+    const bursts = duels.filter((duel) => lastPace(duel) > fastestEarlier(duel) * 1.1).length / duels.length
+    expect(bursts).toBeGreaterThan(0.3)
+    expect(bursts).toBeLessThan(0.75)
+  })
+
+  it('finds the moment the health is down to a value', () => {
+    for (const duel of duels.slice(0, 40)) {
+      const at = timeAtHp(duel, duel.threshold / 2)
+      expect(hpAt(duel, at)).toBeCloseTo(duel.threshold / 2, 5)
+      expect(at).toBeGreaterThan(duel.rangeAt)
+      expect(at).toBeLessThan(duel.deathAt)
+      expect(timeAtHp(duel, duel.threshold)).toBeCloseTo(duel.rangeAt, 5)
     }
   })
 })
@@ -137,5 +175,28 @@ describe('SMITE_RULES', () => {
     expect(hits / 300).toBeGreaterThan(0.8)
     expect(total / 300).toBeGreaterThan(55)
     expect(total / 300).toBeLessThan(85)
+  })
+
+  it('has a bot in a different mood each duel, so there is no single answer to learn', () => {
+    const moods = new Map<SmiteMood, number>()
+    const random = seededRandom(3)
+    for (let index = 0; index < 2000; index++) {
+      const mood = smiteMood(random)
+      moods.set(mood, (moods.get(mood) ?? 0) + 1)
+    }
+    for (const [mood, { chance }] of Object.entries(BOT_SMITE.moods)) {
+      expect((moods.get(mood as SmiteMood) ?? 0) / 2000).toBeCloseTo(chance, 1)
+    }
+  })
+
+  it('has a bot that is sometimes greedy and very low, sometimes safe and high', () => {
+    const shares: number[] = []
+    for (let seed = 0; seed < 600; seed++) {
+      const duel = smiteDuel(seed % 2 ? 'baron' : 'elder', seed)
+      const result = smiteResult(duel, botSmite(duel, seed * 31 + 5) / 1000)
+      if (result.outcome === 'hit') shares.push(result.hp / 1200)
+    }
+    expect(shares.filter((share) => share < 0.12).length / shares.length).toBeGreaterThan(0.2)
+    expect(shares.filter((share) => share > 0.5).length / shares.length).toBeGreaterThan(0.15)
   })
 })

@@ -2,14 +2,14 @@ import { seededRandom } from '../random'
 import { stepSeed, type BothMoves, type GameSetup, type MiniGameRules, type Owed, type Player, type Settled } from './versus'
 
 /**
- * The teamfight ult: a marker sweeps back and forth over a bar, a little faster each second.
+ * The teamfight ult: a marker sweeps back and forth over a bar, faster each second.
  * Stop it as close to the middle of the zone as you can. `seconds` is the time limit.
  */
 export const ULT = {
   seconds: 9,
   /** Bar lengths per second at the start, and how much faster it gets each second. */
-  speed: { min: 0.55, max: 0.75 },
-  acceleration: 0.15,
+  speed: { min: 0.75, max: 0.95 },
+  acceleration: 0.2,
   /** Where the marker starts, so it is never stuck at the very edge. */
   start: 0.08,
 } as const
@@ -20,10 +20,10 @@ export const ULT = {
  * Any press scores at least `min.score`, so a duel is rarely decided at 0–0.
  */
 export const ULT_ZONES = {
-  perfect: 0.03,
-  great: 0.08,
-  good: 0.15,
-  min: { distance: 0.48, score: 10 },
+  perfect: 0.022,
+  great: 0.06,
+  good: 0.12,
+  min: { distance: 0.4, score: 10 },
 } as const
 
 export interface UltBar {
@@ -83,7 +83,7 @@ export function zoneCrossings(bar: UltBar): number[] {
 }
 
 /** The bot waits for one of the first passes over the zone and presses a little early or late. */
-export const BOT_ULT = { error: 0.32 } as const
+export const BOT_ULT = { error: 0.24 } as const
 
 export function botPress(bar: UltBar, seed: number): number {
   const random = seededRandom(seed ^ 0x1b873593)
