@@ -75,10 +75,28 @@ export const GOLD = {
 } as const
 
 /**
- * Multiplayer: extra gold for winning a live event, on top of what the event itself is worth,
- * so a won mini-game always matters. Tuned with the live match tests in simulateMatch.test.ts.
+ * Multiplayer: extra gold for winning live events, on top of what each event itself is worth, so a
+ * won mini-game always matters. The total is split evenly over the events of a match, so 3 or 5
+ * events weigh the same in total. Tuned with the live match tests in liveMatch.test.ts: between
+ * equal teams, 3–0 in events wins ~97% and 2–1 ~83%; a team rated 15+ points better that loses
+ * every event wins about half the time.
  */
-export const LIVE_EVENT_GOLD = { gank: 1500, teamfight: 2500, baron: 2000, elder: 3000 } as const
+export const LIVE_EVENT_GOLD_TOTAL = 15000
+
+/**
+ * A team this sure to win stops trading and pushes to end: one structure after another with short
+ * gaps, so a decided game doesn't drag on at 90%+. Judged by the game so far (the simulation's
+ * own LOCK_IN formula, where the draft counts little), so a better draft alone never closes a
+ * game and comebacks stay possible. The losing side may surrender instead, like a real FF vote.
+ */
+export const CLOSE_OUT = {
+  chance: 0.93,
+  /** Not before inhibitors can fall, so early leads can still be thrown. */
+  from: 20 * 60,
+  /** Chance per event that the team being closed out surrenders. */
+  surrenderChance: 0.15,
+  gap: { min: 20, max: 35 },
+} as const
 
 /** Extra gold for kills on a leading team: this share of the lead, capped (shutdown bounties). */
 export const BOUNTY = { share: 0.08, max: 1000 } as const

@@ -2,14 +2,15 @@ import { describe, expect, it } from 'vitest'
 import { simulateLiveMatch } from '../match/simulateMatch'
 import { sampleTeams } from '../match/testUtils'
 import type { MatchTeams, Side } from '../match/types'
-import { liveScript } from './liveEvents'
+import { liveEvents } from './liveEvents'
 import { buildLiveReel, liveChances, liveTimeline, mirrorMatch } from './liveReel'
 
 const teams = sampleTeams(5)
 const SEED = 31
 const winners: Side[] = ['blue', 'red', 'red', 'blue']
+const script = liveEvents(SEED, ['gank', 'duel', 'hook', 'smite'])
 const matchAfter = (count: number) =>
-  simulateLiveMatch(teams, SEED, { events: liveScript(SEED), winners: winners.slice(0, count) })
+  simulateLiveMatch(teams, SEED, { events: script, winners: winners.slice(0, count) })
 const swapped: MatchTeams = { blue: teams.red, red: teams.blue }
 
 describe('buildLiveReel', () => {

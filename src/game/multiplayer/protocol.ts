@@ -1,4 +1,5 @@
-import { LANES, type Lane, type Side } from '../match/types'
+import type { Side } from '../match/types'
+import { parseSettings, type LobbySettings } from './settings'
 import { isEncodedTeam, type EncodedTeam } from './teamCode'
 
 /** A random id per browser tab, so two tabs can play each other while testing. */
@@ -17,34 +18,41 @@ export interface PresenceInfo extends PlayerInfo {
   ready: boolean
   /** In a draft or a match right now. */
   playing: boolean
+  /** The lobby settings. Only the host's count; both players see them. */
+  settings?: LobbySettings
 }
 
 /** Spam them. Both players see every one. */
 export const EMOTES = ['GG', 'EZ', 'WP', '?', 'FF', '💀', '😂', '🔥'] as const
 export type Emote = (typeof EMOTES)[number]
 
+/** Limits for mini-game moves from the network: whole numbers (times in ms, gold, packed choices). */
+export const MOVE_LIMITS = { maxValue: 10_000_000, maxStep: 64, maxEvent: 16 } as const
+
 /**
  * Every message in a lobby. The host sends the ones that move the game along (startDraft,
- * startMatch, eventResult) and fills in for a player who doesn't answer in time.
+ * startMatch, eventResult) and fills in moves for a player who doesn't answer in time.
  */
 export type RoomMessage =
-  | { type: 'startDraft'; round: string; seconds: number; players: PlayerInfo[] }
+  | { type: 'startDraft'; round: string; seconds: number; players: PlayerInfo[]; settings: LobbySettings }
   | { type: 'team'; round: string; player: PlayerId; team: EncodedTeam }
   | { type: 'startMatch'; round: string; seed: number; teams: EncodedTeam[] }
+  /** A player reached a live event: the intro with the tutorial is showing. */
   | { type: 'arrived'; round: string; event: number; player: PlayerId }
-  | { type: 'score'; round: string; event: number; player: PlayerId; score: number }
-  | { type: 'hide'; round: string; event: number; bush: Lane }
-  | { type: 'guess'; round: string; event: number; bush: Lane | null }
+  /** A player pressed Ready on the intro. The game starts when both have, or after the intro time. */
+  | { type: 'eventReady'; round: string; event: number; player: PlayerId }
+  /** One mini-game move (see src/game/minigames/versus.ts). */
+  | { type: 'move'; round: string; event: number; player: PlayerId; step: number; value: number }
   | { type: 'eventResult'; round: string; event: number; result: EventResult }
   | { type: 'surrender'; round: string; player: PlayerId }
   | { type: 'emote'; player: PlayerId; emote: Emote }
 
-/** How a live event ended. `scores` for the duels, `bush` and `guess` for the gank. */
+/** How a live event ended: the winning side (a tie goes to a coin flip) and both scores. */
 export interface EventResult {
   winner: Side
-  scores: Record<Side, number> | null
-  bush: Lane | null
-  guess: Lane | null
+  scores: Record<Side, number>
+  /** The scores were equal and a coin flip decided. */
+  tie: boolean
 }
 
 type Fields = Record<string, unknown>
@@ -52,18 +60,17 @@ type Fields = Record<string, unknown>
 const isObject = (value: unknown): value is Fields => typeof value === 'object' && value !== null
 const isString = (value: unknown): value is string => typeof value === 'string' && value.length > 0 && value.length < 100
 const isCount = (value: unknown): value is number => Number.isInteger(value) && (value as number) >= 0
+const isBelow = (limit: number) => (value: unknown): value is number => isCount(value) && value < limit
 const isSide = (value: unknown): value is Side => value === 'blue' || value === 'red'
-const isLane = (value: unknown): value is Lane => typeof value === 'string' && (LANES as readonly string[]).includes(value)
 const isEmote = (value: unknown): value is Emote => typeof value === 'string' && (EMOTES as readonly string[]).includes(value)
-const isScore = (value: unknown): value is number => isCount(value) && (value as number) <= 100
+const isMoveValue = (value: unknown): value is number => isCount(value) && value <= MOVE_LIMITS.maxValue
 
 const isPlayerInfo = (value: unknown): value is PlayerInfo => isObject(value) && isString(value.id) && isString(value.name)
 
 function isEventResult(value: unknown): value is EventResult {
-  if (!isObject(value) || !isSide(value.winner)) return false
-  const { scores, bush, guess } = value
-  const scoresOk = scores === null || (isObject(scores) && isScore(scores.blue) && isScore(scores.red))
-  return scoresOk && (bush === null || isLane(bush)) && (guess === null || isLane(guess))
+  if (!isObject(value) || !isSide(value.winner) || typeof value.tie !== 'boolean') return false
+  const { scores } = value
+  return isObject(scores) && isMoveValue(scores.blue) && isMoveValue(scores.red)
 }
 
 /** Checks a message from the network. Anything malformed (or from an older version) is dropped. */
@@ -71,18 +78,20 @@ export function parseRoomMessage(value: unknown): RoomMessage | null {
   if (!isObject(value)) return null
   const message = value
   const inRound = isString(message.round)
-  const atEvent = inRound && isCount(message.event)
+  const atEvent = inRound && isBelow(MOVE_LIMITS.maxEvent)(message.event)
+  const fromPlayer = isString(message.player)
   switch (message.type) {
     case 'startDraft':
       return inRound &&
         isCount(message.seconds) &&
         Array.isArray(message.players) &&
         message.players.length === 2 &&
-        message.players.every(isPlayerInfo)
+        message.players.every(isPlayerInfo) &&
+        parseSettings(message.settings) !== null
         ? (message as RoomMessage)
         : null
     case 'team':
-      return inRound && isString(message.player) && isEncodedTeam(message.team) ? (message as RoomMessage) : null
+      return inRound && fromPlayer && isEncodedTeam(message.team) ? (message as RoomMessage) : null
     case 'startMatch':
       return inRound &&
         isCount(message.seed) &&
@@ -92,19 +101,18 @@ export function parseRoomMessage(value: unknown): RoomMessage | null {
         ? (message as RoomMessage)
         : null
     case 'arrived':
-      return atEvent && isString(message.player) ? (message as RoomMessage) : null
-    case 'score':
-      return atEvent && isString(message.player) && isScore(message.score) ? (message as RoomMessage) : null
-    case 'hide':
-      return atEvent && isLane(message.bush) ? (message as RoomMessage) : null
-    case 'guess':
-      return atEvent && (message.bush === null || isLane(message.bush)) ? (message as RoomMessage) : null
+    case 'eventReady':
+      return atEvent && fromPlayer ? (message as RoomMessage) : null
+    case 'move':
+      return atEvent && fromPlayer && isBelow(MOVE_LIMITS.maxStep)(message.step) && isMoveValue(message.value)
+        ? (message as RoomMessage)
+        : null
     case 'eventResult':
       return atEvent && isEventResult(message.result) ? (message as RoomMessage) : null
     case 'surrender':
-      return inRound && isString(message.player) ? (message as RoomMessage) : null
+      return inRound && fromPlayer ? (message as RoomMessage) : null
     case 'emote':
-      return isString(message.player) && isEmote(message.emote) ? (message as RoomMessage) : null
+      return fromPlayer && isEmote(message.emote) ? (message as RoomMessage) : null
     default:
       return null
   }
@@ -115,7 +123,9 @@ export function parsePresence(value: unknown): PresenceInfo | null {
   const fields = value as unknown as Fields
   const { joinedAt, ready, playing } = fields
   if (typeof joinedAt !== 'number' || typeof ready !== 'boolean' || typeof playing !== 'boolean') return null
-  return { id: value.id, name: value.name, joinedAt, ready, playing }
+  const settings = fields.settings === undefined ? undefined : parseSettings(fields.settings)
+  if (settings === null) return null
+  return { id: value.id, name: value.name, joinedAt, ready, playing, ...(settings ? { settings } : {}) }
 }
 
 /**

@@ -124,6 +124,8 @@ export interface ScriptedEvent {
   time: number
   ganker: Side
   lane: Lane
+  /** Extra gold for the side that wins the event, on top of what the event itself is worth. */
+  gold: number
 }
 
 /**

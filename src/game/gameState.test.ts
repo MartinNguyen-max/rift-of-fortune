@@ -241,3 +241,52 @@ describe('Match vs Bots: items lock for the reroll step', () => {
     expect(canRerollItem(state, '9')).toBe(true)
   })
 })
+
+describe('gameReducer: fast pace', () => {
+  const fast = { championRerolls: 3, itemRerolls: 3, pace: 'fast' as const }
+  const roles: Role[] = ['TOP', 'JUNGLE', 'MIDDLE', 'BOTTOM', 'SUPPORT']
+  const offer = roles.map((role) => makeChampion({ id: `Champ${role}` }))
+  const items = Array.from({ length: 10 }, (_, index) => makeItem({ id: `${index}` }))
+
+  function placeAll(state: GameState): GameState {
+    return roles.reduce(
+      (current, role, index) => gameReducer(current, { type: 'placeOffered', championId: offer[index]?.id ?? '', role }),
+      state,
+    )
+  }
+
+  it('offers five champions at once and never rolls', () => {
+    const state = initialGameState(fast, offer)
+    expect(state.offer).toHaveLength(5)
+    expect(canRoll(state)).toBe(false)
+    expect(initialGameState(MATCH_RULES).offer).toBeUndefined()
+  })
+
+  it('places an offered champion in any empty role, once', () => {
+    const state = initialGameState(fast, offer)
+    const placed = gameReducer(state, { type: 'placeOffered', championId: 'ChampTOP', role: 'SUPPORT' })
+    expect(placed.team.SUPPORT?.id).toBe('ChampTOP')
+    expect(placed.offer).toHaveLength(4)
+    expect(gameReducer(placed, { type: 'placeOffered', championId: 'ChampJUNGLE', role: 'SUPPORT' })).toBe(placed)
+    expect(gameReducer(placed, { type: 'placeOffered', championId: 'ChampTOP', role: 'TOP' })).toBe(placed)
+  })
+
+  it('hands out all ten items at once, revealed, in one round', () => {
+    const drafted = placeAll(initialGameState(fast, offer))
+    const started = gameReducer(drafted, { type: 'startItems', items })
+    expect(started.itemsRevealed).toBe(true)
+    let state = started
+    items.forEach((item, index) => {
+      state = gameReducer(state, { type: 'assignItem', itemId: item.id, role: roles[Math.floor(index / 2)] ?? 'TOP' })
+    })
+    expect(canStartNextItemRound(state)).toBe(false)
+    expect(canFinish(state)).toBe(true)
+  })
+
+  it('offers new champions on reset', () => {
+    const placed = placeAll(initialGameState(fast, offer))
+    const fresh = gameReducer(placed, { type: 'reset', offer: offer.slice(0, 5) })
+    expect(fresh.offer).toHaveLength(5)
+    expect(fresh.team.TOP).toBeNull()
+  })
+})

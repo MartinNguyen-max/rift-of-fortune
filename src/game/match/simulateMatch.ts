@@ -4,6 +4,7 @@ import { ROLES } from '../roles'
 import {
   BOUNTY,
   BUFF_EDGE,
+  CLOSE_OUT,
   DRAGONS_FOR_SOUL,
   FAILED_GANK_KILL_CHANCE,
   GANK_BONUS,
@@ -11,7 +12,6 @@ import {
   GOLD_SCALE,
   KILL_SPREAD,
   LANE_TOWERS,
-  LIVE_EVENT_GOLD,
   LANE_WEIGHT,
   LOCK_IN,
   LUCK_SHARE,
@@ -155,9 +155,12 @@ class Simulation {
     this.time = this.between(MATCH_TIMES.firstEvent)
     while (this.winner === null) {
       if (!this.playLiveEvents()) break
-      this.step()
-      if (this.winner === null) this.maybeSurrender()
-      this.time += this.between(this.time < MATCH_TIMES.laningEnd ? MATCH_TIMES.laningGap : MATCH_TIMES.lateGap)
+      const closer = this.closer()
+      if (closer) this.push(closer, 'big')
+      else this.step()
+      if (this.winner === null) this.maybeSurrender(closer)
+      const gap = closer ? CLOSE_OUT.gap : this.time < MATCH_TIMES.laningEnd ? MATCH_TIMES.laningGap : MATCH_TIMES.lateGap
+      this.time += this.between(gap)
     }
     const last = this.events[this.events.length - 1]
     return {
@@ -193,7 +196,7 @@ class Simulation {
   }
 
   private playLiveEvent(event: ScriptedEvent, winner: Side) {
-    this.sides[winner].gold += LIVE_EVENT_GOLD[event.kind]
+    this.sides[winner].gold += event.gold
     this.scripted.push(this.events.length)
     switch (event.kind) {
       case 'gank':
@@ -207,9 +210,28 @@ class Simulation {
     }
   }
 
-  /** The game can't end while live events are still to come. */
-  private liveEventsLeft(): boolean {
-    return this.scriptIndex < this.script.events.length
+  /**
+   * The game can end once no live event is left, or once the events left can't change who won
+   * the most of them (2–0 with one to go).
+   */
+  private canEnd(): boolean {
+    const left = this.script.events.length - this.scriptIndex
+    if (left === 0) return true
+    const played = this.script.winners.slice(0, this.scriptIndex)
+    const blue = played.filter((side) => side === 'blue').length
+    return Math.abs(blue - (played.length - blue)) > left
+  }
+
+  /**
+   * The side that is sure enough to win that it pushes to end the game now, if any. Judged by the
+   * game so far, where the draft counts little, so a better draft alone never closes a game.
+   */
+  private closer(): Side | null {
+    if (this.time < CLOSE_OUT.from || !this.canEnd()) return null
+    const chance = blueWinChance(this.teams, this.scoreboard(), LOCK_IN.weights)
+    if (chance >= CLOSE_OUT.chance) return 'blue'
+    if (1 - chance >= CLOSE_OUT.chance) return 'red'
+    return null
   }
 
   private liveEventAhead(kind: ScriptedEvent['kind']): boolean {
@@ -602,7 +624,7 @@ class Simulation {
     const inhibitorsOpen = this.time >= MATCH_TIMES.inhibitorsFrom && state.towers >= TOWERS_FOR_INHIBITOR
     const baseSpot: MapSpot = side === 'blue' ? 'redBase' : 'blueBase'
 
-    if (power === 'big' && state.inhibitors > 0 && !this.liveEventsLeft()) {
+    if (power === 'big' && state.inhibitors > 0 && this.canEnd()) {
       state.towers += NEXUS_TOWERS
       this.winner = side
       return this.addEvent({ kind: 'nexus', side, actor: null, tags: [], big: true, spot: baseSpot })
@@ -615,10 +637,14 @@ class Simulation {
     if (state.towers < LANE_TOWERS) this.takeTower(side, pickRandom(LANES, this.random), false)
   }
 
-  private maybeSurrender() {
-    if (this.time < MATCH_TIMES.surrenderFrom || this.liveEventsLeft()) return
-    const leader: Side = this.goldLead('blue') >= 0 ? 'blue' : 'red'
-    if (this.goldLead(leader) < SURRENDER.lead || this.random() >= SURRENDER.chance) return
+  /** A team far behind in gold may give up, and so may a team being closed out. */
+  private maybeSurrender(closer: Side | null) {
+    if (!this.canEnd()) return
+    const goldLeader: Side = this.goldLead('blue') >= 0 ? 'blue' : 'red'
+    const fedUp = this.time >= MATCH_TIMES.surrenderFrom && this.goldLead(goldLeader) >= SURRENDER.lead
+    const leader = closer ?? (fedUp ? goldLeader : null)
+    if (!leader || this.time < MATCH_TIMES.surrenderFrom) return
+    if (this.random() >= (closer ? CLOSE_OUT.surrenderChance : SURRENDER.chance)) return
     this.time += this.between(MATCH_TIMES.followUp)
     this.winner = leader
     this.addEvent({ kind: 'surrender', side: leader, actor: null, tags: [], big: true, spot: leader === 'blue' ? 'redBase' : 'blueBase' })

@@ -14,9 +14,9 @@ export function drawItems(pool: readonly Item[], random?: RandomFn): Item[] {
   return sample(pool, ITEM_COUNT, random)
 }
 
-/** The items rolled in a given round (1-based). */
-export function itemsInRound(items: readonly Item[], round: number): Item[] {
-  return items.slice((round - 1) * ITEMS_PER_ROUND, round * ITEMS_PER_ROUND)
+/** The items rolled in a given round (1-based). The fast pace hands out all of them in one round. */
+export function itemsInRound(items: readonly Item[], round: number, perRound = ITEMS_PER_ROUND): Item[] {
+  return items.slice((round - 1) * perRound, round * perRound)
 }
 
 export function itemsForRole(items: readonly Item[], assignments: ItemAssignments, role: Role): Item[] {

@@ -1,40 +1,36 @@
-import type { Lane, Side } from '../match/types'
-import { pickRandom, type RandomFn } from '../random'
-import { LANES } from '../match/types'
-import { duelWinner, gankWinner, LIVE_EVENT_COUNT, LIVE_EVENTS, liveScript } from './liveEvents'
+import type { Side } from '../match/types'
+import { MINI_GAME_RULES } from '../minigames/registry'
+import { withMove, type BothMoves, type Moves } from '../minigames/versus'
+import type { RandomFn } from '../random'
+import { eventSetup, eventWinner, liveEvents, type LiveEvent } from './liveEvents'
 import type { EventResult, PlayerId, PlayerInfo, RoomMessage } from './protocol'
+import type { LobbySettings } from './settings'
 import type { EncodedTeam } from './teamCode'
-import { ULT } from './ult'
-
-/** The "Get ready" screen before each mini-game, and the 3-2-1 after it, in seconds. */
-const INTRO_SECONDS = 5
-const COUNTDOWN_SECONDS = 4
 
 /** Seconds for each step. Players get a little extra time (`grace`) for slow connections. */
 export const TIMINGS = {
-  draft: 90,
   draftGrace: 5,
   versus: 10,
-  /** The "Get ready" screen before each mini-game, with one line on what to do. */
-  intro: INTRO_SECONDS,
-  /** Hiding and guessing in the gank. */
-  gankHide: 12,
-  gankGuess: 12,
-  /** The longest a smite duel or the ult bar can take, plus the intro and the 3-2-1. */
-  duel: INTRO_SECONDS + COUNTDOWN_SECONDS + Math.max(16, ULT.seconds),
-  /** How long the host waits for a player who is still connected but hasn't answered. */
-  eventGrace: 15,
+  /** The intro before each live event: it ends when both press Ready, or after this. */
+  intro: 10,
+  /** How long the host waits past a mini-game's time limit before filling in missing moves. */
+  eventGrace: 6,
+  /** A player gone this long gets poor moves filled in, so the other never waits for nothing. */
+  offline: 3,
+  /** A player gone this long has surrendered. */
+  gone: 30,
 } as const
 
 export interface LiveEventState {
-  /** When the first player reached this event (local time, ms). Starts the host's timeouts. */
+  /** When the first player reached this event (local time, ms). */
   openedAt: number | null
   arrived: PlayerId[]
-  scores: Partial<Record<PlayerId, number>>
-  bush: Lane | null
-  hiddenAt: number | null
-  /** undefined: not guessed yet; null: ran out of time. */
-  guess: Lane | null | undefined
+  /** Players who pressed Ready on the intro. */
+  ready: PlayerId[]
+  /** When both had pressed Ready (local time, ms). */
+  readyAt: number | null
+  /** The mini-game moves by player: 0 the host (blue), 1 the guest (red). */
+  moves: BothMoves
   result: EventResult | null
 }
 
@@ -43,6 +39,7 @@ export interface RoundState {
   id: string
   /** Blue (the host) first. */
   players: PlayerInfo[]
+  settings: LobbySettings
   draftSeconds: number
   startedAt: number
   teams: Partial<Record<PlayerId, EncodedTeam>>
@@ -55,10 +52,9 @@ export interface RoundState {
 const emptyEvent = (): LiveEventState => ({
   openedAt: null,
   arrived: [],
-  scores: {},
-  bush: null,
-  hiddenAt: null,
-  guess: undefined,
+  ready: [],
+  readyAt: null,
+  moves: [[], []],
   result: null,
 })
 
@@ -68,6 +64,17 @@ export function sideOf(round: Pick<RoundState, 'players'>, player: PlayerId): Si
 
 export function playerOn(round: Pick<RoundState, 'players'>, side: Side): PlayerInfo | undefined {
   return round.players[side === 'blue' ? 0 : 1]
+}
+
+/** A player's index in the mini-games: 0 for the host, 1 for the guest, or null for a stranger. */
+export function playerIndex(round: Pick<RoundState, 'players'>, player: PlayerId): 0 | 1 | null {
+  const index = round.players.findIndex(({ id }) => id === player)
+  return index === 0 || index === 1 ? index : null
+}
+
+/** The live events of the round's match, or none before the match starts. */
+export function roundEvents(round: Pick<RoundState, 'match' | 'settings'>): LiveEvent[] {
+  return round.match ? liveEvents(round.match.seed, round.settings.games) : []
 }
 
 const updateEvent = (round: RoundState, index: number, update: (event: LiveEventState) => LiveEventState): RoundState => {
@@ -88,11 +95,12 @@ export function roundReducer(round: RoundState | null, message: RoomMessage, now
     return {
       id: message.round,
       players: message.players,
+      settings: message.settings,
       draftSeconds: message.seconds,
       startedAt: now,
       teams: {},
       match: null,
-      events: Array.from({ length: LIVE_EVENT_COUNT }, emptyEvent),
+      events: Array.from({ length: message.settings.games.length }, emptyEvent),
       surrendered: null,
     }
   }
@@ -110,20 +118,22 @@ export function roundReducer(round: RoundState | null, message: RoomMessage, now
         openedAt: event.openedAt ?? now,
         arrived: event.arrived.includes(message.player) ? event.arrived : [...event.arrived, message.player],
       }))
-    case 'score':
-      return updateEvent(round, message.event, (event) =>
-        event.scores[message.player] === undefined
-          ? { ...event, scores: { ...event.scores, [message.player]: message.score } }
-          : event,
-      )
-    case 'hide':
-      return updateEvent(round, message.event, (event) =>
-        event.bush === null ? { ...event, bush: message.bush, hiddenAt: now } : event,
-      )
-    case 'guess':
-      return updateEvent(round, message.event, (event) =>
-        event.bush !== null && event.guess === undefined ? { ...event, guess: message.bush } : event,
-      )
+    case 'eventReady':
+      if (!isPlayer(round, message.player)) return round
+      return updateEvent(round, message.event, (event) => {
+        if (event.ready.includes(message.player)) return event
+        const ready = [...event.ready, message.player]
+        return { ...event, openedAt: event.openedAt ?? now, ready, readyAt: ready.length >= 2 ? now : null }
+      })
+    case 'move': {
+      const player = playerIndex(round, message.player)
+      if (player === null) return round
+      return updateEvent(round, message.event, (event) => {
+        const moves: [Moves, Moves] = [event.moves[0], event.moves[1]]
+        moves[player] = withMove(event.moves[player], message.step, message.value)
+        return { ...event, moves }
+      })
+    }
     case 'eventResult':
       return updateEvent(round, message.event, (event) => ({ ...event, result: message.result }))
     case 'surrender':
@@ -141,10 +151,18 @@ export function decidedWinners(round: RoundState): Side[] {
   return winners
 }
 
+/** When a live event's game starts: once both are ready, or when the intro time is up. */
+export function eventStart(event: Pick<LiveEventState, 'openedAt' | 'readyAt'>): number | null {
+  if (event.readyAt !== null) return event.readyAt
+  return event.openedAt === null ? null : event.openedAt + TIMINGS.intro * 1000
+}
+
 export interface HostContext {
   now: number
   /** Ids of the players connected right now. */
   online: readonly PlayerId[]
+  /** When each player who is not connected was last seen (local time, ms). */
+  goneSince: Partial<Record<PlayerId, number>>
   random: RandomFn
   /** A random full team, for a player who never sent theirs. */
   randomTeam: () => EncodedTeam
@@ -152,59 +170,56 @@ export interface HostContext {
 
 const seconds = (value: number) => value * 1000
 
+const goneFor = (player: PlayerId, limit: number, { now, goneSince }: HostContext): boolean => {
+  const since = goneSince[player]
+  return since !== undefined && now - since >= seconds(limit)
+}
+
 /**
- * What the host sends next, if anything: start the match once both teams are in (or the draft
- * time is up), and settle each live event once both players answered (or ran out of time).
- * A player who is gone never holds the game up; they simply score 0.
+ * What the host sends next, if anything: a surrender for a player gone too long, the match start
+ * once both teams are in (or the draft time is up), and each live event's result once the
+ * mini-game is decided. A player who is gone or out of time never holds the game up: the host
+ * fills in their missing moves with poor ones.
  */
 export function hostMessages(round: RoundState, context: HostContext): RoomMessage[] {
   if (round.surrendered) return []
+  const gone = round.players.find(({ id }) => goneFor(id, TIMINGS.gone, context))
+  if (gone) return [{ type: 'surrender', round: round.id, player: gone.id }]
   if (!round.match) return draftMessages(round, context)
   const index = round.events.findIndex((event) => !event.result)
   const event = round.events[index]
-  if (!event) return []
-  const kind = LIVE_EVENTS[index]?.kind
-  return kind === 'gank' ? gankMessages(round, index, event, context) : duelMessages(round, index, event, context)
+  return event ? eventMessages(round, index, event, context) : []
 }
 
 function draftMessages(round: RoundState, { now, online, random, randomTeam }: HostContext): RoomMessage[] {
   const timeUp = now >= round.startedAt + seconds(round.draftSeconds + TIMINGS.draftGrace)
-  const teams = round.players.map(({ id }) =>
-    round.teams[id] ?? (timeUp || !online.includes(id) ? randomTeam() : undefined),
-  )
+  const teams = round.players.map(({ id }) => round.teams[id] ?? (timeUp || !online.includes(id) ? randomTeam() : undefined))
   if (!teams.every((team) => team !== undefined)) return []
   return [{ type: 'startMatch', round: round.id, seed: Math.floor(random() * 2 ** 32), teams }]
 }
 
-/** A player is waited for while connected and still within the time limit. */
-function waitingFor(player: PlayerId, since: number | null, limit: number, { now, online }: HostContext): boolean {
-  if (!online.includes(player)) return false
-  return since === null || now < since + seconds(limit + TIMINGS.eventGrace)
-}
+function eventMessages(round: RoundState, index: number, event: LiveEventState, context: HostContext): RoomMessage[] {
+  const live = roundEvents(round)[index]
+  const start = eventStart(event)
+  if (!round.match || !live || start === null) return []
+  const rules = MINI_GAME_RULES[live.game]
+  const setup = eventSetup(round.match.seed, index, live.late, round.settings.bothRoles)
 
-function duelMessages(round: RoundState, index: number, event: LiveEventState, context: HostContext): RoomMessage[] {
-  if (event.openedAt === null || !round.match) return []
-  const [blue, red] = round.players
-  if (!blue || !red) return []
-  const missing = [blue, red].filter(({ id }) => event.scores[id] === undefined)
-  if (missing.some(({ id }) => waitingFor(id, event.openedAt, TIMINGS.duel, context))) return []
-  const scores = { blue: event.scores[blue.id] ?? 0, red: event.scores[red.id] ?? 0 }
-  const winner = duelWinner(scores, round.match.seed, index)
-  return [{ type: 'eventResult', round: round.id, event: index, result: { winner, scores, bush: null, guess: null } }]
-}
-
-function gankMessages(round: RoundState, index: number, event: LiveEventState, context: HostContext): RoomMessage[] {
-  if (event.openedAt === null || !round.match) return []
-  const { ganker } = liveScript(round.match.seed)[index] ?? { ganker: 'blue' as Side }
-  const gankerId = playerOn(round, ganker)?.id ?? ''
-  const defenderId = playerOn(round, ganker === 'blue' ? 'red' : 'blue')?.id ?? ''
-
-  if (event.bush === null) {
-    if (waitingFor(gankerId, event.openedAt, TIMINGS.intro + TIMINGS.gankHide, context)) return []
-    return [{ type: 'hide', round: round.id, event: index, bush: pickRandom(LANES, context.random) }]
+  const settled = rules.settle(event.moves, setup)
+  if (settled) {
+    const result: EventResult = {
+      winner: eventWinner(settled.winner, round.match.seed, index),
+      scores: { blue: settled.scores[0], red: settled.scores[1] },
+      tie: settled.winner === null,
+    }
+    return [{ type: 'eventResult', round: round.id, event: index, result }]
   }
-  if (event.guess === undefined && waitingFor(defenderId, event.hiddenAt, TIMINGS.intro + TIMINGS.gankGuess, context)) return []
-  const guess = event.guess ?? null
-  const result: EventResult = { winner: gankWinner(ganker, event.bush, guess), scores: null, bush: event.bush, guess }
-  return [{ type: 'eventResult', round: round.id, event: index, result }]
+
+  const timeUp = context.now >= start + seconds(rules.liveSeconds(setup) + TIMINGS.eventGrace)
+  return rules.owed(event.moves, setup).flatMap((owed) => {
+    const player = round.players[owed.player]
+    if (!player || !(timeUp || goneFor(player.id, TIMINGS.offline, context))) return []
+    const value = rules.fallback(owed, event.moves, setup)
+    return [{ type: 'move', round: round.id, event: index, player: player.id, step: owed.step, value } satisfies RoomMessage]
+  })
 }

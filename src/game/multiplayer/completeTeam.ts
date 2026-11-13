@@ -14,11 +14,16 @@ interface GameDataPools {
 
 /**
  * The draft timer ran out: keeps everything the player already did and fills in the rest at random.
- * The rolled champion goes into a random empty role, empty roles get random champions, and items
+ * Offered champions (fast pace) and the rolled champion go into random empty roles, empty roles get random champions, and items
  * still in the pool go to random champions with room. `null` drafts a whole random team.
  */
 export function completeTeam(state: GameState | null, data: GameDataPools, random: RandomFn): TeamMember[] {
   const team: Team = { ...(state?.team ?? emptyTeam()) }
+  // Fast pace: the champions still on offer go into the empty roles first.
+  for (const champion of sample(state?.offer ?? [], state?.offer?.length ?? 0, random)) {
+    const [role] = sample(emptyRoles(team), 1, random)
+    if (role) team[role] = champion
+  }
   const rolled = state?.rolled?.champion
   if (rolled) {
     const [role] = sample(emptyRoles(team), 1, random)
