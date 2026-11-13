@@ -8,7 +8,7 @@ import { playSound } from '../../services/sound'
 import { SIDE_TEXT } from '../match/matchStyles'
 import { RiftMap } from '../RiftMap'
 import { RoleSlot } from '../RoleSlot'
-import { useCountdown } from './useCountdown'
+import { useCountdown } from '../useCountdown'
 
 interface VersusScreenProps {
   /** Your team on blue. */

@@ -165,5 +165,13 @@ export const forgeRules = (items: readonly Item[], components: readonly ItemComp
   botMove: (step, _moves, { seed, variant }) =>
     step === 0 ? Math.round((botForgeTimes(seed, forgeOrders(seed, items, components, variant)).at(-1) ?? 0) * 1000) : undefined,
   formatScore: (ms) => (ms >= FORGE_LIMIT_SECONDS * 1000 ? 'Not finished' : `${(ms / 1000).toFixed(2)} s`),
-  best: { of: (moves) => moves[0][0] ?? null, lowerIsBetter: true, format: (ms) => `${(ms / 1000).toFixed(2)} s` },
+  best: {
+    // An unfinished forge is no record.
+    of: (moves) => {
+      const ms = moves[0][0]
+      return ms !== undefined && ms < FORGE_LIMIT_SECONDS * 1000 ? ms : null
+    },
+    lowerIsBetter: true,
+    format: (ms) => `${(ms / 1000).toFixed(2)} s`,
+  },
 })

@@ -1,97 +1,108 @@
-import { AnimatePresence, motion } from 'framer-motion'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { motion } from 'framer-motion'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { championLoadingUrl } from '../../data'
 import {
-  bestReactionMs,
-  duelRoundResult,
-  duelRounds,
+  drawTimes,
+  DUEL_MAX_ROUNDS,
+  duelResults,
   duelWinner,
-  roundEndsAt,
-  type DuelRound,
+  NO_SHOT,
+  SHOT_WINDOW,
   type DuelRoundResult,
 } from '../../game/minigames/duel'
-import { usePressKey, useStopwatch } from '../multiplayer/games/useStopwatch'
-import type { MiniGameProps } from './MiniGameShell'
-import { SKINS } from './miniGameArt'
+import { other, type Player } from '../../game/minigames/versus'
+import { championIconById, SKINS } from './miniGameArt'
+import { BigCall, ContestantTag, Waiting } from './parts'
+import { useShownWhen } from './timing'
+import type { Contestant, MiniGameViewProps, TutorialArtProps } from './types'
+import { usePressKey, useStopwatch } from './useStopwatch'
 
 /** Seconds the round result stays up before the next standoff. */
-const BETWEEN_ROUNDS = 2.2
+const BETWEEN_ROUNDS = 2.4
 /** "Ready..." shows for this long, then "Steady..." until DRAW. */
 const READY_SECONDS = 1
 
-const REASONS: Record<DuelRoundResult['reason'], string> = {
-  faster: 'Bang! Headshot.',
-  slower: 'Jhin was faster. “And now... four.”',
-  'player-early': 'You shot before DRAW. Not very sheriff of you.',
-  'bot-early': 'Jhin fired early. Art can’t be rushed, Jhin.',
-}
-
-const formatMs = (seconds: number | null) => (seconds === null ? '—' : `${Math.round(seconds * 1000)} ms`)
+const formatMs = (ms: number | null) => (ms === null ? '—' : `${ms} ms`)
 
 /** Sheriff Caitlyn vs High Noon Jhin: wait for DRAW, then shoot first. Best of 3. */
-export function DuelGame({ seed, onFinish }: MiniGameProps) {
-  const rounds = useMemo(() => duelRounds(seed), [seed])
-  const [results, setResults] = useState<DuelRoundResult[]>([])
-  const [standoff, setStandoff] = useState(true)
-  const round = rounds[results.length]
-  const last = results.at(-1)
-  const winner = duelWinner(results)
+export function DuelGame({ setup, me, moves, sendMove, onShown, players }: MiniGameViewProps) {
+  const them = other(me)
+  const draws = useMemo(() => drawTimes(setup.seed), [setup.seed])
+  const results = useMemo(() => duelResults(moves, setup.seed), [moves, setup.seed])
+  const over = duelWinner(results) !== null
+  /** Rounds whose result has been shown. */
+  const [seen, setSeen] = useState(0)
+  const showing = results[seen]
 
-  const resolve = useCallback(
-    (shotAt: number | null) => {
-      if (!round) return
-      setStandoff(false)
-      setResults((done) => [...done, duelRoundResult(round, shotAt)])
-    },
-    [round],
-  )
-
-  // After a round: the next standoff, or the end of the duel.
   useEffect(() => {
-    if (standoff || results.length === 0) return
-    const id = window.setTimeout(() => {
-      if (!winner) {
-        setStandoff(true)
-        return
-      }
-      const wins = results.filter((result) => result.winner === 'player').length
-      const best = (side: 'player' | 'bot') => {
-        const ms = bestReactionMs(results, side)
-        return ms === null ? '' : ` · best ${ms} ms`
-      }
-      onFinish({ winner, player: `${wins} won${best('player')}`, bot: `${results.length - wins} won${best('bot')}` })
-    }, BETWEEN_ROUNDS * 1000)
+    if (!showing) return
+    const id = window.setTimeout(() => setSeen(seen + 1), BETWEEN_ROUNDS * 1000)
     return () => window.clearTimeout(id)
-  }, [standoff, results, winner, onFinish])
+  }, [showing, seen])
+  useShownWhen(over && seen >= results.length, onShown, 200)
+
+  const round = seen
+  const drawAt = draws[round]
+  const myShot = moves[me][round]
+  const shoot = useCallback((ms: number) => sendMove(round, ms), [sendMove, round])
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <RoundDots results={results} />
-      {standoff && round ? (
-        <Standoff key={results.length} round={round} onResolve={resolve} />
+      <div className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-2">
+        <ContestantTag contestant={players[me]} you value={`${seenWins(results, seen, me)}`} />
+        <RoundDots results={results.slice(0, seen)} me={me} />
+        <ContestantTag contestant={players[them]} you={false} value={`${seenWins(results, seen, them)}`} />
+      </div>
+      {showing ? (
+        <Arena call={null} drawn={false} result={showing} me={me} them={players[them]} onShoot={() => {}} />
+      ) : drawAt !== undefined && !over && myShot === undefined ? (
+        <Standoff key={round} drawAt={drawAt} theirShot={moves[them][round]} me={me} them={players[them]} onShoot={shoot} />
       ) : (
-        <Arena call={null} drawn={false} result={last ?? null} onShoot={() => {}} />
+        <Arena call={null} drawn={false} result={null} me={me} them={players[them]} onShoot={() => {}} />
       )}
+      {!showing && !over && myShot !== undefined && <Waiting name={players[them].name} />}
       <p className="text-sm text-gold-light/60">Click, tap or press Space to shoot. Only after DRAW!</p>
     </div>
   )
 }
 
-/** One round, from "Ready..." until someone shoots. Mounted fresh each round so its clock starts at 0. */
-function Standoff({ round, onResolve }: { round: DuelRound; onResolve: (shotAt: number | null) => void }) {
+const seenWins = (results: readonly DuelRoundResult[], seen: number, player: Player) =>
+  results.slice(0, seen).filter(({ winner }) => winner === player).length
+
+interface StandoffProps {
+  drawAt: number
+  /** The opponent's shot this round, once known (the bot's is known up front). */
+  theirShot: number | undefined
+  me: Player
+  them: Contestant
+  onShoot: (ms: number) => void
+}
+
+/** One round, from "Ready..." until you shoot. Mounted fresh each round so its clock starts at 0. */
+function Standoff({ drawAt, theirShot, me, them, onShoot }: StandoffProps) {
   const { seconds, read } = useStopwatch(true)
-  const shoot = useCallback(() => onResolve(read()), [onResolve, read])
+  const fired = useRef(false)
+  const fire = useCallback(
+    (ms: number) => {
+      if (fired.current) return
+      fired.current = true
+      onShoot(ms)
+    },
+    [onShoot],
+  )
+  const shoot = useCallback(() => fire(Math.round(read() * 1000)), [fire, read])
   usePressKey(shoot, true)
 
-  // The bot's shot ends the round if the player hasn't shot yet.
+  // Too slow: the round is over once the opponent has shot (or jumped the gun), or the window closes.
+  const deadline = Math.min(drawAt + SHOT_WINDOW * 1000, theirShot ?? Infinity)
   useEffect(() => {
-    const id = window.setTimeout(() => onResolve(null), roundEndsAt(round) * 1000)
+    const id = window.setTimeout(() => fire(NO_SHOT), Math.max(0, deadline - read() * 1000))
     return () => window.clearTimeout(id)
-  }, [round, onResolve])
+  }, [deadline, read, fire])
 
-  const drawn = seconds >= round.drawAt
+  const drawn = seconds * 1000 >= drawAt
   const call = drawn ? 'DRAW!' : seconds < READY_SECONDS ? 'Ready...' : 'Steady...'
-  return <Arena call={call} drawn={drawn} result={null} onShoot={shoot} />
+  return <Arena call={call} drawn={drawn} result={null} me={me} them={them} onShoot={shoot} />
 }
 
 interface ArenaProps {
@@ -99,54 +110,56 @@ interface ArenaProps {
   drawn: boolean
   /** The round just played, shown between rounds. */
   result: DuelRoundResult | null
+  me: Player
+  them: Contestant
   onShoot: () => void
 }
 
-function Arena({ call, drawn, result, onShoot }: ArenaProps) {
+function Arena({ call, drawn, result, me, them, onShoot }: ArenaProps) {
+  const won = result?.winner === me
   return (
-    <div
+    <motion.div
       role="button"
       tabIndex={0}
       aria-label="Shoot"
       onPointerDown={onShoot}
+      animate={result ? { x: [0, -10, 10, -6, 6, 0] } : { x: 0 }}
+      transition={{ duration: 0.35 }}
       className={`relative flex h-72 w-full cursor-crosshair touch-manipulation items-end justify-between overflow-hidden rounded-lg border-2 select-none sm:h-80 ${
-        drawn ? 'border-red-500' : 'border-gold/40'
+        drawn ? 'border-red-500' : result ? (won ? 'border-gold' : 'border-red-500') : 'border-gold/40'
       } bg-linear-to-b from-orange-300/30 via-amber-700/30 to-yellow-950/70`}
     >
       <div className="absolute top-6 left-1/2 size-24 -translate-x-1/2 rounded-full bg-amber-200/40 blur-md" aria-hidden="true" />
       <Duelist
         src={championLoadingUrl('Caitlyn', SKINS.sheriffCaitlyn)}
         alt="Sheriff Caitlyn"
-        fell={result?.winner === 'bot'}
-        fired={result?.reason === 'faster'}
+        fell={result !== null && !won}
+        fired={result !== null && won && result.reason === 'faster'}
       />
-      <div className="absolute inset-x-0 top-1/3 flex flex-col items-center" aria-live="assertive">
-        <AnimatePresence mode="popLayout">
-          {call && (
-            <motion.span
-              key={call}
-              initial={{ scale: drawn ? 2.5 : 1.3, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: drawn ? 0.08 : 0.3 }}
-              className={`font-display font-black drop-shadow-[0_2px_6px_rgb(0_0_0/0.9)] ${
-                drawn ? 'text-7xl text-red-500 sm:text-8xl' : 'text-4xl text-gold-light'
-              }`}
-            >
-              {call}
-            </motion.span>
-          )}
-        </AnimatePresence>
-        {result && <RoundCall result={result} />}
+      <div className="absolute inset-x-0 top-1/4 flex flex-col items-center" aria-live="assertive">
+        {call && (
+          <motion.span
+            key={call}
+            initial={{ scale: drawn ? 2.5 : 1.3, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: drawn ? 0.08 : 0.3 }}
+            className={`font-display font-black drop-shadow-[0_2px_6px_rgb(0_0_0/0.9)] ${
+              drawn ? 'text-7xl text-red-500 sm:text-8xl' : 'text-4xl text-gold-light'
+            }`}
+          >
+            {call}
+          </motion.span>
+        )}
       </div>
+      {result && <RoundCall result={result} me={me} them={them} />}
       <Duelist
         src={championLoadingUrl('Jhin', SKINS.highNoonJhin)}
         alt="High Noon Jhin"
         mirrored
-        fell={result?.winner === 'player'}
-        fired={result?.reason === 'slower'}
+        fell={result !== null && won}
+        fired={result !== null && !won && result.reason === 'faster'}
       />
-    </div>
+    </motion.div>
   )
 }
 
@@ -176,30 +189,78 @@ function Duelist({ src, alt, mirrored = false, fell, fired }: { src: string; alt
   )
 }
 
-function RoundCall({ result }: { result: DuelRoundResult }) {
+function reason(result: DuelRoundResult, won: boolean, them: Contestant): string {
+  if (result.reason === 'early') return won ? `${them.name} shot before DRAW!` : 'You shot before DRAW!'
+  if (won) return 'Bang! Headshot.'
+  return them.isBot ? 'Jhin was faster. “And now... four.”' : `${them.name} was faster.`
+}
+
+/** The round result: a huge WON or LOST that slams in, why, and both reaction times. */
+function RoundCall({ result, me, them }: { result: DuelRoundResult; me: Player; them: Contestant }) {
+  const won = result.winner === me
+  const mine = result.reactions[me]
+  const theirs = result.reactions[other(me)]
   return (
-    <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="mt-2 flex flex-col items-center gap-1 px-2 text-center">
-      <p className={`font-display text-2xl font-black ${result.winner === 'player' ? 'text-gold' : 'text-red-400'} drop-shadow-[0_2px_4px_rgb(0_0_0/0.9)]`}>
-        {result.winner === 'player' ? 'Round won' : 'Round lost'}
-      </p>
-      <p className="max-w-56 text-sm text-gold-light drop-shadow-[0_1px_3px_rgb(0_0_0/0.9)]">{REASONS[result.reason]}</p>
-      {(result.reason === 'faster' || result.reason === 'slower') && (
-        <p className="rounded bg-abyss/70 px-2 py-0.5 font-mono text-xs text-gold-light">
-          You {formatMs(result.playerReaction)} · Jhin {formatMs(result.botReaction)}
-        </p>
+    <div className="pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 p-2">
+      <BigCall text={won ? 'WON' : 'LOST'} tone={won ? 'win' : 'lose'} sub={reason(result, won, them)} />
+      {result.reason === 'faster' && (
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.45 }}
+          className="rounded bg-abyss/80 px-2 py-0.5 font-mono text-sm text-gold-light"
+        >
+          You {formatMs(mine)} · {them.name} {formatMs(theirs)}
+        </motion.p>
       )}
-    </motion.div>
+    </div>
   )
 }
 
-function RoundDots({ results }: { results: DuelRoundResult[] }) {
+function RoundDots({ results, me }: { results: DuelRoundResult[]; me: Player }) {
   return (
     <div className="flex items-center gap-2" aria-label={`Round ${results.length + 1}`}>
-      {[0, 1, 2].map((index) => {
+      {Array.from({ length: DUEL_MAX_ROUNDS }, (_, index) => {
         const result = results[index]
-        const color = !result ? 'border-gold/40' : result.winner === 'player' ? 'border-gold bg-gold' : 'border-red-400 bg-red-400'
-        return <span key={index} className={`size-3 rounded-full border-2 ${color}`} />
+        const color = !result ? 'border-gold/40' : result.winner === me ? 'border-gold bg-gold' : 'border-red-400 bg-red-400'
+        return <span key={index} className={`size-3.5 rounded-full border-2 ${color}`} />
       })}
+    </div>
+  )
+}
+
+/** 1: DRAW between the two. 2: a tap and a shot. 3: best of 3. */
+export function DuelTutorialArt({ step }: TutorialArtProps) {
+  if (step === 0) {
+    return (
+      <div className="flex size-full items-center justify-between bg-linear-to-b from-orange-300/30 to-yellow-950/70 px-1">
+        <img src={championIconById('Caitlyn')} alt="" className="size-8 rounded-full border-2 border-hextech" />
+        <span className="font-display text-lg font-black text-red-500 drop-shadow-[0_1px_2px_black] sm:text-2xl">DRAW!</span>
+        <img src={championIconById('Jhin')} alt="" className="size-8 -scale-x-100 rounded-full border-2 border-red-400" />
+      </div>
+    )
+  }
+  if (step === 1) {
+    return (
+      <div className="relative flex size-full items-center justify-center bg-linear-to-b from-orange-300/20 to-yellow-950/60">
+        <motion.span
+          animate={{ scale: [1, 1.6, 1], opacity: [0.8, 1, 0.8] }}
+          transition={{ duration: 1.2, repeat: Infinity }}
+          className="absolute size-10 rounded-full bg-yellow-200/60 blur-sm"
+        />
+        <span className="relative text-4xl">👆</span>
+        <span className="absolute right-1.5 bottom-1 rounded border border-gold/50 px-1 font-mono text-[10px] text-gold-light">Space</span>
+      </div>
+    )
+  }
+  return (
+    <div className="flex size-full flex-col items-center justify-center gap-2">
+      <span className="font-display text-sm font-black text-red-500 line-through decoration-2">Ready...</span>
+      <div className="flex gap-1.5">
+        <span className="size-4 rounded-full border-2 border-gold bg-gold" />
+        <span className="size-4 rounded-full border-2 border-gold bg-gold" />
+        <span className="size-4 rounded-full border-2 border-gold/40" />
+      </div>
     </div>
   )
 }

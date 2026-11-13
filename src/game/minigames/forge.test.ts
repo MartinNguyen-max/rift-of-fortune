@@ -7,13 +7,16 @@ import {
   botForgeTimes,
   botItemsDone,
   FORGE_ITEM_COUNT,
+  FORGE_LIMIT_SECONDS,
   forgeableItems,
   forgeOrders,
+  forgeRules,
   missingParts,
   ORDER_PARTS,
   POPULAR_ITEMS,
   TRAY_SIZES,
 } from './forge'
+import { soloSetup } from './versus'
 
 const part = (id: string): ItemComponent => ({ id, name: id, image: '', gold: 500 })
 const components = ['rod', 'sword', 'bow', 'belt', 'tome', 'vest', 'cloak', 'dagger', 'gem', 'pick'].map(part)
@@ -85,5 +88,19 @@ describe('botForgeTimes', () => {
     expect(last).toBeLessThan(35)
     expect(botItemsDone(times, 0)).toBe(0)
     expect(botItemsDone(times, last)).toBe(3)
+  })
+})
+
+describe('forgeRules', () => {
+  const rules = forgeRules(gameData.items, gameData.components)
+  const setup = soloSetup(2)
+
+  it('lets the faster smith win', () => {
+    expect(rules.settle([[9000], [12000]], setup)).toEqual({ winner: 0, scores: [9000, 12000] })
+  })
+
+  it('keeps no personal best for an unfinished forge', () => {
+    expect(rules.best?.of([[9000], [12000]], setup)).toBe(9000)
+    expect(rules.best?.of([[FORGE_LIMIT_SECONDS * 1000], [12000]], setup)).toBeNull()
   })
 })

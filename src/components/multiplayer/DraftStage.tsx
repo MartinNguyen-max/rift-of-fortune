@@ -12,7 +12,7 @@ import { Button } from '../Button'
 import { Game } from '../Game'
 import { nextChampion, randomItems, rerollChampion, rerollItem } from '../matchDraft'
 import type { Room } from './useRoom'
-import { useCountdown } from './useCountdown'
+import { useCountdown } from '../useCountdown'
 
 /** The last seconds of the draft timer turn red. */
 const HURRY_SECONDS = 15
