@@ -57,10 +57,10 @@ export const MINI_GAMES: Record<MiniGameId, MiniGameInfo> = {
     champion: 'Teemo',
     botChampion: 'MasterYi',
     botName: 'Master Yi',
-    tagline: 'Plant 3 shrooms in Yi’s path. Then walk through his.',
+    tagline: 'Plant 3 shrooms in Yi’s path, then walk his. Every boom counts.',
     tutorial: {
-      solo: ['Teemo: plant 3 shrooms', 'One shroom per column', 'Walk across. Furthest walk wins'],
-      live: ['Teemo: plant 3 shrooms', 'One shroom per column', 'Walker wins with 3 safe steps'],
+      solo: ['Plant 3 shrooms, one per column', 'Walk across. A boom won’t stop you', 'Boom: +1 planter. Dodge: +1 walker'],
+      live: ['Plant 3 shrooms, one per column', 'Walk theirs. Watch yours live', 'Boom: +1 planter. Dodge: +1 walker'],
     },
   },
   forge: {

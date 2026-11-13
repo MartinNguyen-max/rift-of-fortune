@@ -1,24 +1,7 @@
-import { useEffect } from 'react'
-import {
-  PATH_STEPS,
-  randomSide,
-  SHROOM_COUNT,
-  shroomsPlaced,
-  walkPath,
-  type ShroomPlan,
-  type Side,
-} from '../../game/minigames/shrooms'
+import { useEffect, useRef, useState } from 'react'
+import { PATH_STEPS, randomSide, SHROOM_COUNT, shroomsPlaced, type ShroomPlan, type Side } from '../../game/minigames/shrooms'
 import { stepSeed, type GameSetup } from '../../game/minigames/versus'
 import { sample, seededRandom, type RandomFn } from '../../game/random'
-
-/**
- * The part of a walk worth showing: up to the boom, or until the walker is through. A bot's or a
- * host's walk has a lane for every step, even after a boom.
- */
-export function walkToShow(plan: ShroomPlan, steps: readonly Side[], stepsToGo: number): Side[] {
-  const { boomAt } = walkPath(plan, steps)
-  return steps.slice(0, Math.min(stepsToGo, boomAt === null ? steps.length : boomAt + 1))
-}
 
 /** A planter out of time keeps their shrooms; the missing ones go on random free columns. */
 export function fillPlan(plan: ShroomPlan, random: RandomFn): ShroomPlan {
@@ -36,6 +19,30 @@ export const timeoutPlan = (plan: ShroomPlan, setup: GameSetup, half: number): S
 /** The lane a walker out of time jumps to on a step. */
 export const timeoutSide = (setup: GameSetup, half: number, step: number): Side =>
   randomSide(seededRandom(stepSeed(setup.seed, half * PATH_STEPS + step, 71)))
+
+/** Only the shrooms that went off: what a walker has found out so far. */
+export const revealedShrooms = (plan: ShroomPlan, booms: readonly number[]): ShroomPlan =>
+  plan.map((side, step) => (booms.includes(step) ? side : null))
+
+/**
+ * Steps on show when you watch someone walk: one hop at a time, at most one per `hopMs`. Steps
+ * that come in live show as soon as they arrive; a walk that arrives in one piece (the bot, or a
+ * reconnect) plays hop by hop. Your own steps show at once.
+ */
+export function useHops(available: number, instant: boolean, hopMs: number): number {
+  const [shown, setShown] = useState(0)
+  const lastHop = useRef(-Infinity)
+  useEffect(() => {
+    if (instant || shown >= available) return
+    const wait = Math.max(0, hopMs - (performance.now() - lastHop.current))
+    const id = window.setTimeout(() => {
+      lastHop.current = performance.now()
+      setShown(shown + 1)
+    }, wait)
+    return () => window.clearTimeout(id)
+  }, [available, instant, shown, hopMs])
+  return instant ? available : Math.min(shown, available)
+}
 
 const KEY_SIDES: Record<string, Side | undefined> = { ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down' }
 

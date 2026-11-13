@@ -22,8 +22,6 @@ export const STEP_SECONDS = { solo: 4, live: 3 } as const
 export const PLANT_SECONDS = 15
 /** Solo: a tied game is played again this many times before it is a draw. */
 export const MAX_SHROOM_GAMES = 3
-/** Multiplayer with one role each: the walker wins by getting this far. */
-export const WALKER_GOAL = 3
 
 /** The two lanes of the path. */
 export type Side = 'up' | 'down'
@@ -52,19 +50,26 @@ export function toggleShroom(plan: ShroomPlan, step: number, side: Side): Shroom
 }
 
 export interface WalkResult {
-  /** Steps taken safely. PATH_STEPS means the walker made it across. */
-  safeSteps: number
-  /** The step that went boom, or null. */
-  boomAt: number | null
+  /** Steps that went boom, in order. The walker keeps walking after a boom. */
+  booms: number[]
+  /** Shrooms passed on the other lane. */
+  dodged: number
 }
 
-/** Walks the path one step at a time until a shroom goes off. */
+/** Walks the steps taken so far: every shroom stepped on goes boom, every other one passed is dodged. */
 export function walkPath(plan: ShroomPlan, steps: readonly Side[]): WalkResult {
-  for (let index = 0; index < steps.length && index < PATH_STEPS; index++) {
-    if (plan[index] === steps[index]) return { safeSteps: index, boomAt: index }
-  }
-  return { safeSteps: Math.min(steps.length, PATH_STEPS), boomAt: null }
+  const booms: number[] = []
+  let dodged = 0
+  steps.slice(0, PATH_STEPS).forEach((side, step) => {
+    const shroom = plan[step]
+    if (shroom === side) booms.push(step)
+    else if (shroom) dodged += 1
+  })
+  return { booms, dodged }
 }
+
+/** Points from one walk: a point to the planter for each boom, a point to the walker for each dodge. */
+export const walkPoints = (walk: WalkResult) => ({ planter: walk.booms.length, walker: walk.dodged })
 
 /** The bot (or a planter who ran out of time) hides its shrooms on random steps and lanes. */
 export function randomPlan(random: RandomFn): ShroomPlan {
@@ -78,32 +83,31 @@ export function randomPlan(random: RandomFn): ShroomPlan {
 
 export const randomSide = (random: RandomFn): Side => (random() < 0.5 ? 'up' : 'down')
 
-/** A random walk: a coin flip on every step. */
-export const randomSteps = (random: RandomFn): Side[] => Array.from({ length: PATH_STEPS }, () => randomSide(random))
-
-// ── Moves: plans and walks packed into whole numbers ─────────────
+// ── Moves ────────────────────────────────────────────────────────
+// A plan is one move (packed). A walk is one move per step, so the planter can watch it live.
 
 const SIDE_DIGIT: Record<Side, number> = { up: 1, down: 2 }
 const DIGIT_SIDE: Record<number, Side | undefined> = { 1: 'up', 2: 'down' }
 
 export const encodePlan = (plan: ShroomPlan): number => packDigits(plan.map((side) => (side ? SIDE_DIGIT[side] : 0)))
-export const decodePlan = (value: number): ShroomPlan => unpackDigits(value, PATH_STEPS).map((digit) => DIGIT_SIDE[digit] ?? null)
 
-/** A walk is the lanes stepped on, in order; it ends at the first boom. */
-export const encodeWalk = (steps: readonly Side[]): number => packDigits(steps.map((side) => SIDE_DIGIT[side]))
-export function decodeWalk(value: number): Side[] {
-  const steps: Side[] = []
-  for (const digit of unpackDigits(value, PATH_STEPS)) {
-    const side = DIGIT_SIDE[digit]
-    if (!side) break
-    steps.push(side)
-  }
-  return steps
+/** A plan from a move. Never more than SHROOM_COUNT shrooms, whatever came over the network. */
+export function decodePlan(value: number): ShroomPlan {
+  let left = SHROOM_COUNT
+  return unpackDigits(value, PATH_STEPS).map((digit) => {
+    const side = DIGIT_SIDE[digit] ?? null
+    if (!side || left === 0) return null
+    left -= 1
+    return side
+  })
 }
+
+export const encodeStep = (side: Side): number => SIDE_DIGIT[side]
+export const decodeStep = (value: number): Side => DIGIT_SIDE[value] ?? 'down'
 
 /**
  * Halves: in each half one player plants and the other walks. In half h, the planter is the first
- * player for even h and the other one for odd h. A player's move h is their plan or their walk.
+ * player for even h and the other one for odd h.
  */
 export function planterOf(half: number, setup: GameSetup): Player {
   const first = firstPlayer(setup)
@@ -111,39 +115,93 @@ export function planterOf(half: number, setup: GameSetup): Player {
 }
 
 /** How many halves can be played: solo replays ties, Multiplayer plays one or two. */
-const maxHalves = (setup: GameSetup) => (setup.variant === 'solo' ? MAX_SHROOM_GAMES * 2 : setup.bothRoles ? 2 : 1)
+export const maxHalves = (setup: GameSetup): number => (setup.variant === 'solo' ? MAX_SHROOM_GAMES * 2 : setup.bothRoles ? 2 : 1)
 
-/** The walk in each finished half: who walked and how far. */
-export function halfResults(moves: BothMoves, setup: GameSetup): { walker: Player; walk: WalkResult }[] {
-  const results: { walker: Player; walk: WalkResult }[] = []
+/** Moves a player makes in a half: one plan, or one per step of the walk. */
+const movesIn = (half: number, player: Player, setup: GameSetup) => (planterOf(half, setup) === player ? 1 : PATH_STEPS)
+
+/** Where a player's moves for a half start. Each player's moves follow on without gaps. */
+export function slotOf(half: number, player: Player, setup: GameSetup): number {
+  let slot = 0
+  for (let earlier = 0; earlier < half; earlier++) slot += movesIn(earlier, player, setup)
+  return slot
+}
+
+/** The half and the place in it of one of a player's moves. */
+function locate(step: number, player: Player, setup: GameSetup): { half: number; offset: number } | null {
+  let start = 0
   for (let half = 0; half < maxHalves(setup); half++) {
-    const planter = planterOf(half, setup)
-    const walker = other(planter)
-    const plan = moves[planter][half]
-    const walk = moves[walker][half]
-    if (plan === undefined || walk === undefined) break
-    results.push({ walker, walk: walkPath(decodePlan(plan), decodeWalk(walk)) })
+    const size = movesIn(half, player, setup)
+    if (step < start + size) return { half, offset: step - start }
+    start += size
+  }
+  return null
+}
+
+export interface HalfMoves {
+  planter: Player
+  walker: Player
+  /** The planted shrooms, once sent. */
+  plan: ShroomPlan | null
+  /** The lanes walked so far, in order. */
+  steps: Side[]
+}
+
+/** What has been played of one half: the plan and the walk so far. */
+export function halfMoves(moves: BothMoves, setup: GameSetup, half: number): HalfMoves {
+  const planter = planterOf(half, setup)
+  const walker = other(planter)
+  const planMove = moves[planter][slotOf(half, planter, setup)]
+  const start = slotOf(half, walker, setup)
+  const steps: Side[] = []
+  for (let step = 0; step < PATH_STEPS; step++) {
+    const move = moves[walker][start + step]
+    if (move === undefined) break
+    steps.push(decodeStep(move))
+  }
+  return { planter, walker, plan: planMove === undefined ? null : decodePlan(planMove), steps }
+}
+
+export interface HalfResult {
+  walker: Player
+  walk: WalkResult
+}
+
+/** Every finished half (planted and walked all the way): who walked and how it went. */
+export function halfResults(moves: BothMoves, setup: GameSetup): HalfResult[] {
+  const results: HalfResult[] = []
+  for (let half = 0; half < maxHalves(setup); half++) {
+    const { walker, plan, steps } = halfMoves(moves, setup, half)
+    if (!plan || steps.length < PATH_STEPS) break
+    results.push({ walker, walk: walkPath(plan, steps) })
   }
   return results
 }
 
+/** Each player's points from some walks. */
+export function pointsOf(results: readonly HalfResult[]): [number, number] {
+  const points: [number, number] = [0, 0]
+  for (const { walker, walk } of results) {
+    const { planter, walker: walkerPoints } = walkPoints(walk)
+    points[other(walker)] += planter
+    points[walker] += walkerPoints
+  }
+  return points
+}
+
+/**
+ * One role each (Multiplayer): the one walk decides, 3 points in all, so 2 booms win it for the
+ * planter. Otherwise the halves come in pairs, each player planting and walking once; the first
+ * pair with more points for one player decides (solo replays a tied pair, Multiplayer flips a coin).
+ */
 function settle(moves: BothMoves, setup: GameSetup): Settled | null {
   const results = halfResults(moves, setup)
-  if (setup.variant === 'live' && !setup.bothRoles) {
-    const [half] = results
-    if (!half) return null
-    const steps = half.walk.safeSteps
-    const scores: [number, number] = [0, 0]
-    scores[half.walker] = steps
-    return { winner: steps >= WALKER_GOAL ? half.walker : other(half.walker), scores }
-  }
-  // Pairs of halves: each player walks once per pair; the first pair that isn't a tie decides.
-  for (let pair = 0; pair * 2 + 1 < results.length; pair++) {
-    const scores: [number, number] = [0, 0]
-    for (const { walker, walk } of results.slice(pair * 2, pair * 2 + 2)) scores[walker] = walk.safeSteps
-    const lastPair = (pair + 1) * 2 >= maxHalves(setup)
+  const halvesPerGame = setup.variant === 'live' && !setup.bothRoles ? 1 : 2
+  for (let game = 0; (game + 1) * halvesPerGame <= results.length; game++) {
+    const scores = pointsOf(results.slice(game * halvesPerGame, (game + 1) * halvesPerGame))
+    const last = (game + 1) * halvesPerGame >= maxHalves(setup)
     if (scores[0] !== scores[1]) return { winner: scores[0] > scores[1] ? 0 : 1, scores }
-    if (lastPair) return { winner: null, scores }
+    if (last) return { winner: null, scores }
   }
   return null
 }
@@ -151,27 +209,41 @@ function settle(moves: BothMoves, setup: GameSetup): Settled | null {
 function owed(moves: BothMoves, setup: GameSetup): Owed[] {
   if (settle(moves, setup)) return []
   const half = halfResults(moves, setup).length
-  const planter = planterOf(half, setup)
+  if (half >= maxHalves(setup)) return []
+  const { planter, walker, plan, steps } = halfMoves(moves, setup, half)
   // The walker can only walk once the shrooms are planted.
-  if (moves[planter][half] === undefined) return [{ player: planter, step: half }]
-  return [{ player: other(planter), step: half }]
+  if (!plan) return [{ player: planter, step: slotOf(half, planter, setup) }]
+  return [{ player: walker, step: slotOf(half, walker, setup) + steps.length }]
+}
+
+/** A missing step from a walker who never answered: always onto the shroom, if there is one. */
+function poorStep(moves: BothMoves, setup: GameSetup, half: number, step: number): Side {
+  return halfMoves(moves, setup, half).plan?.[step] ?? 'up'
 }
 
 export const SHROOM_RULES: MiniGameRules = {
   chances: 2,
-  liveSeconds: (setup) => (setup.bothRoles ? 2 : 1) * (PLANT_SECONDS + PATH_STEPS * STEP_SECONDS.live + 6),
+  liveSeconds: (setup) => (setup.bothRoles ? 2 : 1) * (PLANT_SECONDS + PATH_STEPS * STEP_SECONDS.live + 8),
   owed,
   settle,
-  fallback: ({ player, step }, _moves, setup) => {
-    const random = seededRandom(stepSeed(setup.seed, step, player + 11))
-    return planterOf(step, setup) === player ? encodePlan(randomPlan(random)) : encodeWalk(randomSteps(random))
+  fallback: ({ player, step }, moves, setup) => {
+    const at = locate(step, player, setup)
+    if (!at) return 0
+    if (planterOf(at.half, setup) === player) return encodePlan(randomPlan(seededRandom(stepSeed(setup.seed, at.half, player + 11))))
+    return encodeStep(poorStep(moves, setup, at.half, at.offset))
   },
   botMove: (step, moves, setup) => {
-    if (step >= maxHalves(setup) || settle(moves, setup)) return undefined
-    const random = seededRandom(stepSeed(setup.seed, step, 23))
-    if (planterOf(step, setup) === 1) return encodePlan(randomPlan(random))
-    // The bot walks once the player has planted.
-    return moves[0][step] === undefined ? undefined : encodeWalk(randomSteps(random))
+    const at = locate(step, 1, setup)
+    if (!at || settle(moves, setup)) return undefined
+    if (planterOf(at.half, setup) === 1) return encodePlan(randomPlan(seededRandom(stepSeed(setup.seed, at.half, 23))))
+    // The bot walks once the player has planted: a coin flip on every step.
+    if (!halfMoves(moves, setup, at.half).plan) return undefined
+    return encodeStep(randomSide(seededRandom(stepSeed(setup.seed, at.half * PATH_STEPS + at.offset, 29))))
   },
-  formatScore: (steps) => `${steps} / ${PATH_STEPS} steps`,
+  formatScore: (points) => `${points} ${points === 1 ? 'point' : 'points'}`,
+  best: {
+    of: (moves, setup) => settle(moves, setup)?.scores[0] ?? null,
+    lowerIsBetter: false,
+    format: (points) => `${points} points`,
+  },
 }

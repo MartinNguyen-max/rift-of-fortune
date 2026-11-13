@@ -1,25 +1,27 @@
-import { motion } from 'framer-motion'
+import { motion, useAnimate } from 'framer-motion'
 import { useCallback, useEffect, useId, useMemo, useState, type ReactNode } from 'react'
 import { spellIconUrl } from '../../data'
 import {
-  decodePlan,
-  decodeWalk,
   emptyPlan,
   encodePlan,
-  encodeWalk,
+  encodeStep,
+  halfMoves,
   halfResults,
   isPlanReady,
   PATH_STEPS,
   PLANT_SECONDS,
-  planterOf,
+  pointsOf,
   SHROOM_COUNT,
   SHROOM_RULES,
   shroomsPlaced,
   SIDES,
+  slotOf,
   STEP_SECONDS,
   toggleShroom,
   walkPath,
-  WALKER_GOAL,
+  walkPoints,
+  type HalfMoves,
+  type HalfResult,
   type ShroomPlan,
   type Side,
   type WalkResult,
@@ -27,34 +29,31 @@ import {
 import { other, type GameSetup, type Player } from '../../game/minigames/versus'
 import { Button } from '../Button'
 import { championIconById } from './miniGameArt'
-import { BigCall, ChoiceTimer, ContestantTag, Waiting } from './parts'
-import { timeoutPlan, timeoutSide, useLaneKeys, walkToShow } from './shroomScreen'
+import { BigCall, ChoiceTimer, ContestantTag, Waiting, type Tone } from './parts'
+import { revealedShrooms, timeoutPlan, timeoutSide, useHops, useLaneKeys } from './shroomScreen'
 import { useShownWhen, useTimeout } from './timing'
 import type { Contestant, MiniGameViewProps, TutorialArtProps } from './types'
 
 const SHROOM_ICON = spellIconUrl('TeemoR.png')
 
-/** Seconds between hops when you watch someone walk your path. */
-const HOP_SECONDS = 0.75
-/** Seconds the explosion (or the last hop) plays before the result call. */
-const SETTLE_SECONDS = 0.8
+/** Milliseconds between hops when you watch someone walk your path. */
+const HOP_MS = 750
+/** Seconds the last hop (and its boom) plays before the result call. */
+const SETTLE_SECONDS = 0.9
 /** Seconds a walk's result stays up. */
-const RESULT_SECONDS = 2.4
+const RESULT_SECONDS = 2.6
 /** Seconds "TIE! Plant again." stays up. */
 const TIE_SECONDS = 2
 /** Seconds "PLANT!" or "WALK!" shows when your turn starts. Your walk timer starts after it. */
 const INTRO_SECONDS = 1.1
 
-const NO_WALK: WalkResult = { safeSteps: 0, boomAt: null }
-
-interface HalfResult {
-  walker: Player
-  walk: WalkResult
-}
+const NO_WALK: WalkResult = { booms: [], dodged: 0 }
 
 /**
  * Shroom Hopscotch: Teemo hides 3 shrooms on a two-lane path, the other player walks it from A to B.
- * Played in halves: in each half one player plants and the other walks (`planterOf`).
+ * The walker always walks all the way: each shroom stepped on is a point for the planter, each one
+ * dodged a point for the walker. Played in halves: in each half one player plants and the other
+ * walks (`planterOf`). Each step is its own move, so the planter watches the walk live.
  */
 export function ShroomGame({ setup, me, moves, sendMove, onShown, players }: MiniGameViewProps) {
   const results = useMemo(() => halfResults(moves, setup), [moves, setup])
@@ -62,8 +61,7 @@ export function ShroomGame({ setup, me, moves, sendMove, onShown, players }: Min
   /** Halves whose result has been shown. */
   const [seen, setSeen] = useState(0)
   const half = over ? Math.min(seen, results.length - 1) : seen
-  const planter = planterOf(half, setup)
-  const walker = other(planter)
+  const current = useMemo(() => halfMoves(moves, setup, half), [moves, setup, half])
   const oneRole = setup.variant === 'live' && !setup.bothRoles
   const tieAfter = !oneRole && !over && endsTiedPair(results, half)
   const next = useCallback(() => setSeen(half + 1), [half])
@@ -76,9 +74,8 @@ export function ShroomGame({ setup, me, moves, sendMove, onShown, players }: Min
       me={me}
       players={players}
       half={half}
-      planMove={moves[planter][half]}
-      walkMove={moves[walker][half]}
-      earlier={results.slice(half - (half % 2), half)}
+      current={current}
+      earlier={oneRole ? [] : results.slice(half - (half % 2), half)}
       tieAfter={tieAfter}
       sendMove={sendMove}
       onDone={next}
@@ -86,12 +83,11 @@ export function ShroomGame({ setup, me, moves, sendMove, onShown, players }: Min
   )
 }
 
-/** The second half of a pair, when both walked equally far. */
+/** The second half of a pair, when both got the same points. */
 function endsTiedPair(results: readonly HalfResult[], half: number): boolean {
-  if (half % 2 === 0) return false
-  const first = results[half - 1]
-  const second = results[half]
-  return first !== undefined && second !== undefined && first.walk.safeSteps === second.walk.safeSteps
+  if (half % 2 === 0 || results.length <= half) return false
+  const [first, second] = pointsOf(results.slice(half - 1, half + 1))
+  return first === second
 }
 
 interface HalfStageProps {
@@ -99,11 +95,9 @@ interface HalfStageProps {
   me: Player
   players: readonly [Contestant, Contestant]
   half: number
-  /** The planter's move this half (their plan), once sent. */
-  planMove: number | undefined
-  /** The walker's move this half (their whole walk), once it is over. */
-  walkMove: number | undefined
-  /** Walks already shown in this pair of halves, for the scores. */
+  /** What has been played of this half: the plan once sent, the walk step by step. */
+  current: HalfMoves
+  /** Walks already shown in this pair of halves, for the points. */
   earlier: readonly HalfResult[]
   /** This half ends a tied pair: "Tie! Plant again." before the next one. */
   tieAfter: boolean
@@ -113,74 +107,57 @@ interface HalfStageProps {
 
 type AfterWalk = 'walk' | 'call' | 'tie'
 
-/** One half: plant (or wait for the plan), walk (or watch the walk hop by hop), then the result. */
-function HalfStage({ setup, me, players, half, planMove, walkMove, earlier, tieAfter, sendMove, onDone }: HalfStageProps) {
-  const them = other(me)
-  const planter = planterOf(half, setup)
-  const walker = other(planter)
+/** One half: plant (or wait for the plan), walk (or watch the walk live, hop by hop), then the result. */
+function HalfStage({ setup, me, players, half, current, earlier, tieAfter, sendMove, onDone }: HalfStageProps) {
+  const { planter, walker, plan, steps: sentSteps } = current
   const iPlant = planter === me
-  /** Live one-role games: the walker wins at the flag. Otherwise the walk goes to the finish. */
-  const goal = setup.variant === 'live' && !setup.bothRoles ? WALKER_GOAL : null
-  const stepsToGo = goal ?? PATH_STEPS
 
   const [draft, setDraft] = useState<ShroomPlan>(emptyPlan)
-  const [myWalk, setMyWalk] = useState<Side[]>([])
-  /** Steps of the sent walk on show: a walk you watch plays one hop at a time. */
-  const [shown, setShown] = useState(0)
+  /** Your own steps show at once, before the network echoes them back. */
+  const [myWalk, setMyWalk] = useState<readonly Side[]>([])
   const [introOver, setIntroOver] = useState(false)
   const [after, setAfter] = useState<AfterWalk>('walk')
 
-  const plan = useMemo(() => (planMove === undefined ? null : decodePlan(planMove)), [planMove])
-  const sentWalk = useMemo(
-    () => (walkMove === undefined || !plan ? null : walkToShow(plan, decodeWalk(walkMove), stepsToGo)),
-    [walkMove, plan, stepsToGo],
-  )
-  const steps = sentWalk ? sentWalk.slice(0, shown) : myWalk
+  const walked = !iPlant && myWalk.length > sentSteps.length ? myWalk : sentSteps
+  const steps = walked.slice(0, useHops(walked.length, !iPlant, HOP_MS))
   const walk = plan ? walkPath(plan, steps) : NO_WALK
-  const finished = sentWalk ? shown >= sentWalk.length : walk.boomAt !== null || walk.safeSteps >= stepsToGo
-  /** The walk is in the moves and fully shown: time for the result. */
-  const halfOver = sentWalk !== null && finished
-  const success = walk.boomAt === null ? walk.safeSteps >= stepsToGo : goal !== null && walk.safeSteps >= goal
+  /** The whole walk is in the moves and on show: time for the result. */
+  const halfOver = sentSteps.length >= PATH_STEPS && steps.length >= PATH_STEPS
 
-  const planting = iPlant && planMove === undefined
-  const walking = !iPlant && plan !== null && !sentWalk && !finished && introOver
+  const planting = iPlant && plan === null
+  const walking = !iPlant && plan !== null && walked.length < PATH_STEPS && introOver
   const myTurnStarted = iPlant || plan !== null
-  const showIntro = !introOver && (iPlant ? planting : !sentWalk) && myTurnStarted
+  const showIntro = !introOver && myTurnStarted && (iPlant ? planting : walked.length === 0)
+  const watching = iPlant && plan !== null && !halfOver
 
   useTimeout(() => setIntroOver(true), INTRO_SECONDS * 1000, myTurnStarted)
-  usePlayback(sentWalk, shown, setShown)
   useTimeout(() => setAfter('call'), SETTLE_SECONDS * 1000, halfOver && after === 'walk')
   useTimeout(() => (tieAfter ? setAfter('tie') : onDone()), RESULT_SECONDS * 1000, after === 'call')
   useTimeout(onDone, TIE_SECONDS * 1000, after === 'tie')
 
-  const submitPlan = (value: ShroomPlan) => sendMove(half, encodePlan(value))
-  const plant = (step: number, side: Side) => setDraft((current) => toggleShroom(current, step, side))
+  const submitPlan = (value: ShroomPlan) => sendMove(slotOf(half, me, setup), encodePlan(value))
+  const plant = (step: number, side: Side) => setDraft((draftPlan) => toggleShroom(draftPlan, step, side))
 
   const takeStep = useCallback(
     (side: Side) => {
-      if (!walking || !plan) return
-      const next = [...myWalk, side]
-      setMyWalk(next)
-      setShown(next.length)
-      const result = walkPath(plan, next)
-      if (result.boomAt !== null || result.safeSteps >= stepsToGo) sendMove(half, encodeWalk(next))
+      if (!walking) return
+      setMyWalk([...walked, side])
+      sendMove(slotOf(half, me, setup) + walked.length, encodeStep(side))
     },
-    [walking, plan, myWalk, stepsToGo, sendMove, half],
+    [walking, walked, sendMove, half, me, setup],
   )
   useLaneKeys(takeStep, walking)
 
   const walkerName = players[walker].name
-  const heading = iPlant ? (sentWalk ? `${walkerName} walks your path` : `Block ${walkerName}!`) : goal ? 'Reach the flag!' : 'Walk across!'
-  const waitingFor = !iPlant && plan === null ? players[planter].name : iPlant && planMove !== undefined && !sentWalk ? walkerName : null
+  const heading = planting ? `Block ${walkerName}!` : iPlant ? `${walkerName} walks your path` : 'Walk across!'
+  const waitingFor = !iPlant && plan === null ? players[planter].name : iPlant && plan !== null && walked.length === 0 ? walkerName : null
+  /** A walker sees only the shrooms that went off, and all of them once the walk is over. */
+  const shrooms = iPlant ? (plan ?? draft) : plan && (halfOver ? plan : revealedShrooms(plan, walk.booms))
+  const shown = halfOver ? [...earlier, { walker, walk }] : earlier
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <Scoreboard
-        players={players}
-        me={me}
-        values={scoreValues([...earlier, { walker, walk }], goal)}
-        middle={middleLabel(setup, half)}
-      />
+      <Scoreboard players={players} me={me} points={pointsOf(shown)} middle={middleLabel(setup, half)} />
       <p
         className={`text-center font-display text-lg font-black sm:text-xl ${planting || !iPlant ? 'text-hextech' : 'text-gold-light'}`}
         aria-live="polite"
@@ -191,30 +168,35 @@ function HalfStage({ setup, me, players, half, planMove, walkMove, earlier, tieA
         <div className="flex h-14 w-full items-center justify-center">
           {walking && (
             <ChoiceTimer
-              key={`step-${steps.length}`}
+              key={`step-${walked.length}`}
               seconds={STEP_SECONDS[setup.variant]}
-              onTimeout={() => takeStep(timeoutSide(setup, half, steps.length))}
+              onTimeout={() => takeStep(timeoutSide(setup, half, walked.length))}
             />
           )}
           {planting && <ChoiceTimer key="plant" seconds={PLANT_SECONDS} onTimeout={() => submitPlan(timeoutPlan(draft, setup, half))} />}
           {waitingFor && <Waiting name={waitingFor} />}
+          {watching && steps.length > 0 && (
+            <p className="font-display text-lg font-black text-gold-light/70" aria-live="polite">
+              Step {steps.length} / {PATH_STEPS}
+            </p>
+          )}
         </div>
       )}
       <Board
-        shrooms={iPlant ? (plan ?? draft) : finished ? plan : null}
+        shrooms={shrooms}
         shroomsYours={iPlant}
         steps={steps}
         walker={{ champion: players[walker].champion, you: walker === me }}
-        boomAt={walk.boomAt}
-        arrived={after !== 'walk' && success && walk.boomAt === null}
-        goal={goal}
-        showRoute={iPlant && !sentWalk}
+        booms={walk.booms}
+        arrived={after !== 'walk'}
+        showRoute={iPlant && walked.length === 0}
         onPlant={planting ? plant : undefined}
         onStep={walking ? takeStep : undefined}
       >
+        {plan !== null && <BoomCounter booms={walk.booms.length} total={shroomsPlaced(plan)} live={watching} />}
         {showIntro && <BigCall overlay text={iPlant ? 'PLANT!' : 'WALK!'} tone="you" size="large" />}
-        {after === 'call' && (
-          <WalkCall walk={walk} success={success} goal={goal} who={walker === me ? 'You' : players[them].name} yours={walker === me} />
+        {after === 'call' && plan && (
+          <WalkCall walk={walk} total={shroomsPlaced(plan)} who={walker === me ? 'You' : walkerName} tone={halfTone(walk, iPlant)} />
         )}
         {after === 'tie' && <BigCall overlay text="TIE!" tone="plain" sub="Plant again." />}
       </Board>
@@ -226,25 +208,16 @@ function HalfStage({ setup, me, players, half, planMove, walkMove, earlier, tieA
           </Button>
         </div>
       )}
-      {walking && <p className="text-xs text-gold-light/50">Tap a glowing spot · ↑ ↓</p>}
+      {walking && <p className="text-xs text-gold-light/50">Tap a glowing spot · ↑ ↓ · A boom won’t stop you</p>}
     </div>
   )
 }
 
-/** Plays a walk that arrived in one piece, one hop at a time. */
-function usePlayback(walk: readonly Side[] | null, shown: number, setShown: (shown: number) => void) {
-  useEffect(() => {
-    if (!walk || shown >= walk.length) return
-    const id = window.setTimeout(() => setShown(shown + 1), HOP_SECONDS * 1000)
-    return () => window.clearTimeout(id)
-  }, [walk, shown, setShown])
-}
-
-/** Steps walked so far, by player: both walkers in a pair, only the walker in a one-role game. */
-function scoreValues(walks: readonly HalfResult[], goal: number | null): [string | undefined, string | undefined] {
-  const values: [string | undefined, string | undefined] = goal === null ? ['–', '–'] : [undefined, undefined]
-  for (const { walker, walk } of walks) values[walker] = `${walk.safeSteps}/${goal ?? PATH_STEPS}`
-  return values
+/** Gold when the walk went your way (more of your points than theirs), red when it didn't. */
+function halfTone(walk: WalkResult, iPlant: boolean): Tone {
+  const { planter, walker } = walkPoints(walk)
+  const [mine, theirs] = iPlant ? [planter, walker] : [walker, planter]
+  return mine === theirs ? 'plain' : mine > theirs ? 'win' : 'lose'
 }
 
 function middleLabel(setup: GameSetup, half: number): string {
@@ -255,39 +228,68 @@ function middleLabel(setup: GameSetup, half: number): string {
 interface ScoreboardProps {
   players: readonly [Contestant, Contestant]
   me: Player
-  values: readonly [string | undefined, string | undefined]
+  points: readonly [number, number]
   middle: string
 }
 
-function Scoreboard({ players, me, values, middle }: ScoreboardProps) {
+function Scoreboard({ players, me, points, middle }: ScoreboardProps) {
   const them = other(me)
   return (
     <div className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-2">
-      <ContestantTag contestant={players[me]} you value={values[me]} />
+      <ContestantTag contestant={players[me]} you value={`${points[me]}`} />
       <span className="text-center text-xs font-semibold tracking-wider text-gold-light/60 uppercase">{middle}</span>
-      <ContestantTag contestant={players[them]} you={false} value={values[them]} />
+      <ContestantTag contestant={players[them]} you={false} value={`${points[them]}`} />
     </div>
   )
 }
 
 interface WalkCallProps {
   walk: WalkResult
-  success: boolean
-  goal: number | null
+  /** Shrooms on the path. */
+  total: number
   /** "You" or the opponent's name. */
   who: string
-  /** You walked: a boom is bad news, getting across good. */
-  yours: boolean
+  tone: Tone
 }
 
-/** BOOM! or SAFE!, gold when it's good for you and red when it isn't. */
-function WalkCall({ walk, success, goal, who, yours }: WalkCallProps) {
-  const sub = success
-    ? goal === null
-      ? `${who} made it across!`
-      : `${who} reached the flag!`
-    : `${who} walked ${walk.safeSteps} ${walk.safeSteps === 1 ? 'step' : 'steps'}`
-  return <BigCall overlay text={success ? 'SAFE!' : 'BOOM!'} tone={yours === success ? 'win' : 'lose'} sub={sub} />
+/** SAFE!, BOOM! or 3× BOOM!, gold when it went your way and red when it didn't. */
+function WalkCall({ walk, total, who, tone }: WalkCallProps) {
+  const booms = walk.booms.length
+  const text = booms === 0 ? 'SAFE!' : booms === 1 ? 'BOOM!' : `${booms}× BOOM!`
+  const sub = booms === 0 ? `${who} dodged every shroom!` : `${who} hit ${booms} of ${total} shrooms`
+  return <BigCall overlay text={text} tone={tone} sub={sub} />
+}
+
+/** Booms so far, in the corner of the path. "LIVE" while you watch someone walk your shrooms. */
+function BoomCounter({ booms, total, live }: { booms: number; total: number; live: boolean }) {
+  return (
+    <>
+      {live && (
+        <span className="absolute top-1.5 left-1.5 z-20 flex items-center gap-1 rounded-full bg-abyss/80 px-2 py-0.5 text-[10px] font-black tracking-widest text-red-400 sm:text-xs">
+          <motion.span
+            animate={{ opacity: [1, 0.2, 1] }}
+            transition={{ duration: 1.1, repeat: Infinity }}
+            className="size-1.5 rounded-full bg-red-500 sm:size-2"
+            aria-hidden="true"
+          />
+          LIVE
+        </span>
+      )}
+      <motion.span
+        key={booms}
+        initial={{ scale: booms > 0 ? 1.6 : 1 }}
+        animate={{ scale: 1 }}
+        transition={{ type: 'spring', stiffness: 380, damping: 14 }}
+        className={`absolute top-1.5 right-1.5 z-20 flex items-center gap-1 rounded-full px-2 py-0.5 font-display text-xs font-black sm:text-sm ${
+          booms > 0 ? 'bg-lime-950/85 text-lime-300' : 'bg-abyss/80 text-gold-light/70'
+        }`}
+        aria-label={`${booms} of ${total} shrooms hit`}
+      >
+        <img src={SHROOM_ICON} alt="" className="size-4 rounded-full sm:size-5" />
+        {booms} / {total}
+      </motion.span>
+    </>
+  )
 }
 
 function ShroomTray({ left }: { left: number }) {
@@ -312,28 +314,23 @@ const COLUMNS = PATH_STEPS + 2
 const COLUMN_WIDTH = 50
 const VIEW_WIDTH = COLUMNS * COLUMN_WIDTH
 const VIEW_HEIGHT = 160
-const LANE_TOP = 20
-const LANE_BOTTOM = 140
-const MID_Y = (LANE_TOP + LANE_BOTTOM) / 2
+const MID_Y = 80
 /** Where things sit on the board, in percent. */
 const columnX = (column: number) => ((column + 0.5) / COLUMNS) * 100
 const ROW_Y: Record<Side, number> = { up: 31.25, down: 68.75 }
-/** The line after `goal` steps, in percent. */
-const goalX = (goal: number) => ((goal + 1) / COLUMNS) * 100
 const TOKEN_WIDTH = `${(100 / COLUMNS) * 0.8}%`
 
 interface BoardProps {
-  /** Shrooms on show: your plan, or theirs once your walk is over. */
+  /** Shrooms on show: your plan, or theirs as they go off (all of them once your walk is over). */
   shrooms: ShroomPlan | null
   shroomsYours: boolean
   /** Lanes walked so far. */
   steps: readonly Side[]
   walker: { champion: string; you: boolean }
-  boomAt: number | null
-  /** The walker made it: they hop onto the finish. */
+  /** Steps that went boom so far. */
+  booms: readonly number[]
+  /** The walk is over: the walker hops onto B. */
   arrived: boolean
-  /** Live one-role games: the flag after this many steps. Otherwise the finish is B on the right. */
-  goal: number | null
   /** While planting: Yi's dashed route from A to B. */
   showRoute: boolean
   onPlant?: (step: number, side: Side) => void
@@ -344,51 +341,58 @@ interface BoardProps {
 }
 
 /** The lane from A (left) to B (right): two rows of stepping stones, one column per step. */
-function Board({ shrooms, shroomsYours, steps, walker, boomAt, arrived, goal, showRoute, onPlant, onStep, children }: BoardProps) {
+function Board({ shrooms, shroomsYours, steps, walker, booms, arrived, showRoute, onPlant, onStep, children }: BoardProps) {
   const planting = onPlant !== undefined
   const plantedAll = shrooms !== null && shroomsPlaced(shrooms) >= SHROOM_COUNT
-  const finishX = goal !== null && steps.length <= goal ? goalX(goal) : columnX(COLUMNS - 1)
-  const boomSide = boomAt === null ? undefined : steps[boomAt]
+  const [scope, animate] = useAnimate<HTMLDivElement>()
+
+  // Every boom shakes the path.
+  useEffect(() => {
+    if (booms.length > 0 && scope.current) void animate(scope.current, { x: [0, -9, 9, -6, 6, -3, 0] }, { duration: 0.45 })
+  }, [booms.length, animate, scope])
 
   return (
-    <motion.div
-      animate={boomAt !== null ? { x: [0, -9, 9, -6, 6, -3, 0] } : { x: 0 }}
-      transition={{ duration: 0.45 }}
-      className="relative aspect-[35/16] w-full max-w-xl overflow-hidden rounded-lg border-2 border-gold/40 select-none"
-    >
-      <LaneArt arrows={!showRoute} goal={goal} />
-      {showRoute && <RouteArrow toX={goal === null ? (COLUMNS - 0.5) * COLUMN_WIDTH - 18 : (goal + 1) * COLUMN_WIDTH - 4} />}
+    <div ref={scope} className="relative aspect-[35/16] w-full max-w-xl overflow-hidden rounded-lg border-2 border-gold/40 select-none">
+      <LaneArt arrows={!showRoute} />
+      {showRoute && <RouteArrow toX={(COLUMNS - 0.5) * COLUMN_WIDTH - 18} />}
       <span
         className="absolute bottom-[14%] -translate-x-1/2 font-display text-sm font-black text-gold-light drop-shadow-[0_1px_2px_black] sm:text-lg"
         style={{ left: `${columnX(0)}%` }}
       >
         A
       </span>
-      <FinishMark goal={goal} />
+      <FinishMark />
       <div
         className="absolute inset-x-0 top-[12.5%] bottom-[12.5%] grid grid-rows-2"
         style={{ gridTemplateColumns: `repeat(${COLUMNS}, minmax(0, 1fr))` }}
       >
         {Array.from({ length: PATH_STEPS }, (_, step) =>
-          SIDES.map((side) => (
-            <Spot
-              key={`${step}-${side}`}
-              step={step}
-              side={side}
-              look={spotLook(step, side, { shrooms, steps, planting, plantedAll, choiceStep: onStep ? steps.length : null })}
-              walkerYou={walker.you}
-              shroom={shrooms?.[step] === side ? (shroomsYours ? 'yours' : 'theirs') : null}
-              revealDelay={shroomsYours || step === boomAt ? 0 : 0.35}
-              beyondGoal={goal !== null && step >= goal}
-              onTap={onPlant ? () => onPlant(step, side) : onStep && step === steps.length ? () => onStep(side) : undefined}
-            />
-          )),
+          SIDES.map((side) => {
+            const hasShroom = shrooms?.[step] === side
+            const passed = steps[step] !== undefined
+            return (
+              <Spot
+                key={`${step}-${side}`}
+                step={step}
+                side={side}
+                look={spotLook(step, side, { shrooms, steps, planting, plantedAll, choiceStep: onStep ? steps.length : null })}
+                walkerYou={walker.you}
+                shroom={hasShroom ? (shroomsYours ? 'yours' : 'theirs') : null}
+                spent={hasShroom && passed && !booms.includes(step)}
+                revealDelay={shroomsYours || booms.includes(step) ? 0 : 0.35}
+                onTap={onPlant ? () => onPlant(step, side) : onStep && step === steps.length ? () => onStep(side) : undefined}
+              />
+            )
+          }),
         )}
       </div>
-      <WalkerToken {...walker} steps={steps} boom={boomAt !== null} arrived={arrived} finishX={finishX} />
-      {boomAt !== null && boomSide && <Explosion x={columnX(boomAt + 1)} y={ROW_Y[boomSide]} />}
+      <WalkerToken {...walker} steps={steps} hit={booms.at(-1) === steps.length - 1} arrived={arrived} />
+      {booms.map((step) => {
+        const side = steps[step]
+        return side && <Explosion key={step} x={columnX(step + 1)} y={ROW_Y[side]} />
+      })}
       {children}
-    </motion.div>
+    </div>
   )
 }
 
@@ -433,13 +437,14 @@ interface SpotProps {
   look: SpotLook
   walkerYou: boolean
   shroom: 'yours' | 'theirs' | null
+  /** A shroom the walker went past on the other lane: dodged, so it fades. */
+  spent: boolean
   /** Seconds before a revealed shroom pops up. */
   revealDelay: number
-  beyondGoal: boolean
   onTap?: () => void
 }
 
-function Spot({ step, side, look, walkerYou, shroom, revealDelay, beyondGoal, onTap }: SpotProps) {
+function Spot({ step, side, look, walkerYou, shroom, spent, revealDelay, onTap }: SpotProps) {
   const lane = side === 'up' ? 'top' : 'bottom'
   return (
     <button
@@ -447,9 +452,7 @@ function Spot({ step, side, look, walkerYou, shroom, revealDelay, beyondGoal, on
       onClick={onTap}
       disabled={!onTap}
       aria-label={`Step ${step + 1}, ${lane}${shroom ? ', shroom' : ''}`}
-      className={`group flex touch-manipulation items-center justify-center rounded-full outline-gold focus-visible:outline-2 disabled:cursor-default ${
-        beyondGoal ? 'opacity-50' : ''
-      }`}
+      className="group flex touch-manipulation items-center justify-center rounded-full outline-gold focus-visible:outline-2 disabled:cursor-default"
       style={{ gridColumn: step + 2, gridRow: side === 'up' ? 1 : 2 }}
     >
       <span className={`relative flex aspect-square w-[80%] items-center justify-center rounded-full border-2 transition ${lookClass(look, walkerYou)}`}>
@@ -473,7 +476,9 @@ function Spot({ step, side, look, walkerYou, shroom, revealDelay, beyondGoal, on
             initial={{ scale: 0, rotate: -40 }}
             animate={{ scale: 1, rotate: 0 }}
             transition={{ type: 'spring', stiffness: 420, damping: 16, delay: revealDelay }}
-            className={`absolute size-[88%] rounded-full border-2 ${shroom === 'yours' ? 'border-hextech' : 'border-red-400'}`}
+            className={`absolute size-[88%] rounded-full border-2 transition-[filter,opacity] duration-500 ${
+              shroom === 'yours' ? 'border-hextech' : 'border-red-400'
+            } ${spent ? 'opacity-35 grayscale' : ''}`}
           />
         )}
       </span>
@@ -485,16 +490,16 @@ interface WalkerTokenProps {
   champion: string
   you: boolean
   steps: readonly Side[]
-  boom: boolean
+  /** The last step went boom: the walker staggers, then walks on. */
+  hit: boolean
+  /** The walk is over: the walker hops onto B. */
   arrived: boolean
-  /** Where the walker ends up when they make it, in percent. */
-  finishX: number
 }
 
-/** The walker's champion, hopping from stone to stone. */
-function WalkerToken({ champion, you, steps, boom, arrived, finishX }: WalkerTokenProps) {
+/** The walker's champion, hopping from stone to stone. A boom knocks them about but never stops them. */
+function WalkerToken({ champion, you, steps, hit, arrived }: WalkerTokenProps) {
   const last = steps.at(-1)
-  const left = arrived ? finishX : last ? columnX(steps.length) : columnX(0)
+  const left = arrived ? columnX(COLUMNS - 1) : last ? columnX(steps.length) : columnX(0)
   const top = arrived || !last ? 50 : ROW_Y[last]
   return (
     <motion.div
@@ -505,7 +510,8 @@ function WalkerToken({ champion, you, steps, boom, arrived, finishX }: WalkerTok
       style={{ width: TOKEN_WIDTH }}
     >
       <motion.div
-        animate={boom ? { rotate: [0, -40, -25], scale: [1, 1.3, 0.85], opacity: 0.6 } : { rotate: 0, scale: 1, opacity: 1 }}
+        key={steps.length}
+        animate={hit && !arrived ? { rotate: [0, -35, 20, -10, 0], scale: [1, 1.3, 0.9, 1] } : { rotate: 0, scale: 1 }}
         transition={{ duration: 0.6 }}
         className="size-full"
       >
@@ -515,7 +521,7 @@ function WalkerToken({ champion, you, steps, boom, arrived, finishX }: WalkerTok
           alt=""
           animate={{ y: [0, -14, 0], scale: [1, 1.12, 1] }}
           transition={{ duration: 0.35 }}
-          className={`size-full rounded-full border-2 shadow-lg shadow-black/60 ${you ? 'border-hextech' : 'border-red-400'} ${boom ? 'grayscale' : ''}`}
+          className={`size-full rounded-full border-2 shadow-lg shadow-black/60 ${you ? 'border-hextech' : 'border-red-400'}`}
         />
       </motion.div>
     </motion.div>
@@ -564,15 +570,8 @@ function Explosion({ x, y }: { x: number; y: number }) {
   )
 }
 
-/** B: a flag at the finish, or on the goal line in one-role games. */
-function FinishMark({ goal }: { goal: number | null }) {
-  if (goal !== null) {
-    return (
-      <div className="absolute top-0 h-[16%] -translate-x-1/2" style={{ left: `${goalX(goal)}%` }} aria-hidden="true">
-        <Flag className="h-full" />
-      </div>
-    )
-  }
+/** B: a flag at the finish. */
+function FinishMark() {
   return (
     <div
       className="absolute top-[12.5%] bottom-[12.5%] flex -translate-x-1/2 flex-col items-center justify-center"
@@ -608,9 +607,8 @@ const PEBBLES: readonly [number, number, number][] = [
 ]
 
 /** Top lane, drawn: grass on both sides, a dirt lane, and arrows pointing to the finish. */
-function LaneArt({ arrows, goal }: { arrows: boolean; goal: number | null }) {
+function LaneArt({ arrows }: { arrows: boolean }) {
   const id = useId()
-  const goalLineX = goal === null ? null : (goal + 1) * COLUMN_WIDTH
   return (
     <svg viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`} preserveAspectRatio="none" className="absolute inset-0 size-full" aria-hidden="true">
       <defs>
@@ -647,9 +645,6 @@ function LaneArt({ arrows, goal }: { arrows: boolean; goal: number | null }) {
             />
           )
         })}
-      {goalLineX !== null && (
-        <line x1={goalLineX} y1={LANE_TOP - 6} x2={goalLineX} y2={LANE_BOTTOM + 6} stroke="#c8aa6e" strokeWidth="3" strokeDasharray="6 5" />
-      )}
     </svg>
   )
 }
@@ -685,11 +680,11 @@ function RouteArrow({ toX }: { toX: number }) {
 
 const MINI_LANE = 'bg-[linear-gradient(to_bottom,#2c6136_0_16%,#8d6b43_16%_84%,#2c6136_84%)]'
 
-/** 1: Teemo plants 3 shrooms on the path. 2: one shroom per column, the other spot is ✕. 3: Yi hops to the flag. */
+/** 1: Teemo plants 3 shrooms, one per column. 2: Yi walks through, a boom, and on he goes. 3: the points. */
 export function ShroomTutorialArt({ step }: TutorialArtProps) {
   if (step === 0) return <PlantArt />
-  if (step === 1) return <OnePerColumnArt />
-  return <WalkArt />
+  if (step === 1) return <WalkThroughArt />
+  return <PointsArt />
 }
 
 const ART_SHROOMS: readonly { column: number; side: Side }[] = [
@@ -735,39 +730,62 @@ function PlantArt() {
   )
 }
 
-function OnePerColumnArt() {
-  return (
-    <div className={`flex size-full flex-col items-center justify-center gap-[8%] ${MINI_LANE}`}>
-      <span className="relative flex aspect-square w-[36%] items-center justify-center rounded-full border-2 border-hextech bg-hextech/20">
-        <img src={SHROOM_ICON} alt="" className="absolute size-[88%] rounded-full" />
-      </span>
-      <motion.span
-        animate={{ scale: [1, 1.1, 1] }}
-        transition={{ duration: 1.2, repeat: Infinity }}
-        className="flex aspect-square w-[36%] items-center justify-center rounded-full border-2 border-dashed border-amber-100/40 bg-stone-950/50"
-      >
-        <span className="text-xl font-black text-red-400 sm:text-3xl">✕</span>
-      </motion.span>
-    </div>
-  )
-}
+/** The walk loops every few seconds: hop, hop onto a shroom (boom), hop, finish. */
+const WALK_LOOP = 3.6
+const WALK_TIMES = [0, 0.22, 0.44, 0.66, 0.88, 1]
 
-function WalkArt() {
+function WalkThroughArt() {
   return (
-    <div className={`relative size-full ${MINI_LANE}`}>
+    <div className={`relative size-full overflow-hidden ${MINI_LANE}`}>
       <div className="absolute inset-y-[16%] right-[16%] left-[18%] grid grid-cols-3 grid-rows-2 place-items-center">
         {Array.from({ length: 6 }, (_, index) => (
-          <span key={index} className="aspect-square w-[62%] rounded-full border-2 border-hextech/80 bg-hextech/20 shadow-[0_0_8px_rgb(10_200_185/0.7)]" />
+          <span key={index} className="relative aspect-square w-[62%] rounded-full border-2 border-amber-100/40 bg-stone-950/30">
+            {index === 4 && <img src={SHROOM_ICON} alt="" className="absolute inset-0 size-full rounded-full border-2 border-red-400" />}
+          </span>
         ))}
       </div>
+      <motion.span
+        animate={{ scale: [0, 0, 2.2, 0, 0], opacity: [0, 0, 0.9, 0, 0] }}
+        transition={{ duration: WALK_LOOP, times: [0, 0.43, 0.5, 0.62, 1], repeat: Infinity }}
+        className="absolute top-[67%] left-[51%] size-[18%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-lime-400/80 blur-[2px]"
+        aria-hidden="true"
+      />
       <Flag className="absolute top-1/2 right-[2%] h-[30%] -translate-y-1/2" />
       <motion.img
         src={championIconById('MasterYi')}
         alt=""
-        animate={{ left: ['8%', '29%', '51%', '73%', '90%'], top: ['50%', '33%', '67%', '33%', '50%'] }}
-        transition={{ duration: 3, ease: 'easeInOut', repeat: Infinity, repeatDelay: 0.5 }}
+        animate={{
+          left: ['8%', '29%', '51%', '73%', '90%', '90%'],
+          top: ['50%', '33%', '67%', '33%', '50%', '50%'],
+          rotate: [0, 0, -30, 0, 0, 0],
+        }}
+        transition={{ duration: WALK_LOOP, times: WALK_TIMES, ease: 'easeInOut', repeat: Infinity }}
         className="absolute size-[24%] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-red-400 shadow-md shadow-black/60"
       />
+    </div>
+  )
+}
+
+function PointsArt() {
+  return (
+    <div className="grid size-full grid-cols-[1fr_auto_1fr] grid-rows-2 place-items-center gap-x-1 bg-abyss/60 px-[8%] py-[10%]">
+      <span className="relative flex aspect-square w-[80%] items-center justify-center">
+        <motion.span
+          animate={{ scale: [1, 1.6, 1], opacity: [0.8, 0, 0.8] }}
+          transition={{ duration: 1.4, repeat: Infinity }}
+          className="absolute inset-0 rounded-full bg-lime-400/60 blur-[2px]"
+          aria-hidden="true"
+        />
+        <img src={SHROOM_ICON} alt="" className="relative size-full rounded-full border-2 border-red-400" />
+      </span>
+      <span className="font-display text-sm font-black text-gold sm:text-lg">+1</span>
+      <img src={championIconById('Teemo')} alt="" className="aspect-square w-[80%] rounded-full border-2 border-hextech" />
+      <span className="relative flex aspect-square w-[80%] items-center justify-center">
+        <img src={SHROOM_ICON} alt="" className="size-full rounded-full border-2 border-gold/30 opacity-35 grayscale" />
+        <span className="absolute font-black text-gold-light sm:text-xl">✓</span>
+      </span>
+      <span className="font-display text-sm font-black text-gold sm:text-lg">+1</span>
+      <img src={championIconById('MasterYi')} alt="" className="aspect-square w-[80%] rounded-full border-2 border-red-400" />
     </div>
   )
 }
