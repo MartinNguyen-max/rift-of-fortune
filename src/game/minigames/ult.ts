@@ -8,8 +8,8 @@ import { stepSeed, type BothMoves, type GameSetup, type MiniGameRules, type Owed
 export const ULT = {
   seconds: 9,
   /** Bar lengths per second at the start, and how much faster it gets each second. */
-  speed: { min: 0.75, max: 0.95 },
-  acceleration: 0.2,
+  speed: { min: 1.45, max: 1.75 },
+  acceleration: 0.35,
   /** Where the marker starts, so it is never stuck at the very edge. */
   start: 0.08,
 } as const
@@ -83,7 +83,7 @@ export function zoneCrossings(bar: UltBar): number[] {
 }
 
 /** The bot waits for one of the first passes over the zone and presses a little early or late. */
-export const BOT_ULT = { error: 0.24 } as const
+export const BOT_ULT = { error: 0.12 } as const
 
 export function botPress(bar: UltBar, seed: number): number {
   const random = seededRandom(seed ^ 0x1b873593)

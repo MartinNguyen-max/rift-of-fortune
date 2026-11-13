@@ -6,7 +6,7 @@ import type { Player } from './versus'
  * streaks stay). Round 3: Udyr's spams max out at 15 keys, Headshot is a target to tap, Teemo
  * counts shrooms, and Malphite and the smite got harder.
  */
-const SCORING_VERSION: Partial<Record<MiniGameId, number>> = { duel: 2, combo: 2, shrooms: 2, ult: 2, smite: 2 }
+const SCORING_VERSION: Partial<Record<MiniGameId, number>> = { duel: 2, combo: 2, shrooms: 2, ult: 3, smite: 2 }
 
 export const scoringVersion = (id: MiniGameId): number => SCORING_VERSION[id] ?? 1
 
