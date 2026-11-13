@@ -129,10 +129,13 @@ function LiveEventsSummary({ round, events, mySide }: { round: RoundState; event
         const format = (score: number) => MINI_GAME_RULES[live.game].formatScore(score, setup)
         return (
           <li key={index} className="flex items-center gap-2 px-1">
-            <img src={championIconById(info.champion)} alt="" className="size-6 shrink-0 rounded-full" />
-            <span className="min-w-0 flex-1 text-gold-light/90 [overflow-wrap:anywhere]">{info.name}</span>
-            <span className="text-right font-mono text-[11px] text-gold-light/60">
-              {format(result.scores[mySide])} – {format(result.scores[theirSide])}
+            <img src={championIconById(info.champion)} alt="" className="size-7 shrink-0 rounded-full" />
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="leading-tight text-gold-light/90">{info.name}</span>
+              <span className="font-mono text-[11px] text-gold-light/60">
+                {format(result.scores[mySide])} – {format(result.scores[theirSide])}
+                {result.tie && ' · coin flip'}
+              </span>
             </span>
             <span className={`w-11 shrink-0 text-right font-bold ${won ? 'text-hextech' : 'text-red-400'}`}>{won ? 'Won' : 'Lost'}</span>
           </li>
