@@ -4,6 +4,7 @@ import { Countdown } from '../components/Countdown'
 import { routeHref, type Route } from '../components/useHashRoute'
 import { championIconUrl, gameData, rankEmblemUrl, summonersRiftMapUrl } from '../data'
 import { MINI_GAME_IDS, MINI_GAMES } from '../game/minigames/catalog'
+import { championIconById } from '../components/minigames/miniGameArt'
 import { dailyNumber, dateKey } from '../game/daily'
 import { getTeamMembers } from '../game/gameState'
 import { rankLabel } from '../game/scoring/rank'
@@ -86,15 +87,36 @@ export function HomePage() {
         }
         delay={0.3}
       >
-        Send a friend a link, draft at the same time, then fight it out. Smite Baron and Elder, land your ult and read
-        the gank. Spam GG when you win.
+        Send a friend a link, draft at the same time, then fight it out. You pick the mini-games that become the live
+        events of the match: read the gank, steal Baron, outdraw them at High Noon. Spam GG when you win.
       </ModeCard>
 
-      <ModeCard route="minigames" badge="New · Beta" title="Mini-games" cta="Play mini-games" art={<MiniGameIcons />} delay={0.4} wide>
-        Six quick duels against a bot: a High Noon quick draw, Blitzcrank hooks, Udyr spam, Teemo shrooms, Ornn’s
-        forge and Mundo cleavers. Pick your favorite.
+      <ModeCard route="minigames" badge="New" title="Mini-games" cta="Play mini-games" art={<MiniGameIcons />} delay={0.4} wide>
+        {MINI_GAME_IDS.length} quick fights against a bot, each in under a minute. In Multiplayer they are the live
+        events that swing the match.
+        <MiniGameRundown />
       </ModeCard>
     </div>
+  )
+}
+
+/** Every mini-game in one line each: who you play and what it is about. */
+function MiniGameRundown() {
+  return (
+    <ul className="mt-4 grid gap-2 sm:grid-cols-2" aria-label="All mini-games">
+      {MINI_GAME_IDS.map((id) => {
+        const { name, champion, tagline } = MINI_GAMES[id]
+        return (
+          <li key={id} className="flex min-w-0 items-center gap-2.5 rounded-lg border border-gold/15 bg-abyss/60 p-2">
+            <img src={championIconById(champion)} alt="" className="size-9 shrink-0 rounded-full border border-gold/40" />
+            <span className="min-w-0">
+              <span className="block font-display text-sm leading-tight font-bold text-gold-light [overflow-wrap:anywhere]">{name}</span>
+              <span className="block text-xs leading-snug text-gold-light/60">{tagline}</span>
+            </span>
+          </li>
+        )
+      })}
+    </ul>
   )
 }
 
@@ -137,7 +159,7 @@ function ModeCard({ route, badge, title, cta, art, delay, wide = false, children
         {badge}
       </span>
       <h2 className="font-display text-3xl font-black text-gold">{title}</h2>
-      <p className="flex-1 text-sm text-gold-light/80">{children}</p>
+      <div className="flex-1 text-sm text-gold-light/80">{children}</div>
       <span className="mt-2 w-fit rounded-md border-2 border-gold bg-panel px-6 py-2.5 font-display font-bold tracking-wider text-gold-light uppercase transition group-hover:bg-gold/20 group-hover:shadow-lg group-hover:shadow-gold/20">
         {cta}
       </span>
