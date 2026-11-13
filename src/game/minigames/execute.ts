@@ -134,11 +134,26 @@ export function finalScores(moves: BothMoves, seed: number): [ExecuteScore, Exec
   return [executeScore(mine), executeScore(theirs)]
 }
 
+/**
+ * One number per player for the result card and the personal best: points, then kills, then
+ * speed, so higher is always better and "15 pts · 2.4 s" shows why a tie on points was won.
+ */
+const POINTS_BASE = 100_000
+const KILLS_BASE = 10_000
+
+export function packScore({ points, kills, time }: ExecuteScore): number {
+  if (kills === 0) return 0
+  return points * POINTS_BASE + kills * KILLS_BASE + (KILLS_BASE - 1 - Math.min(KILLS_BASE - 1, time))
+}
+
+const pointsOf = (score: number) => Math.floor(score / POINTS_BASE)
+const timeOf = (score: number) => KILLS_BASE - 1 - (score % KILLS_BASE)
+
 function settle(moves: BothMoves, { seed }: GameSetup): Settled | null {
   const scores = finalScores(moves, seed)
   if (!scores) return null
   const [a, b] = scores
-  return { winner: compareScores(a, b), scores: [a.points, b.points] }
+  return { winner: compareScores(a, b), scores: [packScore(a), packScore(b)] }
 }
 
 function owed(moves: BothMoves): Owed[] {
@@ -169,6 +184,10 @@ const longestWaveSeconds = (EXECUTE.enemies * EXECUTE.gapMs.max + EXECUTE.window
 
 const formatPoints = (points: number) => `${points} ${points === 1 ? 'pt' : 'pts'}`
 
+/** "10 pts · 2.4 s": the points, and how long the kills took in total. */
+export const formatExecuteScore = (score: number): string =>
+  score === 0 ? formatPoints(0) : `${formatPoints(pointsOf(score))} · ${(timeOf(score) / 1000).toFixed(1)} s`
+
 export const EXECUTE_RULES: MiniGameRules = {
   chances: 1,
   // A 3-2-1, the wave, and a moment for the last call.
@@ -177,6 +196,6 @@ export const EXECUTE_RULES: MiniGameRules = {
   settle,
   fallback: () => MISSED,
   botMove: (step, _moves, { seed }) => botExecute(seed, step),
-  formatScore: (score) => formatPoints(score),
-  best: { of: (moves, setup) => settle(moves, setup)?.scores[0] ?? null, lowerIsBetter: false, format: formatPoints },
+  formatScore: (score) => formatExecuteScore(score),
+  best: { of: (moves, setup) => settle(moves, setup)?.scores[0] ?? null, lowerIsBetter: false, format: formatExecuteScore },
 }

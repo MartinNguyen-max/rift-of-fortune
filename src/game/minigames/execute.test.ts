@@ -4,6 +4,7 @@ import {
   BOT_EXECUTE,
   botExecute,
   compareScores,
+  packScore,
   enemyResults,
   EXECUTE,
   EXECUTE_RULES,
@@ -90,10 +91,21 @@ describe('the winner', () => {
     expect(compareScores(s(6, 3, 1200), s(6, 3, 1200))).toBeNull()
   })
 
-  it('settles once both played all five, with the points as scores', () => {
+  it('settles once both played all five, with points, kills and speed in one score', () => {
     const moves: BothMoves = [play('KKKKM'), play('KMKKK')]
     expect(EXECUTE_RULES.settle([play('KKKKM'), play('KMKK')], live)).toBeNull()
-    expect(EXECUTE_RULES.settle(moves, live)).toEqual({ winner: 0, scores: [10, 7] })
+    const settled = EXECUTE_RULES.settle(moves, live)
+    expect(settled?.winner).toBe(0)
+    expect(settled?.scores.map((score) => EXECUTE_RULES.formatScore(score, live).split(' · ')[0])).toEqual(['10 pts', '7 pts'])
+  })
+
+  it('packs the score so higher is always better, and shows the time for a tie on points', () => {
+    expect(packScore(s(6, 3, 1100))).toBeGreaterThan(packScore(s(6, 3, 1200)))
+    expect(packScore(s(6, 4, 3000))).toBeGreaterThan(packScore(s(6, 3, 100)))
+    expect(packScore(s(7, 3, 4000))).toBeGreaterThan(packScore(s(6, 5, 100)))
+    expect(packScore(s(0, 0, 0))).toBe(0)
+    expect(EXECUTE_RULES.formatScore(packScore(s(15, 5, 2400)), live)).toBe('15 pts · 2.4 s')
+    expect(EXECUTE_RULES.formatScore(0, live)).toBe('0 pts')
   })
 
   it('calls equal waves a tie', () => {
@@ -112,11 +124,11 @@ describe('the winner', () => {
     expect(EXECUTE_RULES.fallback({ player: 0, step: 0 }, [[], []], live)).toBe(MISSED)
   })
 
-  it('keeps your points as the personal best', () => {
+  it('keeps your points (then speed) as the personal best', () => {
     const setup = soloSetup(SEED)
-    expect(EXECUTE_RULES.best?.of([play('KKKMK'), play('MMMMM')], setup)).toBe(7)
-    expect(EXECUTE_RULES.formatScore(15, setup)).toBe('15 pts')
-    expect(EXECUTE_RULES.formatScore(1, setup)).toBe('1 pt')
+    const best = EXECUTE_RULES.best?.of([play('KKKMK'), play('MMMMM')], setup) ?? 0
+    expect(EXECUTE_RULES.best?.format(best)).toMatch(/^7 pts · \d\.\d s$/)
+    expect(EXECUTE_RULES.formatScore(packScore(s(1, 1, 500)), setup)).toBe('1 pt · 0.5 s')
   })
 
   it('fits the whole wave in the Multiplayer time limit', () => {
