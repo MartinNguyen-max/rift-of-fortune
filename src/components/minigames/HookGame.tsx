@@ -78,7 +78,13 @@ export function HookGame({ setup, me, moves, sendMove, onShown, players }: MiniG
         </div>
       </div>
 
-      <HookField frame={run.frame} popups={recentGrabs(run.grabs, run.now, POPUP_SECONDS)} denied={run.denied} onFire={run.fire}>
+      <HookField
+        champion={players[me].champion}
+        frame={run.frame}
+        popups={recentGrabs(run.grabs, run.now, POPUP_SECONDS)}
+        denied={run.denied}
+        onFire={run.fire}
+      >
         {!started && !over && (
           <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-abyss/50">
             <GetReady onGo={start} />
@@ -171,6 +177,8 @@ function GameClock({ left, total }: { left: number; total: number }) {
 }
 
 interface HookFieldProps {
+  /** Who throws the hook: Blitzcrank, or Thresh for the guest in Multiplayer. */
+  champion: string
   frame: HookFrame
   /** Your grabs that just landed. */
   popups: readonly Grab[]
@@ -181,8 +189,8 @@ interface HookFieldProps {
   children: ReactNode
 }
 
-/** The field from Blitzcrank's point of view. Tap anywhere on it to fire. */
-function HookField({ frame, popups, denied, onFire, children }: HookFieldProps) {
+/** The field from the hooker's point of view. Tap anywhere on it to fire. */
+function HookField({ champion, frame, popups, denied, onFire, children }: HookFieldProps) {
   const id = useId()
   const clip = `${id}-circle`
   const { angle, length, carried, remaining, cooldownLeft } = frame
@@ -237,7 +245,7 @@ function HookField({ frame, popups, denied, onFire, children }: HookFieldProps) 
         <g transform={`translate(${tip.x} ${tip.y}) rotate(${-angle})`}>
           <path d="M-2 0 L-1.4 2.2 M2 0 L1.4 2.2 M-2 0 H2" stroke={GOLD_LIGHT} strokeWidth="0.7" fill="none" strokeLinecap="round" />
         </g>
-        <Blitzcrank clip={clip} cooldownLeft={cooldownLeft} />
+        <Hooker champion={champion} clip={clip} cooldownLeft={cooldownLeft} />
       </svg>
 
       <GoldPopups grabs={popups} />
@@ -246,8 +254,8 @@ function HookField({ frame, popups, denied, onFire, children }: HookFieldProps) 
   )
 }
 
-/** Blitzcrank, ringed by a bar that fills while Rocket Grab cools down and glows once it is ready. */
-function Blitzcrank({ clip, cooldownLeft }: { clip: string; cooldownLeft: number | null }) {
+/** The hooker, ringed by a bar that fills while the hook cools down and glows once it is ready. */
+function Hooker({ champion, clip, cooldownLeft }: { champion: string; clip: string; cooldownLeft: number | null }) {
   const { x, y } = HOOK_ORIGIN
   const ready = cooldownLeft === 0
   const charge = cooldownLeft === null ? 0 : 1 - cooldownLeft / HOOK.cooldown
@@ -267,7 +275,7 @@ function Blitzcrank({ clip, cooldownLeft }: { clip: string; cooldownLeft: number
         transform={`rotate(-90 ${x} ${y})`}
       />
       <image
-        href={championIconById('Blitzcrank')}
+        href={championIconById(champion)}
         x={x - BLITZ_RADIUS}
         y={y - BLITZ_RADIUS}
         width={BLITZ_RADIUS * 2}

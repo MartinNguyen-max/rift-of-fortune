@@ -64,11 +64,11 @@ export function DuelGame({ setup, me, moves, sendMove, onShown, players }: MiniG
         <ContestantTag contestant={players[them]} you={false} value={`${seenWins(results, seen, them)}`} />
       </div>
       {showing ? (
-        <Arena result={showing} me={me} them={players[them]} />
+        <Arena result={showing} me={me} you={players[me]} them={players[them]} />
       ) : drawAt !== undefined && spot && !over && myShot === undefined ? (
-        <Standoff key={round} drawAt={drawAt} spot={spot} theirShot={moves[them][round]} me={me} them={players[them]} onShoot={shoot} />
+        <Standoff key={round} drawAt={drawAt} spot={spot} theirShot={moves[them][round]} me={me} you={players[me]} them={players[them]} onShoot={shoot} />
       ) : (
-        <Arena result={null} me={me} them={players[them]} />
+        <Arena result={null} me={me} you={players[me]} them={players[them]} />
       )}
       {!showing && !over && myShot !== undefined && <Waiting name={players[them].name} />}
       <p className="text-center text-sm text-gold-light/70">
@@ -88,6 +88,7 @@ interface StandoffProps {
   /** The opponent's shot this round, once known (the bot's is known up front). */
   theirShot: number | undefined
   me: Player
+  you: Contestant
   them: Contestant
   onShoot: (ms: number) => void
 }
@@ -100,7 +101,7 @@ interface Miss {
 }
 
 /** One round, from "Ready..." until you tap. Mounted fresh each round so its clock starts at 0. */
-function Standoff({ drawAt, spot, theirShot, me, them, onShoot }: StandoffProps) {
+function Standoff({ drawAt, spot, theirShot, me, you, them, onShoot }: StandoffProps) {
   const { seconds, read } = useStopwatch(true)
   const fired = useRef(false)
   const [misses, setMisses] = useState<Miss[]>([])
@@ -137,7 +138,7 @@ function Standoff({ drawAt, spot, theirShot, me, them, onShoot }: StandoffProps)
   const drawn = seconds * 1000 >= drawAt
   const call = drawn ? null : seconds < READY_SECONDS ? 'Ready...' : 'Steady...'
   return (
-    <Arena result={null} me={me} them={them} call={call} drawn={drawn} onTap={tapArena}>
+    <Arena result={null} me={me} you={you} them={them} call={call} drawn={drawn} onTap={tapArena}>
       {drawn && <Target spot={spot} onHit={hit} />}
       {misses.map((miss) => (
         <MissMark key={miss.key} miss={miss} />
@@ -198,6 +199,7 @@ interface ArenaProps {
   /** The round just played, shown between rounds. */
   result: DuelRoundResult | null
   me: Player
+  you: Contestant
   them: Contestant
   call?: string | null
   /** The Baron is up. */
@@ -207,7 +209,7 @@ interface ArenaProps {
   children?: ReactNode
 }
 
-function Arena({ result, me, them, call = null, drawn = false, onTap, children }: ArenaProps) {
+function Arena({ result, me, you, them, call = null, drawn = false, onTap, children }: ArenaProps) {
   const won = result?.winner === me
   return (
     <motion.div
@@ -220,8 +222,8 @@ function Arena({ result, me, them, call = null, drawn = false, onTap, children }
     >
       <div className="absolute top-6 left-1/2 size-24 -translate-x-1/2 rounded-full bg-amber-200/40 blur-md" aria-hidden="true" />
       <Duelist
-        src={championLoadingUrl('Caitlyn', SKINS.sheriffCaitlyn)}
-        alt="Sheriff Caitlyn"
+        src={duelistArt(you.champion)}
+        alt={you.name}
         fell={result !== null && !won}
         fired={result !== null && won && result.reason === 'faster'}
       />
@@ -242,8 +244,8 @@ function Arena({ result, me, them, call = null, drawn = false, onTap, children }
       {children}
       {result && <RoundCall result={result} me={me} them={them} />}
       <Duelist
-        src={championLoadingUrl('Jhin', SKINS.highNoonJhin)}
-        alt="High Noon Jhin"
+        src={duelistArt(them.champion)}
+        alt={them.name}
         mirrored
         fell={result !== null && won}
         fired={result !== null && !won && result.reason === 'faster'}
@@ -251,6 +253,10 @@ function Arena({ result, me, them, call = null, drawn = false, onTap, children }
     </motion.div>
   )
 }
+
+/** The High Noon skins. In Multiplayer the guest plays Jhin, so each side shows its own champion. */
+const DUELIST_SKINS: Readonly<Record<string, number>> = { Caitlyn: SKINS.sheriffCaitlyn, Jhin: SKINS.highNoonJhin }
+const duelistArt = (champion: string) => championLoadingUrl(champion, DUELIST_SKINS[champion] ?? 0)
 
 function Duelist({ src, alt, mirrored = false, fell, fired }: { src: string; alt: string; mirrored?: boolean; fell: boolean; fired: boolean }) {
   return (
