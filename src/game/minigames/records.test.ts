@@ -26,6 +26,10 @@ describe('addOutcome', () => {
   })
 })
 
+it('never keeps a zero score as a best', () => {
+  expect(addOutcome(emptyRecord(), { winner: 1, score: 0, lowerIsBetter: false })).toMatchObject({ newBest: false, record: { best: null } })
+})
+
 describe('parseRecord', () => {
   it('reads a stored record and drops damaged ones', () => {
     expect(parseRecord({ played: 3, wins: 1, streak: 0, bestStreak: 1, best: 240 })).toEqual({

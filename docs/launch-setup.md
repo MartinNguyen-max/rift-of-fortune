@@ -7,6 +7,7 @@ What the project owner needs to set up (accounts can't be created from code). Ea
 - **2026-11-12:** Vercel is live at `rift-of-fortune.vercel.app`, and Supabase is set up locally (`.env.local`). The domain riftoffortune.dk is not connected yet. **Match vs Bots is built** (`#/match`). See "Match vs Bots" in [DECISIONS.md](../DECISIONS.md).
 - **2026-11-12 (later):** **Multiplayer is built** (`#/play`), on Supabase Realtime. It needs the same two Supabase env variables on Vercel as the Daily. See "Multiplayer" in [DECISIONS.md](../DECISIONS.md).
 - **2026-11-12 (night):** **Mini-games are built** (`#/minigames`): six games against a bot. Next: the owner plays them and picks the favorites for Multiplayer. See [minigames.md](minigames.md).
+- **2026-11-13:** **Feedback round 2 is built** (both files in `docs/feedback/`): nine mini-games on one model shared with Multiplayer (three new: I Was Hiding, Unstoppable Force, Baron Steal), picture tutorials and personal bests, lobby settings (pace, rerolls, which mini-games, both roles), the mini-games as the live events, earlier match endings, a wilder win-chance bar, a calmer Multiplayer screen, surrender from the versus screen, and 30 s gone = surrender. See "Feedback round 2" in [DECISIONS.md](../DECISIONS.md). Next: the owner playtests Multiplayer with a friend on two devices.
 - **Built earlier:** Classic mode, Daily Rift, homepage, ranked scoring with a lane-swap table, and optional Supabase stats. Lint, build and all tests pass.
 - **Name decided: Rift of Fortune.** "Wild Rift of Fortune" was rejected: Wild Rift is Riot's mobile game.
 - **Domain:** riftoffortune.dk at Simply (the owner is buying it).
@@ -20,7 +21,7 @@ What the project owner needs to set up (accounts can't be created from code). Ea
   1. Add Open Graph link previews, which need the final URL.
   2. Verify the Daily stats end to end.
   3. ~~Build Match vs Bots~~ (done, reworked after the first playtest).
-  4. ~~Build Multiplayer~~ (done 2026-11-12: 1v1 lobbies with link or code, 90 s draft, versus screen, four live mini-games, emotes, rematch). Next: the owner playtests it with a friend on two devices.
+  4. ~~Build Multiplayer~~ (done 2026-11-12: 1v1 lobbies with link or code, draft, versus screen, live mini-games, emotes, rematch; reworked 2026-11-13 after feedback). Next: the owner playtests it with a friend on two devices.
 - **Other ideas** are in [ideas.md](ideas.md). Decisions and their reasons are in [DECISIONS.md](../DECISIONS.md).
 - **Never change** the localStorage prefix or the Daily seed (`rift-of-fortune:`) after launch.
 

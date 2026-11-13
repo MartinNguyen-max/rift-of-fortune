@@ -233,10 +233,18 @@ function RoundDots({ results, me }: { results: DuelRoundResult[]; me: Player }) 
 export function DuelTutorialArt({ step }: TutorialArtProps) {
   if (step === 0) {
     return (
-      <div className="flex size-full items-center justify-between bg-linear-to-b from-orange-300/30 to-yellow-950/70 px-1">
-        <img src={championIconById('Caitlyn')} alt="" className="size-8 rounded-full border-2 border-hextech" />
-        <span className="font-display text-lg font-black text-red-500 drop-shadow-[0_1px_2px_black] sm:text-2xl">DRAW!</span>
-        <img src={championIconById('Jhin')} alt="" className="size-8 -scale-x-100 rounded-full border-2 border-red-400" />
+      <div className="flex size-full flex-col items-center justify-center gap-1.5 bg-linear-to-b from-orange-300/30 to-yellow-950/70 px-1">
+        <motion.span
+          animate={{ scale: [0.8, 1.15, 1] }}
+          transition={{ duration: 1.4, repeat: Infinity, repeatDelay: 0.6 }}
+          className="font-display text-sm font-black text-red-500 drop-shadow-[0_1px_2px_black] sm:text-xl"
+        >
+          DRAW!
+        </motion.span>
+        <div className="flex w-full items-center justify-between px-1">
+          <img src={championIconById('Caitlyn')} alt="" className="size-7 rounded-full border-2 border-hextech sm:size-9" />
+          <img src={championIconById('Jhin')} alt="" className="size-7 -scale-x-100 rounded-full border-2 border-red-400 sm:size-9" />
+        </div>
       </div>
     )
   }

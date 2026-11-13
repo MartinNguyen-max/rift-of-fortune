@@ -32,7 +32,9 @@ export interface RecordUpdate {
 export function addOutcome(record: MiniGameRecord, { winner, score, lowerIsBetter }: GameOutcome): RecordUpdate {
   const won = winner === 0
   const streak = won ? record.streak + 1 : winner === null ? record.streak : 0
-  const improves = score !== null && (record.best === null || (lowerIsBetter ? score < record.best : score > record.best))
+  // Zero gold, points or keys is nothing to celebrate.
+  const counts = score !== null && (lowerIsBetter || score > 0)
+  const improves = counts && (record.best === null || (lowerIsBetter ? score < record.best : score > record.best))
   const next: MiniGameRecord = {
     played: record.played + 1,
     wins: record.wins + (won ? 1 : 0),

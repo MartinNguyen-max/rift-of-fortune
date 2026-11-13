@@ -106,7 +106,7 @@ function SoloCombo({ setup, me, moves, sendMove, onShown, players }: MiniGameVie
     <div className="flex flex-col items-center gap-4">
       <div className="flex w-full items-center justify-between gap-3">
         <SpamLength you={players[me]} length={length} />
-        <BotStatus bot={players[them]} botBest={botBest} length={length} />
+        <BotStatus bot={players[them]} botBest={botBest} length={length} over={settled !== null} />
       </div>
 
       <div className="flex min-h-52 w-full flex-col items-center justify-center gap-3">
@@ -149,8 +149,8 @@ function SpamLength({ you, length }: { you: Contestant; length: number }) {
   )
 }
 
-function BotStatus({ bot, botBest, length }: { bot: Contestant; botBest: number; length: number }) {
-  const out = length > botBest
+function BotStatus({ bot, botBest, length, over }: { bot: Contestant; botBest: number; length: number; over: boolean }) {
+  const out = length > botBest || over
   return (
     <div className="flex min-w-0 items-center gap-2 text-right text-sm" aria-live="polite">
       <span className={`[overflow-wrap:anywhere] ${out ? 'font-semibold text-red-400' : 'text-gold-light/70'}`}>
