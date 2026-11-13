@@ -2,26 +2,23 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { spellIconUrl } from '../../data'
 import {
-  checkCombo,
   COMBO_KEYS,
-  COMBO_MAX_LENGTH,
+  COMBO_ROUNDS,
   COMBO_RULES,
-  COMBO_START_LENGTH,
   comboCheer,
-  comboSpam,
+  comboSpams,
   FIRST_KEY_FACTOR,
   flashSeconds,
   inputSeconds,
-  liveCombos,
   rightKeys,
   type ComboKey,
 } from '../../game/minigames/combo'
 import { other, type GameSetup, type Player, type Settled } from '../../game/minigames/versus'
-import { liveScore, useComboKeys } from './comboScreen'
+import { useComboKeys } from './comboScreen'
 import { GetReady } from './GetReady'
 import { championIconById } from './miniGameArt'
 import { BigCall, ChoiceTimer, ContestantTag, Waiting } from './parts'
-import { useShownWhen, useTimeout } from './timing'
+import { useShownWhen } from './timing'
 import type { Contestant, MiniGameViewProps, TutorialArtProps } from './types'
 
 const SPELLS: Record<ComboKey, { name: string; icon: string; color: string }> = {
@@ -35,214 +32,89 @@ const SPELLS: Record<ComboKey, { name: string; icon: string; color: string }> = 
 const WATCH_SECONDS = 1.2
 /** Pause between two flashed keys, so the same key twice in a row can be seen. */
 const GAP_SECONDS = 0.14
-/** Solo: the cheer between two rounds. */
-const CHEER_SECONDS = 1.3
-/** Multiplayer: how long a spam's right and wrong keys stay up before the next spam. */
-const ROUND_RESULT_SECONDS = 1.5
+/** How long a spam's right and wrong keys stay up before the next spam. */
+const ROUND_RESULT_SECONDS = 1.8
 /** The last call and both scores stay up this long before the result covers the game. */
 const FINAL_MOMENT_MS = 2600
 
-/** Udyr Has No Combo: Simon with Q, W, E and R. Solo grows one spam; Multiplayer plays three new ones. */
-export function ComboGame(props: MiniGameViewProps) {
-  return props.setup.variant === 'solo' ? <SoloCombo {...props} /> : <LiveCombo {...props} />
-}
-
-type SoloStage = 'ready' | 'watch' | 'input' | 'cheer' | 'over'
-type SoloEnd = 'wrong' | 'slow' | 'beat'
-
-/** One spam that grows by a key each round, until a wrong key, the clock, or beating the bot's best. */
-function SoloCombo({ setup, me, moves, sendMove, onShown, players }: MiniGameViewProps) {
+/** Udyr Has No Combo: three new spams of 3, 5 and 7 keys. A wrong key doesn't end a spam: every right key counts. */
+export function ComboGame({ setup, me, moves, sendMove, onShown, players }: MiniGameViewProps) {
   const them = other(me)
-  const spam = useMemo(() => comboSpam(setup.seed), [setup.seed])
-  // Known from the start; only shown once you pass it.
-  const botBest = moves[them][0] ?? COMBO_MAX_LENGTH
-  const [stage, setStage] = useState<SoloStage>('ready')
-  const [length, setLength] = useState(COMBO_START_LENGTH)
+  const spams = useMemo(() => comboSpams(setup.seed), [setup.seed])
+  const mine = moves[me]
+  // Rebuilt from your moves: a player who reconnects goes on with the next spam.
+  const [round, setRound] = useState(() => Math.min(playedRounds(mine), COMBO_ROUNDS - 1))
+  const [stage, setStage] = useState<Stage>('ready')
   const [typed, setTyped] = useState<ComboKey[]>([])
-  const [end, setEnd] = useState<SoloEnd | null>(null)
   const settled = COMBO_RULES.settle(moves, setup)
   useShownWhen(settled !== null, onShown, FINAL_MOMENT_MS)
 
-  const typing = stage === 'input' && moves[me][0] === undefined
-  const completed = length > COMBO_START_LENGTH ? length - 1 : 0
-
-  const finish = useCallback(
-    (reason: SoloEnd, keys: number) => {
-      setEnd(reason)
-      setStage('over')
-      sendMove(0, keys)
-    },
-    [sendMove],
-  )
-
-  const press = useCallback(
-    (key: ComboKey) => {
-      if (!typing) return
-      const next = [...typed, key]
-      setTyped(next)
-      const check = checkCombo(spam, length, next)
-      if (check === 'wrong') finish('wrong', completed)
-      else if (check === 'complete') {
-        if (length > botBest || length >= COMBO_MAX_LENGTH) finish('beat', length)
-        else setStage('cheer')
-      }
-    },
-    [typing, typed, spam, length, completed, botBest, finish],
-  )
-
-  useTimeout(
-    () => {
-      setLength(length + 1)
-      setTyped([])
-      setStage('watch')
-    },
-    CHEER_SECONDS * 1000,
-    stage === 'cheer',
-  )
-  const watch = useCallback(() => setStage('watch'), [])
-  const type = useCallback(() => setStage('input'), [])
-
-  return (
-    <div className="flex flex-col items-center gap-4">
-      <div className="flex w-full items-center justify-between gap-3">
-        <SpamLength you={players[me]} length={length} />
-        <BotStatus bot={players[them]} botBest={botBest} length={length} over={settled !== null} />
-      </div>
-
-      <div className="flex min-h-52 w-full flex-col items-center justify-center gap-3">
-        {stage === 'ready' && <GetReady onGo={watch} />}
-        {stage === 'watch' && <Flasher key={length} keys={spam.slice(0, length)} onDone={type} />}
-        {stage === 'input' && (
-          <ChoiceTimer key={length} seconds={inputSeconds(length)} onTimeout={() => finish('slow', completed)} label="Your turn" />
-        )}
-        {stage === 'cheer' && <BigCall text={`Combo x${length}!`} tone="win" size="large" sub={comboCheer(length)} />}
-        {end && <SoloEndCall end={end} length={length} />}
-        {(stage === 'input' || stage === 'over') && <TypedKeys spam={spam} length={length} typed={typed} judged={stage === 'over'} />}
-      </div>
-
-      {settled ? <FinalScores settled={settled} me={me} players={players} setup={setup} /> : <KeyPad enabled={typing} onPress={press} />}
-    </div>
-  )
-}
-
-function SoloEndCall({ end, length }: { end: SoloEnd; length: number }) {
-  if (end === 'beat') return <BigCall text={`Combo x${length}!`} tone="win" size="large" />
-  return <BigCall text={end === 'wrong' ? 'Wrong key!' : 'Too slow!'} tone="lose" size="large" />
-}
-
-function SpamLength({ you, length }: { you: Contestant; length: number }) {
-  return (
-    <div className="flex shrink-0 items-center gap-2">
-      <img src={championIconById(you.champion)} alt="" className="size-9 rounded-full border-2 border-hextech" />
-      <span className="flex flex-col leading-tight">
-        <span className="text-xs tracking-wider text-gold-light/60 uppercase">Spam</span>
-        <motion.span
-          key={length}
-          initial={{ scale: 1.5 }}
-          animate={{ scale: 1 }}
-          className="font-display text-2xl leading-none font-black text-gold"
-        >
-          {length}
-        </motion.span>
-      </span>
-    </div>
-  )
-}
-
-function BotStatus({ bot, botBest, length, over }: { bot: Contestant; botBest: number; length: number; over: boolean }) {
-  const out = length > botBest || over
-  return (
-    <div className="flex min-w-0 items-center gap-2 text-right text-sm" aria-live="polite">
-      <span className={`[overflow-wrap:anywhere] ${out ? 'font-semibold text-red-400' : 'text-gold-light/70'}`}>
-        {out ? `${bot.name} fat-fingered at ${botBest + 1}!` : `${bot.name}: still spamming...`}
-      </span>
-      <img
-        src={championIconById(bot.champion)}
-        alt=""
-        className={`size-9 shrink-0 rounded-full border-2 border-red-400 ${out ? 'grayscale' : ''}`}
-      />
-    </div>
-  )
-}
-
-type LiveStage = 'ready' | 'watch' | 'input' | 'result'
-
-/** Multiplayer: three new spams of 3, 4 and 5 keys. A wrong key doesn't end it: every right key counts. */
-function LiveCombo({ setup, me, moves, sendMove, onShown, players }: MiniGameViewProps) {
-  const them = other(me)
-  const spams = useMemo(() => liveCombos(setup.seed), [setup.seed])
-  const [round, setRound] = useState(0)
-  const [stage, setStage] = useState<LiveStage>('ready')
-  const [typed, setTyped] = useState<ComboKey[][]>(() => spams.map(() => []))
-  const settled = COMBO_RULES.settle(moves, setup)
-  useShownWhen(settled !== null, onShown, FINAL_MOMENT_MS)
-
-  // Sent by you, or filled in by the host when you were too slow: either way your game is over.
-  const sent = moves[me][0] !== undefined
-  const spam = spams[round] ?? []
-  const roundTyped = typed[round] ?? []
-  const lastRound = round >= spams.length - 1
-  const typing = stage === 'input' && !sent
-  const judged = stage === 'result' || (sent && stage === 'input')
-  const judgedRounds = judged ? round + 1 : round
+  const spam = spams[round] ?? NO_KEYS
+  /** This spam's score once sent: by you, or by the host when your time ran out. */
+  const scored = mine[round]
+  const allSent = playedRounds(mine) >= COMBO_ROUNDS
+  const roundOver = stage === 'result' || scored !== undefined
+  const lastRound = round >= COMBO_ROUNDS - 1
+  const typing = stage === 'input' && scored === undefined
 
   const endRound = useCallback(
-    (allTyped: readonly ComboKey[][]) => {
+    (keys: readonly ComboKey[]) => {
       setStage('result')
-      if (lastRound) sendMove(0, liveScore(spams, allTyped))
+      sendMove(round, rightKeys(spam, keys))
     },
-    [lastRound, sendMove, spams],
+    [round, spam, sendMove],
   )
 
   const press = useCallback(
     (key: ComboKey) => {
-      const length = spams[round]?.length ?? 0
-      const before = typed[round]?.length ?? 0
-      if (!typing || before >= length) return
-      const next = typed.map((keys, index) => (index === round ? [...keys, key] : keys))
+      if (!typing || typed.length >= spam.length) return
+      const next = [...typed, key]
       setTyped(next)
-      if (before + 1 >= length) endRound(next)
+      if (next.length >= spam.length) endRound(next)
     },
-    [typing, spams, typed, round, endRound],
+    [typing, typed, spam.length, endRound],
   )
 
-  useTimeout(
-    () => {
+  useEffect(() => {
+    if (!roundOver || lastRound) return
+    const id = window.setTimeout(() => {
       setRound(round + 1)
+      setTyped([])
       setStage('watch')
-    },
-    ROUND_RESULT_SECONDS * 1000,
-    stage === 'result' && !lastRound && !sent,
-  )
+    }, ROUND_RESULT_SECONDS * 1000)
+    return () => window.clearTimeout(id)
+  }, [roundOver, lastRound, round])
+
   const watch = useCallback(() => setStage('watch'), [])
   const type = useCallback(() => setStage('input'), [])
+  const myScore = mine.slice(0, COMBO_ROUNDS).reduce<number>((total, keys) => total + (keys ?? 0), 0)
 
   return (
     <div className="flex flex-col items-center gap-4">
       <div className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-2">
-        <ContestantTag contestant={players[me]} you value={`${liveScore(spams.slice(0, judgedRounds), typed)}`} />
-        <SpamChips spams={spams} typed={typed} round={round} judgedRounds={judgedRounds} />
+        <ContestantTag contestant={players[me]} you value={`${myScore}`} />
+        <SpamChips spams={spams} scores={mine} round={round} />
         <ContestantTag contestant={players[them]} you={false} value={settled ? `${settled.scores[them]}` : '?'} />
       </div>
 
       <div className="flex min-h-52 w-full flex-col items-center justify-center gap-3">
-        {judged ? (
-          <RoundResult spam={spam} typed={roundTyped} />
-        ) : sent ? null : stage === 'ready' ? (
+        {allSent && stage !== 'result' ? null : roundOver ? (
+          <RoundResult spam={spam} typed={typed} right={scored ?? rightKeys(spam, typed)} />
+        ) : stage === 'ready' ? (
           <GetReady onGo={watch} />
         ) : stage === 'watch' ? (
           <Flasher key={round} keys={spam} onDone={type} />
         ) : (
           <>
             <ChoiceTimer key={round} seconds={inputSeconds(spam.length)} onTimeout={() => endRound(typed)} label="Your turn" />
-            <TypedKeys spam={spam} length={spam.length} typed={roundTyped} judged={false} />
+            <TypedKeys spam={spam} length={spam.length} typed={typed} judged={false} />
           </>
         )}
       </div>
 
       {settled ? (
         <FinalScores settled={settled} me={me} players={players} setup={setup} />
-      ) : sent ? (
+      ) : allSent ? (
         <Waiting name={players[them].name} />
       ) : (
         <KeyPad enabled={typing} onPress={press} />
@@ -251,12 +123,23 @@ function LiveCombo({ setup, me, moves, sendMove, onShown, players }: MiniGameVie
   )
 }
 
+type Stage = 'ready' | 'watch' | 'input' | 'result'
+
+const NO_KEYS: readonly ComboKey[] = []
+
+/** Spams played in a row from the first. */
+function playedRounds(moves: readonly (number | undefined)[]): number {
+  let count = 0
+  while (count < COMBO_ROUNDS && moves[count] !== undefined) count += 1
+  return count
+}
+
 /** One spam's score, big, over the keys you typed: right ones green, wrong ones red. */
-function RoundResult({ spam, typed }: { spam: readonly ComboKey[]; typed: readonly ComboKey[] }) {
-  const right = rightKeys(spam, typed)
+function RoundResult({ spam, typed, right }: { spam: readonly ComboKey[]; typed: readonly ComboKey[]; right: number }) {
+  const perfect = right === spam.length
   return (
     <>
-      <BigCall text={`${right}/${spam.length}`} tone={right === spam.length ? 'win' : 'plain'} size="large" />
+      <BigCall text={`${right}/${spam.length}`} tone={perfect ? 'win' : 'plain'} size="large" sub={perfect ? comboCheer(spam.length) : undefined} />
       <TypedKeys spam={spam} length={spam.length} typed={typed} judged />
     </>
   )
@@ -264,29 +147,28 @@ function RoundResult({ spam, typed }: { spam: readonly ComboKey[]; typed: readon
 
 interface SpamChipsProps {
   spams: readonly (readonly ComboKey[])[]
-  typed: readonly (readonly ComboKey[])[]
+  /** Your right keys per spam, once played. */
+  scores: readonly (number | undefined)[]
   round: number
-  /** Spams whose score is shown. */
-  judgedRounds: number
 }
 
 /** The three spams: right keys once played, the length before. */
-function SpamChips({ spams, typed, round, judgedRounds }: SpamChipsProps) {
+function SpamChips({ spams, scores, round }: SpamChipsProps) {
   return (
     <div className="flex items-center gap-1">
       {spams.map((spam, index) => {
-        const judged = index < judgedRounds
-        const right = rightKeys(spam, typed[index] ?? [])
-        const look = judged
-          ? right === spam.length
-            ? 'border-emerald-400 text-emerald-300'
-            : 'border-gold text-gold-light'
-          : index === round
-            ? 'border-hextech text-hextech'
-            : 'border-gold/25 text-gold-light/40'
+        const right = scores[index]
+        const look =
+          right !== undefined
+            ? right === spam.length
+              ? 'border-emerald-400 text-emerald-300'
+              : 'border-gold text-gold-light'
+            : index === round
+              ? 'border-hextech text-hextech'
+              : 'border-gold/25 text-gold-light/40'
         return (
           <span key={index} className={`rounded-md border-2 px-1.5 py-0.5 font-display text-sm font-black tabular-nums ${look}`}>
-            {judged ? `${right}/${spam.length}` : spam.length}
+            {right !== undefined ? `${right}/${spam.length}` : spam.length}
           </span>
         )
       })}
@@ -511,11 +393,11 @@ function Tally({ contestant, you, value, won }: { contestant: Contestant; you: b
   )
 }
 
-/** 1: Udyr flashes a spell. 2: Q W E R, pressed in turn. 3: the spam grows, 3, 4 then 5 keys. */
+/** 1: Udyr flashes a spell. 2: Q W E R, pressed in turn. 3: three new spams, 3, 5 then 7 keys. */
 export function ComboTutorialArt({ step }: TutorialArtProps) {
   if (step === 0) return <WatchArt />
   if (step === 1) return <KeyCapsArt />
-  return <GrowingSpamArt />
+  return <ThreeSpamsArt />
 }
 
 function WatchArt() {
@@ -558,24 +440,39 @@ function KeyCapsArt() {
   )
 }
 
-function GrowingSpamArt() {
+/** Three rows of keys: 3, 5 and 7 long, each a different spam. */
+const TUTORIAL_SPAMS: readonly (readonly ComboKey[])[] = [
+  ['E', 'Q', 'R'],
+  ['W', 'W', 'R', 'Q', 'E'],
+  ['R', 'E', 'Q', 'Q', 'W', 'E', 'R'],
+]
+
+const KEY_TINT: Record<ComboKey, string> = {
+  Q: 'border-red-400 text-red-300',
+  W: 'border-sky-300 text-sky-200',
+  E: 'border-orange-300 text-orange-200',
+  R: 'border-cyan-200 text-cyan-100',
+}
+
+function ThreeSpamsArt() {
   return (
-    <div className="flex size-full flex-col items-center justify-center gap-1.5">
-      {[3, 4, 5].map((count) => (
-        <div key={count} className="flex w-full justify-center gap-1">
-          {Array.from({ length: count }, (_, index) =>
-            index === count - 1 ? (
-              <motion.span
-                key={index}
-                animate={{ scale: [1, 1.25, 1] }}
-                transition={{ duration: 1, repeat: Infinity, delay: count * 0.2 }}
-                className="aspect-square w-[13%] rounded-sm border-2 border-hextech bg-hextech/40"
-              />
-            ) : (
-              <span key={index} className="aspect-square w-[13%] rounded-sm border-2 border-gold bg-gold/30" />
-            ),
-          )}
-        </div>
+    <div className="flex size-full flex-col items-center justify-center gap-1.5 px-1">
+      {TUTORIAL_SPAMS.map((spam, row) => (
+        <motion.div
+          key={row}
+          animate={{ opacity: [0.35, 1, 1, 0.35] }}
+          transition={{ duration: 3, times: [0, 0.1, 0.3, 0.4], delay: row, repeat: Infinity }}
+          className="flex w-full justify-center gap-0.5"
+        >
+          {spam.map((key, index) => (
+            <span
+              key={index}
+              className={`flex aspect-square w-[12.5%] items-center justify-center rounded-sm border bg-abyss font-display text-[9px] leading-none font-black sm:text-[11px] ${KEY_TINT[key]}`}
+            >
+              {key}
+            </span>
+          ))}
+        </motion.div>
       ))}
     </div>
   )

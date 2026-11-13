@@ -104,10 +104,54 @@ export function HookGame({ setup, me, moves, sendMove, onShown, players }: MiniG
         )}
       </HookField>
 
+      <GrabButton cooldownLeft={run.frame.cooldownLeft} denied={run.denied} enabled={started && !over} onGrab={run.fire} />
       <p className="min-h-4 text-center text-xs text-gold-light/60">
-        {!over && run.shotsFired === 0 && 'Tap or press Space to fire'}
+        {!over && run.shotsFired === 0 && 'Press GRAB when the hook points at a champion. Tapping the field or Space works too.'}
       </p>
     </div>
+  )
+}
+
+interface GrabButtonProps {
+  cooldownLeft: number | null
+  /** Presses while Rocket Grab wasn't ready: each one shakes the button. */
+  denied: number
+  enabled: boolean
+  onGrab: () => void
+}
+
+/** The big GRAB button under the field: glowing when Rocket Grab is ready, grey with the seconds left while it cools down. */
+function GrabButton({ cooldownLeft, denied, enabled, onGrab }: GrabButtonProps) {
+  const ready = enabled && cooldownLeft === 0
+  return (
+    <motion.button
+      type="button"
+      disabled={!enabled}
+      onPointerDown={onGrab}
+      // A keyboard "click" (Enter on a focused button) has no pointer down.
+      onClick={(event) => {
+        if (event.detail === 0) onGrab()
+      }}
+      initial={false}
+      animate={{ x: denied % 2 === 0 ? SHAKE_LEFT.map((x) => x * 4) : SHAKE_RIGHT.map((x) => x * 4) }}
+      transition={{ duration: 0.3 }}
+      className={`relative mx-auto flex h-16 w-full max-w-sm touch-manipulation items-center justify-center gap-3 rounded-xl border-2 font-display text-3xl font-black tracking-wider select-none transition-[scale,background-color,border-color,color] active:scale-95 disabled:opacity-40 ${
+        ready
+          ? 'border-hextech bg-hextech/20 text-gold-light shadow-[0_0_24px_rgb(10_200_185/0.45)]'
+          : 'border-gold/30 bg-abyss/70 text-gold-light/50'
+      }`}
+    >
+      <img
+        src={spellIconUrl('RocketGrab.png')}
+        alt=""
+        draggable={false}
+        className={`size-11 rounded-md border-2 ${ready ? 'border-hextech' : 'border-gold/30 grayscale'}`}
+      />
+      <span>GRAB!</span>
+      {enabled && cooldownLeft !== null && cooldownLeft > 0 && (
+        <span className="absolute right-4 font-mono text-lg text-gold-light/70 tabular-nums">{cooldownLeft.toFixed(1)}</span>
+      )}
+    </motion.button>
   )
 }
 
@@ -449,7 +493,7 @@ function Bushes() {
   )
 }
 
-/** 1: the swinging hook and a tap. 2: a carry pays 300g, a minion 20g. 3: gold against the clock. */
+/** 1: the swinging hook and the GRAB button. 2: a carry pays 300g, a minion 20g. 3: gold against the clock. */
 export function HookTutorialArt({ step }: TutorialArtProps) {
   if (step === 0) return <SwingArt />
   if (step === 1) return <ValueArt />
@@ -472,11 +516,12 @@ function SwingArt() {
         className="absolute top-[6%] left-1/2 size-[32%] -translate-x-1/2 rounded-full border-2 border-hextech"
       />
       <motion.span
-        className="absolute right-[6%] bottom-[4%] text-2xl sm:text-3xl"
-        animate={{ scale: [1, 0.8, 1] }}
-        transition={{ duration: 1.2, repeat: Infinity }}
+        className="absolute inset-x-[14%] bottom-[5%] flex items-center justify-center gap-1 rounded-md border-2 border-hextech bg-hextech/25 py-0.5 font-display text-xs font-black text-gold-light sm:text-sm"
+        animate={{ scale: [1, 1, 0.86, 1], boxShadow: ['0 0 0 rgb(10 200 185 / 0)', '0 0 0 rgb(10 200 185 / 0)', '0 0 14px rgb(10 200 185 / 0.9)', '0 0 0 rgb(10 200 185 / 0)'] }}
+        transition={{ duration: 1.2, times: [0, 0.55, 0.7, 1], repeat: Infinity }}
       >
-        👆
+        <img src={spellIconUrl('RocketGrab.png')} alt="" className="size-4 rounded-sm sm:size-5" />
+        GRAB!
       </motion.span>
     </div>
   )

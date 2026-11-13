@@ -36,10 +36,10 @@ export const MINI_GAMES: Record<MiniGameId, MiniGameInfo> = {
     champion: 'Blitzcrank',
     botChampion: 'Thresh',
     botName: 'Thresh',
-    tagline: 'Swing, aim, grab. Squishy carries pay more than tanks.',
+    tagline: 'The hook swings. Press GRAB when it points at a carry.',
     tutorial: {
-      solo: ['The hook swings: tap to fire', 'Carries pay most, minions waste time', 'Most gold in 25 s wins'],
-      live: ['The hook swings: tap to fire', 'Carries pay most, minions waste time', 'Most gold in 15 s wins'],
+      solo: ['The hook swings. Press GRAB!', 'Carries pay most, minions waste time', 'Most gold in 25 s wins'],
+      live: ['The hook swings. Press GRAB!', 'Carries pay most, minions waste time', 'Most gold in 15 s wins'],
     },
   },
   combo: {
@@ -48,11 +48,8 @@ export const MINI_GAMES: Record<MiniGameId, MiniGameInfo> = {
     champion: 'Udyr',
     botChampion: 'Udyr',
     botName: 'Bot Udyr',
-    tagline: 'No combo. Just spam. Remember the spam.',
-    tutorial: {
-      solo: ['Watch Udyr’s spam', 'Repeat it: Q W E R', 'One more key each round. Longest wins'],
-      live: ['Watch Udyr’s spam', 'Repeat it: Q W E R', '3 spams: 3, 4, 5 keys. Most right keys wins'],
-    },
+    tagline: 'No combo. Just spam. Three new spams: 3, 5 and 7 keys.',
+    tutorial: { solo: ['Watch Udyr’s spam', 'Repeat it: Q W E R', '3 new spams: 3, 5, 7 keys. Most right wins'] },
   },
   shrooms: {
     id: 'shrooms',
