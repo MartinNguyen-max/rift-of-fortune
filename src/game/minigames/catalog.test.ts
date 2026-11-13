@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { gameData } from '../../data'
-import { MINI_GAME_IDS, MINI_GAMES, parseMiniGameId, winnerByScore } from './catalog'
+import { MINI_GAME_IDS, MINI_GAMES, parseMiniGameId, tutorialCaptions } from './catalog'
+import { MINI_GAME_RULES } from './registry'
 
 describe('catalog', () => {
   it('has every game, each with real champions', () => {
@@ -19,11 +20,15 @@ describe('catalog', () => {
   })
 })
 
-describe('winnerByScore', () => {
-  it('lets the higher score win, or the lower one for times', () => {
-    expect(winnerByScore(500, 300)).toBe('player')
-    expect(winnerByScore(300, 500)).toBe('bot')
-    expect(winnerByScore(12.5, 14, true)).toBe('player')
-    expect(winnerByScore(5, 5)).toBe('draw')
+describe('tutorials and rules', () => {
+  it('has three short captions per game, and rules for every game', () => {
+    for (const id of MINI_GAME_IDS) {
+      for (const live of [false, true]) {
+        const captions = tutorialCaptions(MINI_GAMES[id], live)
+        expect(captions).toHaveLength(3)
+        for (const caption of captions) expect(caption.length).toBeLessThanOrEqual(44)
+      }
+      expect(MINI_GAME_RULES[id].liveSeconds({ seed: 1, variant: 'live', bothRoles: true, late: false })).toBeLessThan(80)
+    }
   })
 })

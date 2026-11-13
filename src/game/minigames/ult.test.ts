@@ -1,5 +1,20 @@
 import { describe, expect, it } from 'vitest'
-import { markerAt, ULT, ULT_ZONES, ultBar, ultScore, type UltBar } from './ult'
+import {
+  barOfStep,
+  botPress,
+  markerAt,
+  NO_PRESS,
+  ULT,
+  ULT_RULES,
+  ULT_ZONES,
+  ultBar,
+  ultBars,
+  ultScore,
+  ultScoreOfMove,
+  zoneCrossings,
+  type UltBar,
+} from './ult'
+import { soloSetup, type GameSetup } from './versus'
 
 const bar: UltBar = { zoneCenter: 0.5, speed: 0.6 }
 
@@ -70,5 +85,38 @@ describe('ultScore', () => {
   it('scores 0 after the time limit or without a press', () => {
     expect(ultScore(bar, ULT.seconds + 0.1)).toBe(0)
     expect(ultScore(bar, null)).toBe(0)
+  })
+})
+
+describe('ULT_RULES', () => {
+  const solo = soloSetup(5)
+  const live: GameSetup = { seed: 5, variant: 'live', bothRoles: false, late: false }
+  const perfect = (setup: GameSetup, step: number) => Math.round((zoneCrossings(barOfStep(setup, step))[0] ?? 0) * 1000)
+
+  it('plays 3 bars solo and 1 live', () => {
+    expect(ultBars(solo)).toBe(3)
+    expect(ultBars(live)).toBe(1)
+  })
+
+  it('adds up the bars; the higher total wins', () => {
+    const mine = [0, 1, 2].map((step) => perfect(solo, step))
+    expect(ULT_RULES.settle([mine, [NO_PRESS, NO_PRESS]], solo)).toBeNull()
+    const settled = ULT_RULES.settle([mine, [NO_PRESS, NO_PRESS, NO_PRESS]], solo)
+    expect(settled).toEqual({ winner: 0, scores: [300, 0] })
+  })
+
+  it('is a tie with the same scores', () => {
+    expect(ULT_RULES.settle([[perfect(live, 0)], [perfect(live, 0)]], live)?.winner).toBeNull()
+  })
+
+  it('has a decent bot: most presses score well, few are perfect', () => {
+    const scores = Array.from({ length: 300 }, (_, seed) => {
+      const bar = barOfStep(soloSetup(seed), 0)
+      return ultScoreOfMove(bar, botPress(bar, seed))
+    })
+    const average = scores.reduce((sum, score) => sum + score, 0) / scores.length
+    expect(average).toBeGreaterThan(55)
+    expect(average).toBeLessThan(90)
+    expect(scores.filter((score) => score === 100).length / scores.length).toBeLessThan(0.5)
   })
 })

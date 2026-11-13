@@ -1,20 +1,23 @@
-/** The mini-games, in the order they are shown. Each one is played against a bot for now. */
-export const MINI_GAME_IDS = ['duel', 'hook', 'combo', 'shrooms', 'forge', 'cleaver'] as const
+/** The mini-games, in the order they are shown. Each is played against a bot, or as a live event in Multiplayer. */
+export const MINI_GAME_IDS = ['duel', 'hook', 'combo', 'shrooms', 'forge', 'cleaver', 'gank', 'ult', 'smite'] as const
 export type MiniGameId = (typeof MINI_GAME_IDS)[number]
+
+/** Three short captions, one under each tutorial picture. */
+export type TutorialCaptions = readonly [string, string, string]
 
 export interface MiniGameInfo {
   id: MiniGameId
   name: string
-  /** Data Dragon id of the champion on the card. */
+  /** Data Dragon id of your champion. */
   champion: string
-  /** Data Dragon id of the bot's champion. */
+  /** Data Dragon id of the bot's (or the opponent's) champion. */
   botChampion: string
   /** The bot's name in the game. */
   botName: string
   /** One short line for the card. */
   tagline: string
-  /** The rules, a few short lines shown before the game starts. */
-  howTo: string[]
+  /** The tutorial: three numbered pictures with a few words each. `live` when Multiplayer plays differently. */
+  tutorial: { solo: TutorialCaptions; live?: TutorialCaptions }
 }
 
 export const MINI_GAMES: Record<MiniGameId, MiniGameInfo> = {
@@ -25,12 +28,7 @@ export const MINI_GAMES: Record<MiniGameId, MiniGameInfo> = {
     botChampion: 'Jhin',
     botName: 'High Noon Jhin',
     tagline: 'Wait for DRAW, then shoot. Fastest hands in the West win.',
-    howTo: [
-      'Wait for the word DRAW!',
-      'Then click, tap or press Space as fast as you can.',
-      'Shoot before DRAW and you lose the round.',
-      'First to 2 rounds wins.',
-    ],
+    tutorial: { solo: ['Wait for DRAW!', 'Then shoot: tap or Space', 'Too early = round lost. Best of 3'] },
   },
   hook: {
     id: 'hook',
@@ -39,12 +37,10 @@ export const MINI_GAMES: Record<MiniGameId, MiniGameInfo> = {
     botChampion: 'Thresh',
     botName: 'Thresh',
     tagline: 'Swing, aim, grab. Squishy carries pay more than tanks.',
-    howTo: [
-      'Your hook swings back and forth. Click, tap or press Space to fire.',
-      'Carries are small and light: lots of gold. Tanks are big and heavy: slow to pull.',
-      'Minions are in the way. Grab one and you waste precious seconds.',
-      'Rocket Grab has a cooldown. Most gold when the timer runs out wins.',
-    ],
+    tutorial: {
+      solo: ['The hook swings: tap to fire', 'Carries pay most, minions waste time', 'Most gold in 25 s wins'],
+      live: ['The hook swings: tap to fire', 'Carries pay most, minions waste time', 'Most gold in 15 s wins'],
+    },
   },
   combo: {
     id: 'combo',
@@ -53,12 +49,10 @@ export const MINI_GAMES: Record<MiniGameId, MiniGameInfo> = {
     botChampion: 'Udyr',
     botName: 'Bot Udyr',
     tagline: 'No combo. Just spam. Remember the spam.',
-    howTo: [
-      'Udyr spams Q, W, E and R. Watch the order.',
-      'Then repeat it with the buttons or your keyboard.',
-      'Every round the spam gets one key longer.',
-      'One wrong key and your wrists give out. Longest spam wins.',
-    ],
+    tutorial: {
+      solo: ['Watch Udyr’s spam', 'Repeat it: Q W E R', 'One more key each round. Longest wins'],
+      live: ['Watch Udyr’s spam', 'Repeat it: Q W E R', '3 spams: 3, 4, 5 keys. Most right keys wins'],
+    },
   },
   shrooms: {
     id: 'shrooms',
@@ -66,13 +60,11 @@ export const MINI_GAMES: Record<MiniGameId, MiniGameInfo> = {
     champion: 'Teemo',
     botChampion: 'MasterYi',
     botName: 'Master Yi',
-    tagline: 'Plant 3 shrooms. Then walk through the enemy’s.',
-    howTo: [
-      'First you are Teemo: hide 3 shrooms on a path of 5 steps.',
-      'The bot walks it, jumping left or right each step.',
-      'Then the bot plants, and you walk. Pick left or right in time!',
-      'Whoever walks further wins. Captain Teemo on duty.',
-    ],
+    tagline: 'Plant 3 shrooms in Yi’s path. Then walk through his.',
+    tutorial: {
+      solo: ['Teemo: plant 3 shrooms', 'One shroom per column', 'Walk across. Furthest walk wins'],
+      live: ['Teemo: plant 3 shrooms', 'One shroom per column', 'Walker wins with 3 safe steps'],
+    },
   },
   forge: {
     id: 'forge',
@@ -81,12 +73,7 @@ export const MINI_GAMES: Record<MiniGameId, MiniGameInfo> = {
     botChampion: 'Ornn',
     botName: 'Bot Ornn',
     tagline: 'Build 3 items from their parts. Fastest smith wins.',
-    howTo: [
-      'An item shows up. Click the parts it is built from.',
-      'A wrong part costs you 2 seconds.',
-      'Build 3 items in a row.',
-      'Beat the bot’s time. Ornn does not do refunds.',
-    ],
+    tutorial: { solo: ['An item to build', 'Tap its parts. Wrong part +2 s', '3 items. Fastest smith wins'] },
   },
   cleaver: {
     id: 'cleaver',
@@ -95,30 +82,52 @@ export const MINI_GAMES: Record<MiniGameId, MiniGameInfo> = {
     botChampion: 'DrMundo',
     botName: 'El Macho Mundo',
     tagline: 'Throw cleavers, dodge cleavers. Three hits and Mundo goes down.',
-    howTo: [
-      'Each round one Mundo throws a cleaver and the other dodges. You switch every round.',
-      'Pick a lane: top, mid or bot. You have 3 seconds.',
-      'Thrower: guess where they go. Dodger: be anywhere else.',
-      'Hit the other Mundo 3 times to win.',
-    ],
+    tutorial: { solo: ['THROW: hit their spot', 'DODGE: move 1 spot', '3 hits wins'] },
+  },
+  gank: {
+    id: 'gank',
+    name: 'I Was Hiding',
+    champion: 'Shaco',
+    botChampion: 'Rengar',
+    botName: 'Rengar',
+    tagline: 'Hide in a bush. Guess their bush. Mind games only.',
+    tutorial: {
+      solo: ['Hide in a bush', 'Guess where they hide', 'Right guess = 1 point. Most points wins'],
+      live: ['Hide in a bush', 'Guess where they hide', 'Right guess wins the gank'],
+    },
+  },
+  ult: {
+    id: 'ult',
+    name: 'Unstoppable Force',
+    champion: 'Malphite',
+    botChampion: 'Amumu',
+    botName: 'Amumu',
+    tagline: 'Land the teamfight ult. Dead center or bust.',
+    tutorial: {
+      solo: ['The marker sweeps the bar', 'Tap ULT in the gold zone', 'Center = 100. Best of 3 bars'],
+      live: ['The marker sweeps the bar', 'Tap ULT in the gold zone', 'Center = 100. Higher wins'],
+    },
+  },
+  smite: {
+    id: 'smite',
+    name: 'Baron Steal',
+    champion: 'LeeSin',
+    botChampion: 'Nunu',
+    botName: 'Nunu & Willump',
+    tagline: 'The health drains, the pace changes. Smite as low as you dare.',
+    tutorial: {
+      solo: ['Health drains, the pace changes', 'Smite in the gold zone', 'Lower = more points. Baron, then Elder'],
+      live: ['Health drains, the pace changes', 'Smite in the gold zone', 'Lower = more points. Too late = 0'],
+    },
   },
 }
 
 export const parseMiniGameId = (value: string | undefined): MiniGameId | null =>
   MINI_GAME_IDS.find((id) => id === value) ?? null
 
-/** Who won a mini-game against the bot. */
-export type MiniGameWinner = 'player' | 'bot' | 'draw'
+export const isMiniGameId = (value: unknown): value is MiniGameId =>
+  typeof value === 'string' && (MINI_GAME_IDS as readonly string[]).includes(value)
 
-/** The end of a mini-game: who won and each side's score as text ("312 ms", "850 gold"). */
-export interface MiniGameResult {
-  winner: MiniGameWinner
-  player: string
-  bot: string
-}
-
-/** Compares two scores. `lowerWins` for times. */
-export function winnerByScore(player: number, bot: number, lowerWins = false): MiniGameWinner {
-  if (player === bot) return 'draw'
-  return player > bot !== lowerWins ? 'player' : 'bot'
-}
+/** The tutorial captions for a variant. */
+export const tutorialCaptions = (info: MiniGameInfo, live: boolean): TutorialCaptions =>
+  (live ? info.tutorial.live : undefined) ?? info.tutorial.solo
