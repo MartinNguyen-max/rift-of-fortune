@@ -1,20 +1,18 @@
-import { gameData } from '../data'
 import { Button } from '../components/Button'
 import { Game } from '../components/Game'
-import { rollChampion } from '../game/draft'
-import { drawItems } from '../game/items'
-import type { GameState } from '../game/gameState'
+import { nextChampion, randomItems, rerollChampion, rerollItem } from '../components/matchDraft'
+import { CLASSIC_RULES } from '../game/rules'
 
-const nextChampion = (state: GameState) => rollChampion(gameData.champions, state.team)
-const randomItems = () => drawItems(gameData.items)
-
-/** The main mode: random champions, random items, play as often as you like. */
+/** The main mode: random champions, random items, a few rerolls, play as often as you like. */
 export function ClassicPage() {
   return (
     <Game
       title="Classic"
       nextChampion={nextChampion}
       drawItems={randomItems}
+      rules={CLASSIC_RULES}
+      rerollChampion={rerollChampion}
+      rerollItem={rerollItem}
       resultActions={(_, reset) => (
         <>
           <Button onClick={reset}>Play again</Button>

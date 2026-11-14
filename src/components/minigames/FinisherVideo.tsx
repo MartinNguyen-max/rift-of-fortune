@@ -12,7 +12,8 @@ const MAX_LOAD_MS = 4000
 
 interface FinisherVideoProps {
   finisher: Finisher
-  won: boolean
+  /** Shows WON or LOST above the clip. Left out for a preview. */
+  won?: boolean
   /** The clip ended, failed to load (not added yet) or was skipped. */
   onDone: () => void
 }
@@ -48,7 +49,7 @@ export function FinisherVideo({ finisher, won, onDone }: FinisherVideoProps) {
   return (
     // Hidden until the clip has loaded, so a clip that isn't there yet never flashes an empty box.
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: loaded ? 1 : 0 }} className="flex flex-col items-center gap-3 py-1">
-      {loaded && <BigCall text={won ? 'WON' : 'LOST'} tone={won ? 'win' : 'lose'} />}
+      {loaded && won !== undefined && <BigCall text={won ? 'WON' : 'LOST'} tone={won ? 'win' : 'lose'} />}
       <div className="relative w-full overflow-hidden rounded-xl border-2 border-gold/50 bg-black shadow-2xl shadow-black">
         <video
           ref={video}

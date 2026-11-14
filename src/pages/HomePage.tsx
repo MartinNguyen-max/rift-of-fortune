@@ -31,7 +31,7 @@ export function HomePage() {
         delay={0}
       >
         Roll five random champions, place them on the Rift, hand out random items and get ranked from Iron to
-        Challenger. Play as often as you want.
+        Challenger. Three champion and three item rerolls. Play as often as you want.
         <span className="mt-2 block text-gold-light/50 italic">Then try your team in a real game. We dare you.</span>
       </ModeCard>
 
@@ -63,18 +63,6 @@ export function HomePage() {
       </ModeCard>
 
       <ModeCard
-        route="match"
-        badge="New"
-        title="Match vs Bots"
-        cta="Fight a bot"
-        art={<img src={rankEmblemUrl('Challenger')} alt="" className="size-56 object-contain opacity-20" />}
-        delay={0.2}
-      >
-        Draft a team, then send it into a simulated match against a level 1–3 bot. Live scoreboard, first blood,
-        stolen Barons and two casters who have seen too much.
-      </ModeCard>
-
-      <ModeCard
         route="play"
         badge="New · 1v1"
         title="Multiplayer"
@@ -84,13 +72,13 @@ export function HomePage() {
             1v1
           </span>
         }
-        delay={0.3}
+        delay={0.2}
       >
         Send a friend a link. Draft at the same time and fight a live match where the mini-games swing it, or skip
         champ select: five lanes, five mini-games, five lives. Spam GG when you win.
       </ModeCard>
 
-      <ModeCard route="minigames" badge="New" title="Mini-games" cta="Play mini-games" art={<MiniGameIcons />} delay={0.4} wide>
+      <ModeCard route="minigames" badge="New" title="Mini-games" cta="Play mini-games" art={<MiniGameIcons />} delay={0.3}>
         {MINI_GAME_IDS.length} quick champion games against a bot, each under a minute. Beat your best, then play them
         live with a friend in Multiplayer.
       </ModeCard>

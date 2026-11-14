@@ -120,7 +120,12 @@ export function LiveEventStage({ round, index, live, myId, mySide, send, sendEmo
         {phase === 'game' && event && opened && (
           <Game setup={setup} me={me} moves={event.moves} sendMove={sendMove} onShown={markShown} players={players} />
         )}
-        {phase === 'finisher' && finisher && result && <FinisherVideo finisher={finisher} won={result.winner === mySide} onDone={endFinisher} />}
+        {phase === 'finisher' && finisher && result && (
+          <div className="flex flex-col items-center gap-3">
+            <FinisherVideo finisher={finisher} won={result.winner === mySide} onDone={endFinisher} />
+            <EmoteBar onEmote={sendEmote} />
+          </div>
+        )}
         {phase === 'reveal' && event && result && (
           <EventResultView live={live} event={event} result={result} setup={setup} me={me} mySide={mySide} players={players} sendEmote={sendEmote} lane={lane} />
         )}

@@ -4,7 +4,7 @@ import type { GameState } from '../game/gameState'
 import { drawItems } from '../game/items'
 import { pickRandom } from '../game/random'
 
-/** The draft used before a match (vs bots and multiplayer): Classic rolls plus rerolls. */
+/** The draft for Classic and multiplayer: random rolls plus rerolls. */
 export const nextChampion = (state: GameState) => rollChampion(gameData.champions, state.team)
 export const randomItems = () => drawItems(gameData.items)
 /** A reroll never lands on a champion already on the team. */

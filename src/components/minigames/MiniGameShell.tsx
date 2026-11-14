@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { endOfGameIconUrl } from '../../data'
+import { endOfGameIconUrl, gameData } from '../../data'
 import type { MiniGameInfo } from '../../game/minigames/catalog'
 import type { RecordUpdate } from '../../game/minigames/records'
-import { finisherFor } from '../../game/finishers'
+import { finisherFor, type Finisher } from '../../game/finishers'
 import { MINI_GAME_RULES } from '../../game/minigames/registry'
 import { botMoves, soloSetup, withMove, type BothMoves, type Moves, type Settled } from '../../game/minigames/versus'
 import { readSoloFinishers, saveSoloFinishers } from '../../services/finisherSetting'
@@ -24,6 +24,8 @@ const newSeed = () => Math.floor(Math.random() * 2 ** 32)
 export function MiniGameShell({ info }: { info: MiniGameInfo }) {
   const [seed, setSeed] = useState<number | null>(null)
   const [finishers, setFinishers] = useState(readSoloFinishers)
+  const [preview, setPreview] = useState<Finisher | null>(null)
+  const endPreview = useCallback(() => setPreview(null), [])
   const toggleFinishers = (on: boolean) => {
     setFinishers(on)
     saveSoloFinishers(on)
@@ -58,9 +60,15 @@ export function MiniGameShell({ info }: { info: MiniGameInfo }) {
           <MiniGameIntro info={info} you={players[0]} them={players[1]} live={false}>
             <Button onClick={start}>Start</Button>
             <FinisherToggle on={finishers} onChange={toggleFinishers} />
+            <FinisherPreviews champions={[info.champion, info.botChampion]} onPlay={setPreview} />
           </MiniGameIntro>
         ) : (
           <SoloGame key={seed} info={info} seed={seed} players={players} finishers={finishers} onRematch={start} />
+        )}
+        {preview && (
+          <div className="absolute inset-0 z-30 flex items-center justify-center rounded-xl bg-abyss/85 p-3">
+            <FinisherVideo key={preview.file} finisher={preview} onDone={endPreview} />
+          </div>
         )}
       </div>
     </div>
@@ -78,6 +86,32 @@ function FinisherToggle({ on, onChange }: { on: boolean; onChange: (on: boolean)
       />
       Play the winner's finisher animation
     </label>
+  )
+}
+
+const championName = (id: string) => gameData.champions.find((champion) => champion.id === id)?.name ?? id
+
+/** One small button per champion in this game that has a finisher clip (a mirror match shows one). */
+function FinisherPreviews({ champions, onPlay }: { champions: readonly string[]; onPlay: (finisher: Finisher) => void }) {
+  const withClips = [...new Set(champions)].flatMap((id) => {
+    const finisher = finisherFor(id)
+    return finisher ? [{ id, finisher }] : []
+  })
+  if (withClips.length === 0) return null
+  return (
+    <div className="flex flex-wrap justify-center gap-2">
+      {withClips.map(({ id, finisher }) => (
+        <button
+          key={id}
+          type="button"
+          onClick={() => onPlay(finisher)}
+          className="flex items-center gap-1.5 rounded-md border border-gold/40 bg-panel px-2 py-1 text-xs text-gold-light transition hover:border-gold hover:bg-gold/10"
+        >
+          <img src={championIconById(id)} alt="" className="size-5 rounded-full" />
+          ▶ {championName(id)}
+        </button>
+      ))}
+    </div>
   )
 }
 

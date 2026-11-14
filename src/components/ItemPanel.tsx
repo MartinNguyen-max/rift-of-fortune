@@ -17,7 +17,7 @@ interface ItemPanelProps {
   onSelect: (itemId: string) => void
   /** Rolls the next round, or rates the team after the last round. */
   onContinue: () => void
-  /** Match vs Bots: item rerolls, shown once every item is equipped. */
+  /** Classic and multiplayer: item rerolls, shown once every item is equipped. */
   rerolls?: RerollBoxProps
 }
 

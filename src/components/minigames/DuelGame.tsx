@@ -8,9 +8,7 @@ import {
   duelWinner,
   NO_SHOT,
   SHOT_WINDOW,
-  targetSpots,
   type DuelRoundResult,
-  type TargetSpot,
 } from '../../game/minigames/duel'
 import { other, type Player } from '../../game/minigames/versus'
 import { championIconById, SKINS } from './miniGameArt'
@@ -29,14 +27,13 @@ const MISS_MARKS = 4
 const formatMs = (ms: number | null) => (ms === null ? '—' : `${ms} ms`)
 
 /**
- * Sheriff Caitlyn vs High Noon Jhin: "Ready... Steady..." then a Baron pops up somewhere in the
- * arena. Tap it first. A tap before it shows loses the round; a tap that misses it just costs
+ * Sheriff Caitlyn vs High Noon Jhin: "Ready... Steady..." then one big Baron pops up in the
+ * middle. Tap it first. A tap before it shows loses the round; a tap that misses it just costs
  * time. Best of 3. No keyboard shot: aiming is the game, so a key would beat every tap.
  */
 export function DuelGame({ setup, me, moves, sendMove, onShown, players }: MiniGameViewProps) {
   const them = other(me)
   const draws = useMemo(() => drawTimes(setup.seed), [setup.seed])
-  const spots = useMemo(() => targetSpots(setup.seed), [setup.seed])
   const results = useMemo(() => duelResults(moves, setup.seed), [moves, setup.seed])
   const over = duelWinner(results) !== null
   /** Rounds whose result has been shown. */
@@ -52,7 +49,6 @@ export function DuelGame({ setup, me, moves, sendMove, onShown, players }: MiniG
 
   const round = seen
   const drawAt = draws[round]
-  const spot = spots[round]
   const myShot = moves[me][round]
   const shoot = useCallback((ms: number) => sendMove(round, ms), [sendMove, round])
 
@@ -65,8 +61,8 @@ export function DuelGame({ setup, me, moves, sendMove, onShown, players }: MiniG
       </div>
       {showing ? (
         <Arena result={showing} me={me} you={players[me]} them={players[them]} />
-      ) : drawAt !== undefined && spot && !over && myShot === undefined ? (
-        <Standoff key={round} drawAt={drawAt} spot={spot} theirShot={moves[them][round]} me={me} you={players[me]} them={players[them]} onShoot={shoot} />
+      ) : drawAt !== undefined && !over && myShot === undefined ? (
+        <Standoff key={round} drawAt={drawAt} theirShot={moves[them][round]} me={me} you={players[me]} them={players[them]} onShoot={shoot} />
       ) : (
         <Arena result={null} me={me} you={players[me]} them={players[them]} />
       )}
@@ -83,8 +79,6 @@ const seenWins = (results: readonly DuelRoundResult[], seen: number, player: Pla
 
 interface StandoffProps {
   drawAt: number
-  /** Where the Baron shows this round. */
-  spot: TargetSpot
   /** The opponent's shot this round, once known (the bot's is known up front). */
   theirShot: number | undefined
   me: Player
@@ -101,7 +95,7 @@ interface Miss {
 }
 
 /** One round, from "Ready..." until you tap. Mounted fresh each round so its clock starts at 0. */
-function Standoff({ drawAt, spot, theirShot, me, you, them, onShoot }: StandoffProps) {
+function Standoff({ drawAt, theirShot, me, you, them, onShoot }: StandoffProps) {
   const { seconds, read } = useStopwatch(true)
   const fired = useRef(false)
   const [misses, setMisses] = useState<Miss[]>([])
@@ -139,7 +133,7 @@ function Standoff({ drawAt, spot, theirShot, me, you, them, onShoot }: StandoffP
   const call = drawn ? null : seconds < READY_SECONDS ? 'Ready...' : 'Steady...'
   return (
     <Arena result={null} me={me} you={you} them={them} call={call} drawn={drawn} onTap={tapArena}>
-      {drawn && <Target spot={spot} onHit={hit} />}
+      {drawn && <Target onHit={hit} />}
       {misses.map((miss) => (
         <MissMark key={miss.key} miss={miss} />
       ))}
@@ -147,10 +141,10 @@ function Standoff({ drawAt, spot, theirShot, me, you, them, onShoot }: StandoffP
   )
 }
 
-/** The Baron to shoot: pops up big with a pulsing red ring, so nobody can miss that it's there. */
-function Target({ spot, onHit }: { spot: TargetSpot; onHit: () => void }) {
+/** The Baron to shoot: one big one in the middle every round, with a pulsing red ring, so nobody can miss that it's there. */
+function Target({ onHit }: { onHit: () => void }) {
   return (
-    <div className="absolute z-10 -translate-x-1/2 -translate-y-1/2" style={{ left: `${spot.x * 100}%`, top: `${spot.y * 100}%` }}>
+    <div className="absolute top-[40%] left-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
       <motion.button
         type="button"
         aria-label="Shoot the Baron"
@@ -173,7 +167,7 @@ function Target({ spot, onHit }: { spot: TargetSpot; onHit: () => void }) {
           src={mapIconUrl('baron')}
           alt=""
           draggable={false}
-          className="size-16 rounded-full bg-abyss/85 p-1 shadow-[0_0_24px_6px_rgb(239_68_68/0.7)] sm:size-20"
+          className="size-24 rounded-full bg-abyss/85 p-1 shadow-[0_0_24px_6px_rgb(239_68_68/0.7)] sm:size-32"
         />
       </motion.button>
     </div>

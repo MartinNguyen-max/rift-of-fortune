@@ -21,7 +21,7 @@ interface RoleSlotProps {
   onItemClick?: (itemId: string) => void
   /** Whether an equipped item can still be moved. Defaults to locked. */
   isItemMovable?: (itemId: string) => boolean
-  /** Match vs Bots: the champion can be rerolled (shows a reroll badge), and is the one picked for it. */
+  /** With rerolls: the champion can be rerolled (shows a reroll badge), and is the one picked for it. */
   rerollable?: boolean
   /** Plays the short reroll spin on the champion, then calls `onSpinDone`. */
   spinning?: boolean

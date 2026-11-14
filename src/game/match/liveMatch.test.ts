@@ -5,6 +5,7 @@ import { liveEvents } from '../multiplayer/liveEvents'
 import { seededRandom } from '../random'
 import { rateTeam, type TeamRating } from '../scoring/rateTeam'
 import { simulateGame } from '../scoring/simulate'
+import { pointsTimeline, sureWinner } from './points'
 import { finishedMatch, simulateLiveMatch, simulateMatch } from './simulateMatch'
 import { sampleTeams } from './testUtils'
 import type { MatchTeams, Side } from './types'
@@ -145,5 +146,28 @@ describe('live event balance', { timeout: 120_000 }, () => {
     // 3 or 5 events weigh about the same in total.
     expect(Math.abs(losesAllThree - losesAllFive)).toBeLessThan(0.15)
     expect(blueWinRate(THREE, 1, muchBetter, 500)).toBeGreaterThan(0.7)
+  })
+
+  it('always gives the match to a team far ahead on match points; a close one can go either way', () => {
+    let sure = 0
+    let upsets = 0
+    for (let seed = 1; seed <= 600; seed++) {
+      const matchTeams = pair()
+      const games = seed % 2 === 0 ? THREE : FIVE
+      const order = games.map(() => (random() < 0.5 ? 'blue' : 'red') as Side)
+      const match = simulateLiveMatch(matchTeams, seed, { events: liveEvents(seed, games), winners: order })
+      const ratings = { blue: matchTeams.blue.rating.score, red: matchTeams.red.rating.score }
+      const points = pointsTimeline(ratings, order.slice(0, match.scripted.length), games.length).at(-1)
+      if (!points || !match.winner) throw new Error('the match should be over')
+      const favourite = sureWinner(points)
+      if (favourite) {
+        sure += 1
+        expect(match.winner).toBe(favourite)
+      } else if (points[match.winner] < points[match.winner === 'blue' ? 'red' : 'blue']) {
+        upsets += 1
+      }
+    }
+    expect(sure).toBeGreaterThan(50)
+    expect(upsets).toBeGreaterThan(10)
   })
 })

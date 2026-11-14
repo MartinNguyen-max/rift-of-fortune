@@ -4,7 +4,7 @@ import { gameReducer, initialGameState, type GameState } from '../gameState'
 import { drawItems } from '../items'
 import { seededRandom } from '../random'
 import { ROLES } from '../roles'
-import { MATCH_RULES } from '../rules'
+import { CLASSIC_RULES } from '../rules'
 import { completeTeam } from './completeTeam'
 import { createRoomCode, isRoomCode, parseRoomCode, ROOM_CODE_LENGTH } from './roomCode'
 import { decodeTeam, encodeTeam, isEncodedTeam, randomEncodedTeam } from './teamCode'
@@ -61,7 +61,7 @@ describe('completeTeam', () => {
   })
 
   it('keeps placed champions and places the rolled one', () => {
-    let state: GameState = initialGameState(MATCH_RULES)
+    let state: GameState = initialGameState(CLASSIC_RULES)
     state = gameReducer(state, { type: 'roll', champion: ahri })
     state = gameReducer(state, { type: 'reveal' })
     state = gameReducer(state, { type: 'place', role: 'MIDDLE' })
@@ -72,7 +72,7 @@ describe('completeTeam', () => {
   })
 
   it('keeps handed-out items and gives the rest to champions with room', () => {
-    let state: GameState = initialGameState(MATCH_RULES)
+    let state: GameState = initialGameState(CLASSIC_RULES)
     for (const [index, role] of ROLES.entries()) {
       state = gameReducer(state, { type: 'roll', champion: gameData.champions[index] ?? jinx })
       state = gameReducer(state, { type: 'reveal' })

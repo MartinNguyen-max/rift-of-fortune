@@ -87,7 +87,7 @@ export interface GameData {
   components: ItemComponent[]
 }
 
-/** League minimap icons used in Match vs Bots. Saved to public/icons/ by `npm run data`. */
+/** League minimap icons used in the multiplayer match. Saved to public/icons/ by `npm run data`. */
 export const MAP_ICONS = {
   tower: 'icon_ui_tower_minimap',
   inhibitor: 'icon_ui_inhibitor_minimap_v2',

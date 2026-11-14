@@ -29,7 +29,7 @@ The screens (`src/components/minigames/`) get `{ setup, me, moves, sendMove, onS
 
 | Game | You vs bot | Solo | Multiplayer (`live`) |
 |---|---|---|---|
-| **Headshot at High Noon** (`duel`) | Caitlyn vs Jhin | "Ready... Steady...", then a Baron pops up somewhere in the arena: tap it first. Tapping before it shows loses the round; a tap beside it only costs time. Best of 3. | Same spot and timing for both. |
+| **Headshot at High Noon** (`duel`) | Caitlyn vs Jhin | "Ready... Steady...", then one big Baron pops up in the middle: tap it first. Tapping before it shows loses the round; a tap beside it only costs time. Best of 3. | Same timing for both. |
 | **Rocket Grab Gold Rush** (`hook`) | Blitzcrank vs Thresh | Gold Miner with a swinging hook, 25 s, and a big GRAB button. Carries pay most. Grabbing every champion is an ACE! | 15 s. |
 | **Combo Like a Riven Main** (`combo`) | Riven vs Riven Main | Three fresh combos of 4, 6 and 7 keys (Q W E R as Riven's spells), shown 0.575 / 0.525 / 0.5 s per key. A wrong key doesn't end it; most right keys (max 17) wins. | Same. |
 | **Shroom Hopscotch** (`shrooms`) | Teemo vs Ezreal | Plant 3 shrooms, one per column, then walk the whole path: a shroom is a BOOM, but you keep walking. +1 to the planter per boom, +1 to the walker per dodge. | The planter watches the walk live. One role each: 2+ booms wins for the planter. |

@@ -9,7 +9,7 @@ export interface RerollBoxProps {
   hint: string
 }
 
-/** Reroll pips and what to tap, shared by champion and item rerolls (Match vs Bots). */
+/** Reroll pips and what to tap, shared by champion and item rerolls (Classic, multiplayer). */
 export function RerollBox({ label, left, total, hint }: RerollBoxProps) {
   return (
     <div className="w-full rounded-lg border border-gold/30 bg-abyss/50 p-2.5">

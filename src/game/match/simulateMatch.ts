@@ -28,6 +28,7 @@ import {
   SURRENDER,
   TOWERS_FOR_INHIBITOR,
 } from './config'
+import { pointsTimeline, sureWinner } from './points'
 import { emptyStats, statsAfter } from './stats'
 import { blueWinChance } from './winChance'
 import {
@@ -228,10 +229,30 @@ class Simulation {
    */
   private closer(): Side | null {
     if (this.time < CLOSE_OUT.from || !this.canEnd()) return null
+    const sure = this.sureSide()
+    if (sure) return sure
     const chance = blueWinChance(this.teams, this.scoreboard(), LOCK_IN.weights)
     if (chance >= CLOSE_OUT.chance) return 'blue'
     if (1 - chance >= CLOSE_OUT.chance) return 'red'
     return null
+  }
+
+  /**
+   * The side so far ahead on match points (team rating plus live-event points) that it always
+   * wins, once the live events have decided the game. It wins every fight from then on, and only
+   * it can end the game. Multiplayer only: a match without live events plays as simulated.
+   */
+  private sureSide(): Side | null {
+    if (this.script.events.length === 0 || !this.canEnd()) return null
+    const played = this.script.winners.slice(0, this.scriptIndex)
+    const points = pointsTimeline(this.power, played, this.script.events.length)
+    const now = points[points.length - 1]
+    return now ? sureWinner(now) : null
+  }
+
+  private mayWin(side: Side): boolean {
+    const sure = this.sureSide()
+    return sure === null || sure === side
   }
 
   private liveEventAhead(kind: ScriptedEvent['kind']): boolean {
@@ -310,10 +331,10 @@ class Simulation {
     return luck * 0.5 + (1 - luck) * logistic(edge)
   }
 
-  /** Rolls who wins, unless a live event already decided it (`forcedWinner`). */
+  /** Rolls who wins, unless a live event already decided it (`forcedWinner`) or one side is sure to win. */
   private contest(strength: (side: Side) => number, withBuffs = false, forcedWinner?: Side): ContestResult {
     const blueChance = this.blueChance(strength('blue'), strength('red'), withBuffs)
-    const winner: Side = forcedWinner ?? (this.random() < blueChance ? 'blue' : 'red')
+    const winner: Side = forcedWinner ?? this.sureSide() ?? (this.random() < blueChance ? 'blue' : 'red')
     const chance = winner === 'blue' ? blueChance : 1 - blueChance
     this.updateStreaks(winner, chance)
     return { winner, chance }
@@ -624,7 +645,7 @@ class Simulation {
     const inhibitorsOpen = this.time >= MATCH_TIMES.inhibitorsFrom && state.towers >= TOWERS_FOR_INHIBITOR
     const baseSpot: MapSpot = side === 'blue' ? 'redBase' : 'blueBase'
 
-    if (power === 'big' && state.inhibitors > 0 && this.canEnd()) {
+    if (power === 'big' && state.inhibitors > 0 && this.canEnd() && this.mayWin(side)) {
       state.towers += NEXUS_TOWERS
       this.winner = side
       return this.addEvent({ kind: 'nexus', side, actor: null, tags: [], big: true, spot: baseSpot })
@@ -643,7 +664,7 @@ class Simulation {
     const goldLeader: Side = this.goldLead('blue') >= 0 ? 'blue' : 'red'
     const fedUp = this.time >= MATCH_TIMES.surrenderFrom && this.goldLead(goldLeader) >= SURRENDER.lead
     const leader = closer ?? (fedUp ? goldLeader : null)
-    if (!leader || this.time < MATCH_TIMES.surrenderFrom) return
+    if (!leader || this.time < MATCH_TIMES.surrenderFrom || !this.mayWin(leader)) return
     if (this.random() >= (closer ? CLOSE_OUT.surrenderChance : SURRENDER.chance)) return
     this.time += this.between(MATCH_TIMES.followUp)
     this.winner = leader

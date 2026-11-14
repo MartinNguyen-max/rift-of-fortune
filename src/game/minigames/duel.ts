@@ -6,7 +6,7 @@ export const DUEL_ROUNDS_TO_WIN = 2
 export const DUEL_MAX_ROUNDS = DUEL_ROUNDS_TO_WIN * 2 - 1
 
 /**
- * Headshot at High Noon: "Ready... Steady..." then a Baron pops up somewhere in the arena. Tap it
+ * Headshot at High Noon: "Ready... Steady..." then one big Baron pops up in the middle. Tap it
  * first to win the round; tap before it shows and the round is lost. A tap that misses the Baron
  * only costs time. Best of 3. A move is the time of your tap in ms from the round start.
  */
@@ -29,31 +29,7 @@ export const BOT_REACTION = { min: 0.38, max: 0.6 } as const
 /** How often the bot gets nervous and shoots before the Baron shows. */
 export const BOT_FALSE_START_CHANCE = 0.06
 
-/** Where the Baron can show, as fractions of the arena (its center): clear of the edges. */
-export const TARGET_AREA = { left: 0.2, right: 0.8, top: 0.2, bottom: 0.62 } as const
-
-/** Where the Baron shows: the center, as fractions of the arena's width and height. */
-export interface TargetSpot {
-  x: number
-  y: number
-}
-
 const between = (min: number, max: number, random: RandomFn) => min + random() * (max - min)
-
-/**
- * Where the Baron shows in each round, the same for both players. Each round it jumps to the
- * other half of the arena, so no spot can be camped.
- */
-export function targetSpots(seed: number): TargetSpot[] {
-  const random = seededRandom(seed ^ 0x3c6ef372)
-  const firstRight = random() < 0.5
-  const middle = (TARGET_AREA.left + TARGET_AREA.right) / 2
-  return Array.from({ length: DUEL_MAX_ROUNDS }, (_, round) => {
-    const right = (round % 2 === 0) === firstRight
-    const x = right ? between(middle + 0.05, TARGET_AREA.right, random) : between(TARGET_AREA.left, middle - 0.05, random)
-    return { x, y: between(TARGET_AREA.top, TARGET_AREA.bottom, random) }
-  })
-}
 
 /** When the Baron shows in each round, in ms from the round start. The same for both players. */
 export function drawTimes(seed: number): number[] {

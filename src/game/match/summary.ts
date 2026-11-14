@@ -1,6 +1,6 @@
 import type { Role } from '../../data/types'
 import { ROLES } from '../roles'
-import { describeEvent, formatGameTime, lowercaseYourMidSentence, type CommentaryLine, type MatchLines } from './commentary'
+import { describeEvent, lowercaseYourMidSentence, type CommentaryLine, type MatchLines } from './commentary'
 import { winChanceTimeline } from './winChance'
 import { SIDES, type ChampionRef, type ChampionStats, type EventTag, type KDA, type MatchEvent, type MatchResult, type MatchTeams, type Side } from './types'
 
@@ -92,29 +92,6 @@ export function summarizeMatch(match: MatchResult, lines: MatchLines): MatchSumm
 }
 
 export const formatKda = ({ kills, deaths, assists }: KDA): string => `${kills}/${deaths}/${assists}`
-
-/** Text for the Share button, like the Daily's. */
-export function matchShareText(
-  match: MatchResult,
-  teams: MatchTeams,
-  summary: MatchSummary,
-  opponentLabel: string,
-  url: string,
-): string {
-  const last = match.events[match.events.length - 1]
-  const result = match.winner === 'blue' ? 'Victory 🏆' : 'Defeat 💀'
-  const mvp = teams[summary.mvp.side].rating.champions.find(({ role }) => role === summary.mvp.role)
-  const score = last
-    ? `Kills ${last.score.blue.kills}–${last.score.red.kills} · Towers ${last.score.blue.towers}–${last.score.red.towers} · Dragons ${last.score.blue.dragons}–${last.score.red.dragons}`
-    : ''
-  return [
-    'Rift of Fortune · Match vs Bots',
-    `${result} vs ${teams.red.name} (${opponentLabel}) in ${formatGameTime(match.duration)}`,
-    score,
-    ...(mvp ? [`MVP: ${mvp.champion.name} ${formatKda(summary.mvp.kda)}`] : []),
-    url,
-  ].join('\n')
-}
 
 /** Below this gap from 50%, the draft was a coin flip. */
 const COIN_FLIP_MARGIN = 0.05

@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { useEffect, useRef } from 'react'
 import { championIconUrl, endOfGameIconUrl } from '../../data'
 import { CASTER_NAMES, formatGameTime, type CommentaryLine } from '../../game/match/commentary'
+import { pointsPerEvent, pointsTimeline, pointsVerdict, SURE_WIN_LEAD, type MatchPoints, type PointsVerdict } from '../../game/match/points'
 import { formatKda, type MatchSummary } from '../../game/match/summary'
 import type { MatchResult, MatchTeams, Side } from '../../game/match/types'
 import { MINI_GAMES } from '../../game/minigames/catalog'
@@ -19,6 +20,8 @@ import type { Room } from './useRoom'
 interface LiveEndPanelProps {
   room: Room
   round: RoundState
+  /** The teams on their real sides (blue = the host). */
+  teams: MatchTeams
   events: readonly LiveEvent[]
   mySide: Side
   won: boolean
@@ -62,7 +65,7 @@ export function RematchControls({ room, round }: { room: Room; round: RoundState
 }
 
 /** Victory or Defeat, the live events, the series, Rematch and emotes. Nothing else. */
-export function LiveEndPanel({ room, round, events, mySide, won, match }: LiveEndPanelProps) {
+export function LiveEndPanel({ room, round, teams, events, mySide, won, match }: LiveEndPanelProps) {
   const { me, wins, sendEmote } = room
   const panel = useRef<HTMLElement>(null)
   useEffect(() => {
@@ -104,7 +107,14 @@ export function LiveEndPanel({ room, round, events, mySide, won, match }: LiveEn
         <p className="text-sm text-gold-light/70">{howItEnded}</p>
       </div>
 
-      <LiveEventsSummary round={round} events={events} mySide={mySide} />
+      <HowItWasDecided
+        round={round}
+        teams={teams}
+        events={events}
+        mySide={mySide}
+        won={won}
+        opponentName={opponentInfo?.name ?? 'Your opponent'}
+      />
 
       {opponentInfo && <SeriesScore me={me} opponent={opponentInfo} wins={wins} />}
 
@@ -119,20 +129,62 @@ export function LiveEndPanel({ room, round, events, mySide, won, match }: LiveEn
   )
 }
 
-function LiveEventsSummary({ round, events, mySide }: { round: RoundState; events: readonly LiveEvent[]; mySide: Side }) {
+interface HowItWasDecidedProps {
+  round: RoundState
+  teams: MatchTeams
+  events: readonly LiveEvent[]
+  mySide: Side
+  won: boolean
+  opponentName: string
+}
+
+/** One line under the points: why the winner won, so an upset never feels like a cheat. */
+function verdictText(verdict: PointsVerdict, won: boolean, opponentName: string): string {
+  switch (verdict) {
+    case 'sure':
+      return `${SURE_WIN_LEAD}+ points ahead always wins.`
+    case 'held':
+      return `Close game. ${won ? 'You' : opponentName} had the upper hand and held on.`
+    case 'even':
+      return 'Dead even on points: the match decided it.'
+    case 'upset':
+      return won
+        ? `Anything can happen: ${opponentName} had the upper hand, but you got lucky. Only possible in a close game.`
+        : `Anything can happen: you had the upper hand, but ${opponentName} got lucky. Only possible in a close game.`
+  }
+}
+
+/**
+ * The short result: both team ratings, the points each live event added, and why the winner won.
+ * Yours first, theirs second. The match is simulated, but a big points lead always wins.
+ */
+function HowItWasDecided({ round, teams, events, mySide, won, opponentName }: HowItWasDecidedProps) {
   const seed = round.match?.seed ?? 0
+  const theirSide: Side = mySide === 'blue' ? 'red' : 'blue'
   const played = events.flatMap((live, index) => {
     const result = round.events[index]?.result
     return result ? [{ live, index, result }] : []
   })
-  if (played.length === 0) return null
-  const theirSide: Side = mySide === 'blue' ? 'red' : 'blue'
+  const ratings: MatchPoints = { blue: teams.blue.rating.score, red: teams.red.rating.score }
+  const points = pointsTimeline(
+    ratings,
+    played.map(({ result }) => result.winner),
+    events.length,
+  )
+  const prize = pointsPerEvent(events.length)
+  const final = points[points.length - 1]
+  const winnerSide = won ? mySide : theirSide
+  const pair = (step: MatchPoints | undefined) => (step ? `${step[mySide]} – ${step[theirSide]}` : '')
 
   return (
     <ul className="flex flex-col gap-1 rounded-lg border border-hextech/30 bg-hextech/5 p-2 text-left text-sm">
-      <li className="px-1 text-[10px] tracking-widest text-hextech uppercase">Live events</li>
-      {played.map(({ live, index, result }) => {
-        const won = result.winner === mySide
+      <li className="px-1 text-[10px] tracking-widest text-hextech uppercase">How it was decided</li>
+      <li className="flex items-center gap-2 px-1">
+        <span className="flex-1 text-gold-light/90">Team rating</span>
+        <span className="font-mono font-bold text-gold-light">{pair(points[0])}</span>
+      </li>
+      {played.map(({ live, index, result }, at) => {
+        const eventWon = result.winner === mySide
         const info = MINI_GAMES[live.game]
         const setup = eventSetup(seed, index, live.late, round.settings.bothRoles)
         const format = (score: number) => MINI_GAME_RULES[live.game].formatScore(score, setup)
@@ -140,16 +192,26 @@ function LiveEventsSummary({ round, events, mySide }: { round: RoundState; event
           <li key={index} className="flex items-center gap-2 px-1">
             <img src={championIconById(info.champion)} alt="" className="size-7 shrink-0 rounded-full" />
             <span className="flex min-w-0 flex-1 flex-col">
-              <span className="leading-tight text-gold-light/90">{info.name}</span>
+              <span className="leading-tight text-gold-light/90">
+                {info.name}{' '}
+                <span className={`font-bold ${eventWon ? 'text-hextech' : 'text-red-400'}`}>
+                  {eventWon ? `won +${prize}` : `lost, +${prize} them`}
+                </span>
+              </span>
               <span className="font-mono text-[11px] text-gold-light/60">
                 {format(result.scores[mySide])} – {format(result.scores[theirSide])}
                 {result.tie && ' · coin flip'}
               </span>
             </span>
-            <span className={`w-11 shrink-0 text-right font-bold ${won ? 'text-hextech' : 'text-red-400'}`}>{won ? 'Won' : 'Lost'}</span>
+            <span className="shrink-0 font-mono font-bold text-gold-light">{pair(points[at + 1])}</span>
           </li>
         )
       })}
+      {final && !round.surrendered && (
+        <li className="border-t border-hextech/20 px-1 pt-1 text-xs text-gold-light/70">
+          {verdictText(pointsVerdict(final, winnerSide), won, opponentName)}
+        </li>
+      )}
     </ul>
   )
 }

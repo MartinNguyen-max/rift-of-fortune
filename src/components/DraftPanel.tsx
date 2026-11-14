@@ -12,7 +12,7 @@ interface DraftPanelProps {
   onRoll: () => void
   onRevealed: () => void
   onStartItems: () => void
-  /** Match vs Bots: champion rerolls, shown once the team is complete. */
+  /** Classic and multiplayer: champion rerolls, shown once the team is complete. */
   rerolls?: RerollBoxProps
 }
 

@@ -17,7 +17,7 @@ import {
   type GameAction,
   type GameState,
 } from './gameState'
-import { MATCH_RULES } from './rules'
+import { CLASSIC_RULES } from './rules'
 import { makeChampion, makeItem } from './testUtils'
 
 const ahri = makeChampion({ id: 'Ahri' })
@@ -155,13 +155,13 @@ describe('getTeamMembers', () => {
   })
 })
 
-describe('Match vs Bots rerolls', () => {
+describe('Classic rerolls', () => {
   const roles: Role[] = ['TOP', 'JUNGLE', 'MIDDLE', 'BOTTOM', 'SUPPORT']
   const items = Array.from({ length: 10 }, (_, i) => makeItem({ id: String(i) }))
   const apply = (state: GameState, ...actions: GameAction[]) => actions.reduce(gameReducer, state)
 
   function teamOf(count: number): GameState {
-    let state = initialGameState(MATCH_RULES)
+    let state = initialGameState(CLASSIC_RULES)
     for (const role of roles.slice(0, count)) {
       state = gameReducer(rollAndReveal(state, makeChampion({ id: role })), { type: 'place', role })
     }
@@ -190,8 +190,8 @@ describe('Match vs Bots rerolls', () => {
   it('swaps a champion for a new one and uses up a reroll, until none are left', () => {
     let state = gameReducer(teamOf(5), { type: 'rerollChampion', role: 'MIDDLE', champion: ahri })
     expect(state.team.MIDDLE?.id).toBe('Ahri')
-    expect(championRerollsLeft(state)).toBe(MATCH_RULES.championRerolls - 1)
-    for (let i = 1; i < MATCH_RULES.championRerolls; i++) {
+    expect(championRerollsLeft(state)).toBe(CLASSIC_RULES.championRerolls - 1)
+    for (let i = 1; i < CLASSIC_RULES.championRerolls; i++) {
       state = gameReducer(state, { type: 'rerollChampion', role: 'TOP', champion: makeChampion({ id: `New${i}` }) })
     }
     expect(canRerollChampion(state, 'TOP')).toBe(false)
@@ -206,29 +206,29 @@ describe('Match vs Bots rerolls', () => {
   it('swaps an equipped item for a new one on the same champion', () => {
     const state = gameReducer(equipped(), { type: 'rerollItem', itemId: '0', item: makeItem({ id: 'New' }) })
     expect(getTeamMembers(state)[0]?.items.map(({ id }) => id)).toEqual(['New', '5'])
-    expect(itemRerollsLeft(state)).toBe(MATCH_RULES.itemRerolls - 1)
+    expect(itemRerollsLeft(state)).toBe(CLASSIC_RULES.itemRerolls - 1)
     expect(canFinish(state)).toBe(true)
   })
 
   it('never rerolls into an item already in the game', () => {
     const state = gameReducer(equipped(), { type: 'rerollItem', itemId: '0', item: makeItem({ id: '7' }) })
-    expect(itemRerollsLeft(state)).toBe(MATCH_RULES.itemRerolls)
+    expect(itemRerollsLeft(state)).toBe(CLASSIC_RULES.itemRerolls)
   })
 
   it('has no rerolls in the Classic rules, and keeps the rules when starting over', () => {
     const classic = gameReducer(rollAndReveal(initialGameState()), { type: 'place', role: 'TOP' })
     expect(canRerollChampion(classic, 'TOP')).toBe(false)
-    expect(rulesOf(gameReducer(teamOf(5), { type: 'reset' }))).toEqual(MATCH_RULES)
+    expect(rulesOf(gameReducer(teamOf(5), { type: 'reset' }))).toEqual(CLASSIC_RULES)
   })
 })
 
-describe('Match vs Bots: items lock for the reroll step', () => {
+describe('Rerolls: items lock for the reroll step', () => {
   const roles: Role[] = ['TOP', 'JUNGLE', 'MIDDLE', 'BOTTOM', 'SUPPORT']
   const items = Array.from({ length: 10 }, (_, i) => makeItem({ id: String(i) }))
   const apply = (state: GameState, ...actions: GameAction[]) => actions.reduce(gameReducer, state)
 
   it('locks every item once all ten are placed, so they can only be rerolled', () => {
-    let state = initialGameState(MATCH_RULES)
+    let state = initialGameState(CLASSIC_RULES)
     for (const role of roles) state = gameReducer(rollAndReveal(state, makeChampion({ id: role })), { type: 'place', role })
     const handOut = (from: number) => roles.map((role, i): GameAction => ({ type: 'assignItem', itemId: String(from + i), role }))
     state = apply(state, { type: 'startItems', items }, { type: 'revealItems' }, ...handOut(0), { type: 'nextItemRound' }, { type: 'revealItems' })

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { ROLES } from '../roles'
 import { commentate } from './commentary'
 import { simulateMatch } from './simulateMatch'
-import { dramaScore, FEEDER_VERBS, findMvp, matchShareText, matchStory, momentOfTheMatch, mostDeaths, standouts, summarizeMatch } from './summary'
+import { dramaScore, FEEDER_VERBS, findMvp, matchStory, momentOfTheMatch, mostDeaths, standouts, summarizeMatch } from './summary'
 import { winChanceTimeline } from './winChance'
 import { emptyStats } from './stats'
 import { makeEvent, sampleTeams } from './testUtils'
@@ -64,19 +64,6 @@ describe('summarizeMatch', () => {
     const match = simulateMatch(teams, 1)
     const lines = commentate(match, teams).map((line, index) => (index === 2 ? { caster: 'analyst' as const, text: 'Roast', callback: true } : line && { ...line, callback: false }))
     expect(summarizeMatch(match, lines).bestLine).toBe(lines[2])
-  })
-})
-
-describe('matchShareText', () => {
-  it('shows the result, opponent, score, MVP and link', () => {
-    const match = simulateMatch(teams, 1)
-    const summary = summarizeMatch(match, commentate(match, teams))
-    const text = matchShareText(match, teams, summary, 'Level 2', 'https://example.com/#/match')
-    expect(text).toContain(match.winner === 'blue' ? 'Victory' : 'Defeat')
-    expect(text).toContain('vs Team Bot (Level 2)')
-    expect(text).toMatch(/Kills \d+–\d+/)
-    expect(text).toContain('MVP: ')
-    expect(text.endsWith('https://example.com/#/match')).toBe(true)
   })
 })
 

@@ -52,7 +52,7 @@ interface GameProps {
   nextChampion: (state: GameState) => Champion
   /** The ten items for this game. */
   drawItems: () => Item[]
-  /** Match vs Bots: champion and item rerolls. Classic rules when left out. */
+  /** Champion and item rerolls (Classic, multiplayer). No rerolls when left out. */
   rules?: GameRules
   /** A random champion to replace a placed one, not already on the team. */
   rerollChampion?: (state: GameState) => Champion

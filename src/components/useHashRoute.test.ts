@@ -5,7 +5,7 @@ describe('parseRoute', () => {
   it.each([
     ['#/daily', 'daily'],
     ['#/classic', 'classic'],
-    ['#/match', 'match'],
+    ['#/match', 'home'],
     ['#/play', 'play'],
     ['#/play/K7Q2X', 'play'],
     ['#/minigames', 'minigames'],
@@ -19,7 +19,7 @@ describe('parseRoute', () => {
   })
 
   it('round-trips with routeHref', () => {
-    for (const route of ['home', 'classic', 'daily', 'match', 'play', 'minigames'] as const) {
+    for (const route of ['home', 'classic', 'daily', 'play', 'minigames'] as const) {
       expect(parseRoute(routeHref(route))).toBe(route)
     }
   })

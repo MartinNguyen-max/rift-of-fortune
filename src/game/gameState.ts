@@ -1,7 +1,7 @@
 import type { Champion, Item, Role } from '../data/types'
 import { allItemsAssigned, canAssignItem, ITEM_COUNT, ITEM_ROUNDS, itemsForRole, itemsInRound, type ItemAssignments } from './items'
 import { ROLES } from './roles'
-import { CLASSIC_RULES, type GameRules } from './rules'
+import { DAILY_RULES, type GameRules } from './rules'
 import type { TeamMember } from './scoring/teamBalance'
 import { emptyTeam, isTeamComplete, type Team } from './team'
 
@@ -45,7 +45,7 @@ export type GameAction =
   | { type: 'reset' }
 
 /** A new game. */
-export function initialGameState(rules: GameRules = CLASSIC_RULES): GameState {
+export function initialGameState(rules: GameRules = DAILY_RULES): GameState {
   return {
     phase: 'draft',
     team: emptyTeam(),
@@ -60,7 +60,7 @@ export function initialGameState(rules: GameRules = CLASSIC_RULES): GameState {
   }
 }
 
-export const rulesOf = (state: GameState): GameRules => state.rules ?? CLASSIC_RULES
+export const rulesOf = (state: GameState): GameRules => state.rules ?? DAILY_RULES
 export const championRerollsLeft = (state: GameState): number => state.championRerollsLeft ?? 0
 export const itemRerollsLeft = (state: GameState): number => state.itemRerollsLeft ?? 0
 

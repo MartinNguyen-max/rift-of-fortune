@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 import { parseMiniGameId, type MiniGameId } from '../game/minigames/catalog'
 import { parseRoomCode } from '../game/multiplayer/roomCode'
 
-export type Route = 'home' | 'classic' | 'daily' | 'match' | 'play' | 'minigames'
+export type Route = 'home' | 'classic' | 'daily' | 'play' | 'minigames'
 
-const PAGES: readonly Route[] = ['classic', 'daily', 'match', 'play', 'minigames']
+const PAGES: readonly Route[] = ['classic', 'daily', 'play', 'minigames']
 
 const pathOf = (hash: string) => hash.replace(/^#\/?/, '')
 
