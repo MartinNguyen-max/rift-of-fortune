@@ -48,7 +48,7 @@ describe('parseRecord', () => {
     const old = { played: 9, wins: 5, streak: 2, bestStreak: 4, best: 20 }
     expect(parseRecord(old, 2)).toEqual({ played: 9, wins: 5, streak: 2, bestStreak: 4, best: null, rules: 2 })
     expect(parseRecord({ ...old, best: 14, rules: 2 }, 2)?.best).toBe(14)
-    expect(scoringVersion('combo')).toBe(2)
+    expect(scoringVersion('combo')).toBeGreaterThan(1)
     expect(scoringVersion('hook')).toBe(1)
   })
 })

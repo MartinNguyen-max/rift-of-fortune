@@ -1,7 +1,7 @@
 import type { Champion, Item, Role } from '../data/types'
 import { allItemsAssigned, canAssignItem, ITEM_COUNT, ITEM_ROUNDS, itemsForRole, itemsInRound, type ItemAssignments } from './items'
 import { ROLES } from './roles'
-import { CLASSIC_RULES, isFastPace, type GameRules } from './rules'
+import { CLASSIC_RULES, type GameRules } from './rules'
 import type { TeamMember } from './scoring/teamBalance'
 import { emptyTeam, isTeamComplete, type Team } from './team'
 
@@ -28,15 +28,12 @@ export interface GameState {
   rules?: GameRules
   championRerollsLeft?: number
   itemRerollsLeft?: number
-  /** Fast pace: the champions still to place, all shown at once (missing in other modes). */
-  offer?: Champion[]
 }
 
 export type GameAction =
   | { type: 'roll'; champion: Champion }
   | { type: 'reveal' }
   | { type: 'place'; role: Role }
-  | { type: 'placeOffered'; championId: string; role: Role }
   | { type: 'rerollChampion'; role: Role; champion: Champion }
   | { type: 'startItems'; items: Item[] }
   | { type: 'revealItems' }
@@ -45,10 +42,10 @@ export type GameAction =
   | { type: 'unassignItem'; itemId: string }
   | { type: 'rerollItem'; itemId: string; item: Item }
   | { type: 'finish' }
-  | { type: 'reset'; offer?: Champion[] }
+  | { type: 'reset' }
 
-/** A new game. The fast pace needs the champions to offer. */
-export function initialGameState(rules: GameRules = CLASSIC_RULES, offer: Champion[] = []): GameState {
+/** A new game. */
+export function initialGameState(rules: GameRules = CLASSIC_RULES): GameState {
   return {
     phase: 'draft',
     team: emptyTeam(),
@@ -60,7 +57,6 @@ export function initialGameState(rules: GameRules = CLASSIC_RULES, offer: Champi
     rules,
     championRerollsLeft: rules.championRerolls,
     itemRerollsLeft: rules.itemRerolls,
-    ...(isFastPace(rules) ? { offer } : {}),
   }
 }
 
@@ -69,18 +65,8 @@ export const championRerollsLeft = (state: GameState): number => state.championR
 export const itemRerollsLeft = (state: GameState): number => state.itemRerollsLeft ?? 0
 
 export function canRoll(state: GameState): boolean {
-  return state.phase === 'draft' && state.rolled === null && !isTeamComplete(state.team) && !isFastPace(rulesOf(state))
+  return state.phase === 'draft' && state.rolled === null && !isTeamComplete(state.team)
 }
-
-/** Fast pace: an offered champion can go into any empty role. */
-export function canPlaceOffered(state: GameState, championId: string, role: Role): boolean {
-  return (
-    state.phase === 'draft' && state.team[role] === null && (state.offer ?? []).some(({ id }) => id === championId)
-  )
-}
-
-/** Item rounds: two rounds of 5, or one round of all 10 in the fast pace. */
-export const itemRounds = (state: GameState): number => (isFastPace(rulesOf(state)) ? 1 : ITEM_ROUNDS)
 
 export function canPlace(state: GameState, role: Role): boolean {
   return state.phase === 'draft' && state.rolled?.revealed === true && state.team[role] === null
@@ -97,7 +83,7 @@ export function canRerollChampion(state: GameState, role: Role): boolean {
 
 /** The items rolled in the current round. */
 export function currentRoundItems(state: GameState): Item[] {
-  return itemsInRound(state.items, state.itemRound, ITEM_COUNT / itemRounds(state))
+  return itemsInRound(state.items, state.itemRound, ITEM_COUNT / ITEM_ROUNDS)
 }
 
 /** True while the player can hand out (or take back) items of the current round. */
@@ -119,11 +105,11 @@ function roundComplete(state: GameState): boolean {
 }
 
 export function canStartNextItemRound(state: GameState): boolean {
-  return state.itemRound < itemRounds(state) && roundComplete(state)
+  return state.itemRound < ITEM_ROUNDS && roundComplete(state)
 }
 
 export function canFinish(state: GameState): boolean {
-  return state.itemRound === itemRounds(state) && roundComplete(state)
+  return state.itemRound === ITEM_ROUNDS && roundComplete(state)
 }
 
 /** The reroll step: all ten items are placed and the mode has item rerolls (even when they are used up). */
@@ -156,16 +142,6 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       if (!state.rolled || !canPlace(state, action.role)) return state
       return { ...state, team: { ...state.team, [action.role]: state.rolled.champion }, rolled: null }
 
-    case 'placeOffered': {
-      const champion = state.offer?.find(({ id }) => id === action.championId)
-      if (!champion || !canPlaceOffered(state, action.championId, action.role)) return state
-      return {
-        ...state,
-        team: { ...state.team, [action.role]: champion },
-        offer: state.offer?.filter(({ id }) => id !== action.championId),
-      }
-    }
-
     case 'rerollChampion':
       if (!canRerollChampion(state, action.role)) return state
       return {
@@ -176,15 +152,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'startItems':
       if (!canStartItems(state)) return state
-      // The fast pace shows every item at once, without the roll.
-      return {
-        ...state,
-        phase: 'items',
-        items: action.items,
-        assignments: {},
-        itemRound: 1,
-        itemsRevealed: isFastPace(rulesOf(state)),
-      }
+      return { ...state, phase: 'items', items: action.items, assignments: {}, itemRound: 1, itemsRevealed: false }
 
     case 'revealItems':
       return state.phase === 'items' ? { ...state, itemsRevealed: true } : state
@@ -226,6 +194,6 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return canFinish(state) ? { ...state, phase: 'results' } : state
 
     case 'reset':
-      return initialGameState(rulesOf(state), action.offer)
+      return initialGameState(rulesOf(state))
   }
 }

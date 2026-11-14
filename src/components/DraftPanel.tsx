@@ -14,8 +14,6 @@ interface DraftPanelProps {
   onStartItems: () => void
   /** Match vs Bots: champion rerolls, shown once the team is complete. */
   rerolls?: RerollBoxProps
-  /** Fast pace: all items come at once, so the button says so. */
-  fastPace?: boolean
 }
 
 export function DraftPanel({
@@ -27,7 +25,6 @@ export function DraftPanel({
   onRevealed,
   onStartItems,
   rerolls,
-  fastPace = false,
 }: DraftPanelProps) {
   if (teamComplete) {
     return (
@@ -39,7 +36,7 @@ export function DraftPanel({
             : 'Five brave souls. Now let’s see what the shop gives them.'}
         </p>
         {rerolls && <RerollBox {...rerolls} />}
-        <Button onClick={onStartItems}>{fastPace ? 'Get items' : 'Roll items'}</Button>
+        <Button onClick={onStartItems}>Roll items</Button>
       </section>
     )
   }

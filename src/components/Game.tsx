@@ -13,7 +13,6 @@ import {
   canFinish,
   canHandOutItems,
   canPlace,
-  canPlaceOffered,
   canRerollChampion,
   canRerollItem,
   canRoll,
@@ -26,21 +25,19 @@ import {
   initialGameState,
   isItemMovable,
   itemRerollsLeft,
-  itemRounds,
   rulesOf,
   type GameState,
 } from '../game/gameState'
 import { canAssignItem, itemsForRole, ITEMS_PER_CHAMPION, unassignedItems } from '../game/items'
 import { isRole } from '../game/roles'
-import { isFastPace, type GameRules } from '../game/rules'
+import type { GameRules } from '../game/rules'
 import { rateTeam, type TeamRating } from '../game/scoring/rateTeam'
 import { playSound, playSynth, preloadSounds, prepareChampionVoice } from '../services/sound'
 import { emptyRoles } from '../game/team'
-import { championIdFromOfferDragId, ITEM_POOL_ID, itemIdFromDragId, ROLLED_CHAMPION_ID } from './dragIds'
+import { ITEM_POOL_ID, itemIdFromDragId, ROLLED_CHAMPION_ID } from './dragIds'
 import { DraftPanel } from './DraftPanel'
 import { ItemPanel } from './ItemPanel'
 import { ItemRoll } from './ItemRoll'
-import { OfferPanel } from './OfferPanel'
 import { PhaseSteps } from './PhaseSteps'
 import type { RerollBoxProps } from './RerollBox'
 import { ResultsPanel } from './ResultsPanel'
@@ -61,8 +58,6 @@ interface GameProps {
   rerollChampion?: (state: GameState) => Champion
   /** A random item to replace an equipped one, not already in the game. */
   rerollItem?: (state: GameState) => Item
-  /** Fast pace: the champions offered all at once. */
-  offerChampions?: () => Champion[]
   onStateChange?: (state: GameState) => void
   /** Buttons and extras under the rank, e.g. Play again or Share. `reset` starts a new game. */
   resultActions: (rating: TeamRating, reset: () => void) => ReactNode
@@ -77,17 +72,15 @@ export function Game({
   rules,
   rerollChampion,
   rerollItem,
-  offerChampions,
   onStateChange,
   resultActions,
 }: GameProps) {
   const [state, dispatch] = useReducer(
     gameReducer,
     initialState ?? null,
-    (saved) => saved ?? initialGameState(rules, rules && isFastPace(rules) ? (offerChampions?.() ?? []) : []),
+    (saved) => saved ?? initialGameState(rules),
   )
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
-  const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null)
   /** What is playing the short reroll spin right now. */
   const [spinningRole, setSpinningRole] = useState<Role | null>(null)
   const [spinningItemId, setSpinningItemId] = useState<string | null>(null)
@@ -107,13 +100,6 @@ export function Game({
   const stopChampionSpin = useCallback(() => setSpinningRole(null), [])
   const stopItemSpin = useCallback(() => setSpinningItemId(null), [])
   const roll = () => dispatch({ type: 'roll', champion: nextChampion(state) })
-  /** Fast pace: places an offered champion. */
-  const placeOffered = (championId: string, role: Role) => {
-    if (!canPlaceOffered(state, championId, role)) return
-    dispatch({ type: 'placeOffered', championId, role })
-    playSound('lock-in')
-    setSelectedOfferId(null)
-  }
   /** Places the champion, then rolls the next one so the player doesn't have to press Roll again. */
   const place = (role: Role) => {
     const placed = gameReducer(state, { type: 'place', role })
@@ -141,7 +127,7 @@ export function Game({
   const startItems = () => {
     const items = drawItems()
     for (const item of items) new Image().src = itemIconUrl(item.image)
-    if (!isFastPace(rulesOf(state))) playSynth('roll')
+    playSynth('roll')
     dispatch({ type: 'startItems', items })
   }
   const assignItem = (itemId: string, role: Role) => {
@@ -150,7 +136,7 @@ export function Game({
   }
   const unassignItem = (itemId: string) => dispatch({ type: 'unassignItem', itemId })
   const reset = () => {
-    dispatch({ type: 'reset', offer: isFastPace(rulesOf(state)) ? offerChampions?.() : undefined })
+    dispatch({ type: 'reset' })
     setSelectedItemId(null)
   }
   const continueItems = () => {
@@ -162,8 +148,6 @@ export function Game({
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
     if (!over) return
     if (active.id === ROLLED_CHAMPION_ID && isRole(over.id)) return place(over.id)
-    const offeredId = championIdFromOfferDragId(active.id)
-    if (offeredId !== null && isRole(over.id)) return placeOffered(offeredId, over.id)
 
     const itemId = itemIdFromDragId(active.id)
     if (itemId === null) return
@@ -179,9 +163,6 @@ export function Game({
   const activeItemId = poolItems.some((item) => item.id === selectedItemId) ? selectedItemId : (poolItems[0]?.id ?? null)
   const hasRoomForItem = (role: Role) => itemsForRole(state.items, state.assignments, role).length < ITEMS_PER_CHAMPION
   const { championRerolls, itemRerolls } = rulesOf(state)
-  const fastPace = isFastPace(rulesOf(state))
-  const offer = state.offer ?? []
-  const activeOfferId = offer.some(({ id }) => id === selectedOfferId) ? selectedOfferId : (offer[0]?.id ?? null)
   /** Once every item is equipped, tapping one picks it for a reroll instead of taking it back. */
   const itemRerollsOpen = rerollItem !== undefined && itemRerolls > 0 && canFinish(state)
   const canPickItemReroll = itemRerollsOpen && itemRerollsLeft(state) > 0
@@ -207,7 +188,7 @@ export function Game({
 
   const renderSlot = (role: Role) => {
     if (state.phase === 'draft') {
-      const placeable = fastPace ? activeOfferId !== null && canPlaceOffered(state, activeOfferId, role) : canPlace(state, role)
+      const placeable = canPlace(state, role)
       const rerollable = rerollChampion !== undefined && canRerollChampion(state, role)
       return (
         <RoleSlot
@@ -221,7 +202,7 @@ export function Game({
           onSpinDone={stopChampionSpin}
           onActivate={
             placeable
-              ? () => (fastPace && activeOfferId ? placeOffered(activeOfferId, role) : place(role))
+              ? () => place(role)
               : rerollable
                 ? () => rerollChampionIn(role)
                 : undefined
@@ -257,10 +238,7 @@ export function Game({
         <div className="w-full max-w-md rounded-xl border border-gold/30 bg-panel/70 p-3 shadow-2xl shadow-black/50 backdrop-blur sm:p-5 lg:p-6">
           <p className="mb-1 text-center font-display text-sm font-bold tracking-wider text-gold lg:mb-3">{title}</p>
           <PhaseSteps current={state.phase} />
-          {state.phase === 'draft' && fastPace && offer.length > 0 && (
-            <OfferPanel champions={offer} selectedId={activeOfferId} onSelect={setSelectedOfferId} />
-          )}
-          {state.phase === 'draft' && !(fastPace && offer.length > 0) && (
+          {state.phase === 'draft' && (
             <DraftPanel
               rolled={state.rolled}
               pickNumber={6 - emptyRoles(state.team).length}
@@ -270,7 +248,6 @@ export function Game({
               onRevealed={reveal}
               onStartItems={startItems}
               rerolls={championRerollBox}
-              fastPace={fastPace}
             />
           )}
           {state.phase === 'items' && !state.itemsRevealed && (
@@ -278,7 +255,6 @@ export function Game({
               key={state.itemRound}
               items={currentRoundItems(state)}
               round={state.itemRound}
-              rounds={itemRounds(state)}
               onDone={revealItems}
             />
           )}
@@ -286,7 +262,6 @@ export function Game({
             <ItemPanel
               items={poolItems}
               round={state.itemRound}
-              rounds={itemRounds(state)}
               selectedItemId={activeItemId}
               roundComplete={canStartNextItemRound(state) || canFinish(state)}
               onSelect={setSelectedItemId}

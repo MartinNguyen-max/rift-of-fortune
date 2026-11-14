@@ -1,6 +1,6 @@
 import { useDroppable } from '@dnd-kit/core'
 import type { Item } from '../data/types'
-import { ITEM_COUNT, ITEMS_PER_CHAMPION, ITEMS_PER_ROUND } from '../game/items'
+import { ITEM_ROUNDS, ITEMS_PER_CHAMPION, ITEMS_PER_ROUND } from '../game/items'
 import { Button } from './Button'
 import { RerollBox, type RerollBoxProps } from './RerollBox'
 import { ITEM_POOL_ID } from './dragIds'
@@ -11,8 +11,6 @@ interface ItemPanelProps {
   /** The current round's items that are not handed out yet. */
   items: Item[]
   round: number
-  /** Two rounds of five, or one of ten in the fast pace. */
-  rounds: number
   selectedItemId: string | null
   /** True once every item of this round is handed out. */
   roundComplete: boolean
@@ -23,16 +21,16 @@ interface ItemPanelProps {
   rerolls?: RerollBoxProps
 }
 
-export function ItemPanel({ items, round, rounds, selectedItemId, roundComplete, onSelect, onContinue, rerolls }: ItemPanelProps) {
+export function ItemPanel({ items, round, selectedItemId, roundComplete, onSelect, onContinue, rerolls }: ItemPanelProps) {
   const { setNodeRef, isOver } = useDroppable({ id: ITEM_POOL_ID })
   const selectedItem = items.find((item) => item.id === selectedItemId)
-  const isLastRound = round >= rounds
+  const isLastRound = round >= ITEM_ROUNDS
   const showRerolls = rerolls !== undefined && isLastRound && roundComplete
 
   return (
     <section className="flex flex-col items-center gap-3 text-center lg:gap-5">
       <h2 className="text-sm font-semibold tracking-widest text-gold/80 uppercase">
-        Gear up{rounds > 1 ? ` · Round ${round} of ${rounds}` : ''}
+        Gear up · Round {round} of {ITEM_ROUNDS}
       </h2>
       {/* Phones show the hint only in the first round, to save space. */}
       {round === 1 && items.length > 0 && (
@@ -42,9 +40,7 @@ export function ItemPanel({ items, round, rounds, selectedItemId, roundComplete,
         </p>
       )}
       <p className={showRerolls ? 'hidden' : 'hidden text-sm text-gold-light/70 lg:block'}>
-        {rounds === 1
-          ? `All ${ITEM_COUNT} items at once. Every champion ends with exactly ${ITEMS_PER_CHAMPION}.`
-          : isLastRound
+        {isLastRound
           ? `Last ${ITEMS_PER_ROUND} items. Every champion ends with exactly ${ITEMS_PER_CHAMPION}.`
           : `Hand out these ${ITEMS_PER_ROUND} items, max ${ITEMS_PER_CHAMPION} per champion. They lock when you roll the next ${ITEMS_PER_ROUND}.`}{' '}
         Tap a champion to give them the selected item, or drag an item onto one. Tap an equipped item to take it back.

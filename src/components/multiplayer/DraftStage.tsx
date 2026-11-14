@@ -10,7 +10,7 @@ import type { TeamRating } from '../../game/scoring/rateTeam'
 import type { TeamMember } from '../../game/scoring/teamBalance'
 import { Button } from '../Button'
 import { Game } from '../Game'
-import { nextChampion, offerChampions, randomItems, rerollChampion, rerollItem } from '../matchDraft'
+import { nextChampion, randomItems, rerollChampion, rerollItem } from '../matchDraft'
 import { useCountdown } from '../useCountdown'
 import type { Room } from './useRoom'
 
@@ -61,7 +61,6 @@ export function DraftStage({ room, round }: { room: Room; round: RoundState }) {
           rules={rules}
           rerollChampion={rules.championRerolls > 0 ? rerollChampion : undefined}
           rerollItem={rules.itemRerolls > 0 ? rerollItem : undefined}
-          offerChampions={offerChampions}
           onStateChange={remember}
           resultActions={(rating) => (
             <Button onClick={() => lockIn(membersOf(rating))} disabled={lockedIn} className="text-lg">
