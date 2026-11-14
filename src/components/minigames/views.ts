@@ -1,6 +1,7 @@
 import type { MiniGameId } from '../../game/minigames/catalog'
 import { CleaverGame, CleaverTutorialArt } from './CleaverGame'
 import { ComboGame, ComboTutorialArt } from './ComboGame'
+import { DevourGame, DevourTutorialArt } from './DevourGame'
 import { DuelGame, DuelTutorialArt } from './DuelGame'
 import { ExecuteGame, ExecuteTutorialArt } from './ExecuteGame'
 import { ForgeGame, ForgeTutorialArt } from './ForgeGame'
@@ -12,6 +13,7 @@ import { ShroomGame, ShroomTutorialArt } from './ShroomGame'
 import { SmiteGame, SmiteReveal, SmiteTutorialArt } from './SmiteGame'
 import type { MiniGameView } from './types'
 import { UltGame, UltTutorialArt } from './UltGame'
+import { WindWallGame, WindWallTutorialArt } from './WindWallGame'
 
 /** The screen, tutorial pictures and (for some) the result picture of every mini-game. */
 export const MINI_GAME_VIEWS: Record<MiniGameId, MiniGameView> = {
@@ -26,5 +28,7 @@ export const MINI_GAME_VIEWS: Record<MiniGameId, MiniGameView> = {
   execute: { Game: ExecuteGame, TutorialArt: ExecuteTutorialArt },
   shadows: { Game: ShadowsGame, TutorialArt: ShadowsTutorialArt },
   race: { Game: RaceGame, TutorialArt: RaceTutorialArt },
+  windwall: { Game: WindWallGame, TutorialArt: WindWallTutorialArt },
+  devour: { Game: DevourGame, TutorialArt: DevourTutorialArt },
   smite: { Game: SmiteGame, TutorialArt: SmiteTutorialArt, Reveal: SmiteReveal },
 }

@@ -1,5 +1,5 @@
 /** The mini-games, in the order they are shown. Each is played against a bot, or as a live event in Multiplayer. */
-export const MINI_GAME_IDS = ['duel', 'hook', 'combo', 'shrooms', 'forge', 'cleaver', 'gank', 'ult', 'execute', 'shadows', 'race', 'smite'] as const
+export const MINI_GAME_IDS = ['duel', 'hook', 'combo', 'shrooms', 'forge', 'cleaver', 'gank', 'ult', 'execute', 'shadows', 'race', 'windwall', 'devour', 'smite'] as const
 export type MiniGameId = (typeof MINI_GAME_IDS)[number]
 
 /** Three short captions, one under each tutorial picture. */
@@ -136,6 +136,30 @@ export const MINI_GAMES: Record<MiniGameId, MiniGameInfo> = {
     tutorial: {
       solo: ['Hold: Sion charges, faster and faster', 'Let go: he slides. Stop in the gold zone', 'Middle = 100. Hit the tower = 0. 3 runs'],
       live: ['Hold: Sion charges, faster and faster', 'Let go: he slides. Stop in the gold zone', 'Same 3 tracks for both. Most points wins'],
+    },
+  },
+  windwall: {
+    id: 'windwall',
+    name: 'Wind Wall',
+    champion: 'Yasuo',
+    botChampion: 'Yone',
+    botName: 'Yone',
+    tagline: 'Skillshots from every side, faster and faster. Wall them before they land.',
+    tutorial: {
+      solo: ['A shooter shows up: a shot is coming', 'Tap that side: Wind Wall!', 'Most blocked wins, then the faster'],
+      live: ['A shooter shows up: a shot is coming', 'Tap that side: Wind Wall!', 'Same volley for both. Most blocked wins'],
+    },
+  },
+  devour: {
+    id: 'devour',
+    name: 'Devour',
+    champion: 'TahmKench',
+    botChampion: 'Yuumi',
+    botName: 'Yuumi',
+    tagline: 'Jinx’s rocket is coming for your carry. Swallow them at the last second.',
+    tutorial: {
+      solo: ['Jinx fires. The rocket speeds up', 'Devour your carry just before it hits', 'Closer = more points. Early = spat out'],
+      live: ['Jinx fires. The rocket speeds up', 'Devour your carry just before it hits', 'Same rockets. Closer = more points'],
     },
   },
   smite: {

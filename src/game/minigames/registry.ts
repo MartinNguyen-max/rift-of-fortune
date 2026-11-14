@@ -2,6 +2,7 @@ import { gameData } from '../../data'
 import type { MiniGameId } from './catalog'
 import { CLEAVER_RULES } from './cleaver'
 import { COMBO_RULES } from './combo'
+import { DEVOUR_RULES } from './devour'
 import { DUEL_RULES } from './duel'
 import { EXECUTE_RULES } from './execute'
 import { forgeRules } from './forge'
@@ -12,6 +13,7 @@ import { SHADOW_RULES } from './shadows'
 import { SHROOM_RULES } from './shrooms'
 import { SMITE_RULES } from './smite'
 import { ULT_RULES } from './ult'
+import { WIND_WALL_RULES } from './windwall'
 import type { MiniGameRules } from './versus'
 
 /** The rules of every mini-game, with the game data they need. Solo and Multiplayer use the same rules. */
@@ -27,5 +29,7 @@ export const MINI_GAME_RULES: Record<MiniGameId, MiniGameRules> = {
   execute: EXECUTE_RULES,
   shadows: SHADOW_RULES,
   race: RACE_RULES,
+  windwall: WIND_WALL_RULES,
+  devour: DEVOUR_RULES,
   smite: SMITE_RULES,
 }
