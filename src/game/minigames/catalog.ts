@@ -170,8 +170,8 @@ export const MINI_GAMES: Record<MiniGameId, MiniGameInfo> = {
     botName: 'Ahri',
     tagline: 'Twisted Fate shows a card, then Gates in. Is it the truth or a bluff?',
     tutorial: {
-      solo: ['TF shows a card over a lane', 'He Gates there, or bluffs', 'Guarded +1 · card lane +2 · bluff +1'],
-      live: ['TF shows a card over a lane', 'He Gates there, or bluffs', 'Guarded +1 · card lane +2 · bluff +1'],
+      solo: ['TF shows a card over a lane', 'He Gates there, or bluffs', 'Truth +2 · bluff +1 · guard +1'],
+      live: ['TF shows a card over a lane', 'He Gates there, or bluffs', 'Truth +2 · bluff +1 · guard +1'],
     },
   },
   paranoia: {

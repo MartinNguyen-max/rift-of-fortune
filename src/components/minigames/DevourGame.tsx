@@ -362,15 +362,15 @@ export function DevourTutorialArt({ step }: TutorialArtProps) {
   if (step === 0) {
     return (
       <div className={`relative size-full ${backdrop}`}>
-        <img src={championIconById('Jinx')} alt="" className="absolute top-1/2 left-[14%] size-[26%] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-red-500" />
+        <img src={championIconById('Jinx')} alt="" className="absolute top-1/2 left-[20%] size-[36%] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-red-500" />
         <motion.img
           src={JINX_ROCKET}
           alt=""
-          animate={{ left: ['26%', '34%', '80%'], opacity: [1, 1, 0] }}
+          animate={{ left: ['36%', '44%', '76%'], opacity: [1, 1, 0] }}
           transition={{ duration: 1.8, repeat: Infinity, times: [0, 0.55, 1], ease: 'easeIn' }}
-          className="absolute top-1/2 size-[20%] -translate-x-1/2 -translate-y-1/2 rounded border border-orange-300"
+          className="absolute top-1/2 size-[28%] -translate-x-1/2 -translate-y-1/2 rounded border border-orange-300"
         />
-        <img src={championIconById('Ezreal')} alt="" className="absolute top-1/2 left-[86%] size-[22%] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-hextech" />
+        <img src={championIconById('Ezreal')} alt="" className="absolute top-1/2 left-[80%] size-[32%] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-hextech" />
       </div>
     )
   }

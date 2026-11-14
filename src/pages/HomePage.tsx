@@ -86,14 +86,15 @@ export function HomePage() {
         }
         delay={0.3}
       >
-        Send a friend a link, draft at the same time, then fight it out. You pick the mini-games that become the live
-        events of the match: read the gank, steal Baron, outdraw them at High Noon. Spam GG when you win.
+        Send a friend a link. Draft at the same time and fight a live match where the mini-games swing it, or skip
+        champ select: five lanes, five mini-games, five lives. Spam GG when you win.
       </ModeCard>
 
       <ModeCard route="minigames" badge="New" title="Mini-games" cta="Play mini-games" art={<MiniGameIcons />} delay={0.4} wide>
-        {MINI_GAME_IDS.length} quick fights against a bot, each under a minute: a High Noon headshot, Blitzcrank hooks, Udyr
-        spam, Teemo shrooms, Ornn’s forge, Mundo cleavers, Shaco’s bushes, Malphite’s ult, Darius pentakills, Zed’s
-        shadows and Baron steals. In Multiplayer they are the live events that swing the match.
+        {MINI_GAME_IDS.length} quick fights against a bot, each under a minute: a High Noon headshot, Blitzcrank hooks,
+        Riven combos, Teemo shrooms, Gwen’s stitching, Katarina’s daggers, Akali’s bushes, Malphite’s ult, Garen’s
+        pentakills, Zed’s shadows, Sion’s charge, Yasuo’s Wind Wall, Tahm Kench’s Devour, Twisted Fate’s bluff, Nocturne in
+        the dark and Baron steals. In Multiplayer they are the live events that swing the match.
       </ModeCard>
     </div>
   )
