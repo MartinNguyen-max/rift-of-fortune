@@ -130,7 +130,7 @@ export function ForgeGame({ setup, me, moves, sendMove, onShown, players }: Mini
       <div className="relative flex w-full flex-col items-center gap-4">
         <div className="relative z-10 w-full">
           <motion.div
-            key={orderIndex}
+            key={`order-${orderIndex}`}
             initial={{ x: 40, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.2 }}
@@ -142,7 +142,7 @@ export function ForgeGame({ setup, me, moves, sendMove, onShown, players }: Mini
             <ItemPlate item={order.item} forged={forging} />
             <Workbench ref={workbench} order={order} placed={placed} forged={forging} />
           </motion.div>
-          {mistakes > 0 && <PenaltyPop key={mistakes} />}
+          {mistakes > 0 && <PenaltyPop key={`penalty-${mistakes}`} />}
           {ending === 'late' ? (
             <BigCall
               overlay
@@ -157,7 +157,7 @@ export function ForgeGame({ setup, me, moves, sendMove, onShown, players }: Mini
         </div>
 
         {!finished ? (
-          <Tray key={orderIndex} parts={order.tray} enabled={running} wrongPart={wrongPart} onPick={pick} />
+          <Tray key={`tray-${orderIndex}`} parts={order.tray} enabled={running} wrongPart={wrongPart} onPick={pick} />
         ) : settled ? (
           <FinalTimes settled={settled} me={me} players={players} setup={setup} />
         ) : (

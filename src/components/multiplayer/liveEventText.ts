@@ -8,6 +8,7 @@ const ROLE_WORDS: Partial<Record<MiniGameId, [string, string]>> = {
   gank: ['hide', 'guess'],
   shrooms: ['plant', 'walk'],
   cleaver: ['throw', 'dodge'],
+  destiny: ['gate', 'guard'],
 }
 
 /** One short line for the intro: which role you start with, e.g. "You hide first" or "You walk". */

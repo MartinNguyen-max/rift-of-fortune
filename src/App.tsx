@@ -18,7 +18,8 @@ export default function App() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="flex min-h-screen flex-col">
+      {/* Big slam-in words start scaled up: clip sideways so a phone never scrolls sideways mid-animation. */}
+      <div className="flex min-h-screen flex-col overflow-x-clip">
         <header className="relative px-4 pt-3 pb-2 text-center lg:pt-8 lg:pb-6">
           <SoundToggle key={route} hint={route === 'home'} />
           <h1 className="font-display text-xl font-black tracking-wide text-gold drop-shadow-[0_0_12px_rgb(200_170_110/0.35)] sm:text-3xl lg:text-5xl">
