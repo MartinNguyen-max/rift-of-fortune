@@ -173,7 +173,7 @@ describe('SMITE_RULES', () => {
   })
 })
 
-describe('Nunu, the bot', () => {
+describe('Lillia, the bot', () => {
   const results = fights.map((fight, index) => smiteResult(fight, botSmite(fight, index * 31 + 5) / 1000))
 
   it('picks a different mood each fight, so there is no single answer to learn', () => {

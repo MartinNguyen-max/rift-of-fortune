@@ -173,9 +173,9 @@ export function smiteOfMove(fight: SmiteFight, move: number): SmiteResult {
 export type SmiteMood = 'sharp' | 'steady' | 'slow' | 'panic' | 'doze'
 
 /**
- * Nunu smites in a different mood each fight, so there is no single answer to learn: sharp
+ * Lillia smites in a different mood each fight, so there is no single answer to learn: sharp
  * reacts as fast as a pro, steady like a good player, slow sometimes loses it to the teams;
- * panic smites before the line, doze after it died. `reaction` is seconds after the line.
+ * panic smites before the line, doze (she nods off, very Lillia) after it died. `reaction` is seconds after the line.
  */
 export const BOT_SMITE: Record<SmiteMood, { chance: number; reaction: Range }> = {
   sharp: { chance: 0.2, reaction: { min: 0.19, max: 0.28 } },

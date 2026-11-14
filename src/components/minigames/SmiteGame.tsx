@@ -16,6 +16,7 @@ import {
   type SmiteResult,
   type SmiteTarget,
 } from '../../game/minigames/smite'
+import { MINI_GAMES } from '../../game/minigames/catalog'
 import { other, type Player } from '../../game/minigames/versus'
 import { GetReady } from './GetReady'
 import { championIconById } from './miniGameArt'
@@ -41,7 +42,7 @@ const PIT_COLORS: Record<SmiteTarget, string> = {
 const percent = (share: number) => `${share * 100}%`
 
 /**
- * Lee Sin vs Nunu & Willump: both teams hit the objective, so its health drops in small hits.
+ * Lee Sin vs Lillia: both teams hit the objective, so its health drops in small hits.
  * Smite deals 1,600: the first smite at 1,600 health or less steals it. Too early does nothing.
  */
 export function SmiteGame({ setup, me, moves, sendMove, onShown, players }: MiniGameViewProps) {
@@ -552,8 +553,8 @@ export function SmiteTutorialArt({ step }: TutorialArtProps) {
   }
   return (
     <div className="flex size-full flex-col items-center justify-center gap-[7%] bg-linear-to-b from-purple-800/45 to-abyss px-[8%]">
-      <TutorialSmiter champion="LeeSin" time="0.28 s" first />
-      <TutorialSmiter champion="Nunu" time="0.41 s" first={false} />
+      <TutorialSmiter champion={MINI_GAMES.smite.champion} time="0.28 s" first />
+      <TutorialSmiter champion={MINI_GAMES.smite.botChampion} time="0.41 s" first={false} />
     </div>
   )
 }

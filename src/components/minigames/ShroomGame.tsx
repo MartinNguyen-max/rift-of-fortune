@@ -1,6 +1,7 @@
 import { motion, useAnimate } from 'framer-motion'
 import { useCallback, useEffect, useId, useMemo, useState, type ReactNode } from 'react'
 import { spellIconUrl } from '../../data'
+import { MINI_GAMES } from '../../game/minigames/catalog'
 import {
   emptyPlan,
   encodePlan,
@@ -35,6 +36,9 @@ import { useShownWhen, useTimeout } from './timing'
 import type { Contestant, MiniGameViewProps, TutorialArtProps } from './types'
 
 const SHROOM_ICON = spellIconUrl('TeemoR.png')
+/** The tutorial's planter and walker. */
+const PLANTER = MINI_GAMES.shrooms.champion
+const WALKER = MINI_GAMES.shrooms.botChampion
 
 /** Milliseconds between hops when you watch someone walk your path. */
 const HOP_MS = 750
@@ -58,8 +62,12 @@ const NO_WALK: WalkResult = { booms: [], dodged: 0 }
 export function ShroomGame({ setup, me, moves, sendMove, onShown, players }: MiniGameViewProps) {
   const results = useMemo(() => halfResults(moves, setup), [moves, setup])
   const over = useMemo(() => SHROOM_RULES.settle(moves, setup) !== null, [moves, setup])
-  /** Halves whose result has been shown. */
-  const [seen, setSeen] = useState(0)
+  /**
+   * Halves whose result has been shown. A player who rejoins mid-game starts at the half in play:
+   * the finished ones count, but aren't replayed. (Nobody else can have a finished half yet when
+   * the game opens: every half needs their own plan or walk.)
+   */
+  const [seen, setSeen] = useState(results.length)
   const half = over ? Math.min(seen, results.length - 1) : seen
   const current = useMemo(() => halfMoves(moves, setup, half), [moves, setup, half])
   const oneRole = setup.variant === 'live' && !setup.bothRoles
@@ -331,7 +339,7 @@ interface BoardProps {
   booms: readonly number[]
   /** The walk is over: the walker hops onto B. */
   arrived: boolean
-  /** While planting: Yi's dashed route from A to B. */
+  /** While planting: the walker's dashed route from A to B. */
   showRoute: boolean
   onPlant?: (step: number, side: Side) => void
   /** While walking: the two spots of the next step glow. */
@@ -649,7 +657,7 @@ function LaneArt({ arrows }: { arrows: boolean }) {
   )
 }
 
-/** "Master Yi wants to go from A to B": a dashed, moving arrow along the lane. */
+/** "Ezreal wants to go from A to B": a dashed, moving arrow along the lane. */
 function RouteArrow({ toX }: { toX: number }) {
   const fromX = COLUMN_WIDTH / 2 + 16
   return (
@@ -680,7 +688,7 @@ function RouteArrow({ toX }: { toX: number }) {
 
 const MINI_LANE = 'bg-[linear-gradient(to_bottom,#2c6136_0_16%,#8d6b43_16%_84%,#2c6136_84%)]'
 
-/** 1: Teemo plants 3 shrooms, one per column. 2: Yi walks through, a boom, and on he goes. 3: the points. */
+/** 1: Teemo plants 3 shrooms, one per column. 2: Ezreal walks through, a boom, and on he goes. 3: the points. */
 export function ShroomTutorialArt({ step }: TutorialArtProps) {
   if (step === 0) return <PlantArt />
   if (step === 1) return <WalkThroughArt />
@@ -722,7 +730,7 @@ function PlantArt() {
         )}
       </div>
       <img
-        src={championIconById('Teemo')}
+        src={championIconById(PLANTER)}
         alt=""
         className="absolute right-0.5 bottom-0.5 size-[30%] rounded-full border-2 border-hextech shadow-md shadow-black/60"
       />
@@ -752,7 +760,7 @@ function WalkThroughArt() {
       />
       <Flag className="absolute top-1/2 right-[2%] h-[30%] -translate-y-1/2" />
       <motion.img
-        src={championIconById('MasterYi')}
+        src={championIconById(WALKER)}
         alt=""
         animate={{
           left: ['8%', '29%', '51%', '73%', '90%', '90%'],
@@ -779,13 +787,13 @@ function PointsArt() {
         <img src={SHROOM_ICON} alt="" className="relative size-full rounded-full border-2 border-red-400" />
       </span>
       <span className="font-display text-sm font-black text-gold sm:text-lg">+1</span>
-      <img src={championIconById('Teemo')} alt="" className="aspect-square w-[80%] rounded-full border-2 border-hextech" />
+      <img src={championIconById(PLANTER)} alt="" className="aspect-square w-[80%] rounded-full border-2 border-hextech" />
       <span className="relative flex aspect-square w-[80%] items-center justify-center">
         <img src={SHROOM_ICON} alt="" className="size-full rounded-full border-2 border-gold/30 opacity-35 grayscale" />
         <span className="absolute font-black text-gold-light sm:text-xl">✓</span>
       </span>
       <span className="font-display text-sm font-black text-gold sm:text-lg">+1</span>
-      <img src={championIconById('MasterYi')} alt="" className="aspect-square w-[80%] rounded-full border-2 border-red-400" />
+      <img src={championIconById(WALKER)} alt="" className="aspect-square w-[80%] rounded-full border-2 border-red-400" />
     </div>
   )
 }

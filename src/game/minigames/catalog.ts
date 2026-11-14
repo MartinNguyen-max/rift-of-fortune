@@ -55,9 +55,9 @@ export const MINI_GAMES: Record<MiniGameId, MiniGameInfo> = {
     id: 'shrooms',
     name: 'Shroom Hopscotch',
     champion: 'Teemo',
-    botChampion: 'MasterYi',
-    botName: 'Master Yi',
-    tagline: 'Plant 3 shrooms in Yi’s path, then walk his. Every boom counts.',
+    botChampion: 'Ezreal',
+    botName: 'Ezreal',
+    tagline: 'Plant 3 shrooms in Ezreal’s path, then walk his. Every boom counts.',
     tutorial: {
       solo: ['Plant 3 shrooms, one per column', 'Walk across. A boom won’t stop you', 'Boom: +1 planter. Dodge: +1 walker'],
       live: ['Plant 3 shrooms, one per column', 'Walk theirs. Watch yours live', 'Boom: +1 planter. Dodge: +1 walker'],
@@ -84,10 +84,10 @@ export const MINI_GAMES: Record<MiniGameId, MiniGameInfo> = {
   gank: {
     id: 'gank',
     name: 'I Was Hiding',
-    champion: 'Shaco',
-    botChampion: 'Rengar',
-    botName: 'Rengar',
-    tagline: 'Hide in a bush. Guess their bush. Mind games only.',
+    champion: 'Akali',
+    botChampion: 'Warwick',
+    botName: 'Warwick',
+    tagline: 'Akali hides in a bush, Warwick sniffs her out. Then swap. Mind games only.',
     tutorial: {
       solo: ['Hide in a bush', 'Guess where they hide', 'Right guess = 1 point. Most points wins'],
       live: ['Hide in a bush', 'Guess where they hide', 'Right guess wins the gank'],
@@ -130,8 +130,8 @@ export const MINI_GAMES: Record<MiniGameId, MiniGameInfo> = {
     id: 'smite',
     name: 'Baron Steal',
     champion: 'LeeSin',
-    botChampion: 'Nunu',
-    botName: 'Nunu & Willump',
+    botChampion: 'Lillia',
+    botName: 'Lillia',
     tagline: 'Smite deals 1,600. The moment Baron drops that low, steal it first.',
     tutorial: {
       solo: ['Baron loses health in small hits', 'Smite deals 1,600: hit it at 1,600 or less', 'First smite steals it. Baron, then Elder'],
