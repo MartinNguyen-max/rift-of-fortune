@@ -36,12 +36,12 @@ const LAST_CALL_HOLD_MS = 2400
 
 type Players = readonly [Contestant, Contestant]
 
-/** Twisted Fate and Nocturne take turns: one picks a lane to gank, the other guesses it. */
+/** One player ganks all game, the other guesses: 5 ganks, a lane picked in secret each time. */
 export function DestinyGame({ setup, me, moves, sendMove, onShown, players }: MiniGameViewProps) {
   const them = other(me)
-  const halves = destinyHalves(setup)
+  const halves = destinyHalves()
   const results = useMemo(() => destinyResults(moves, setup), [moves, setup])
-  const { half, beat, revealing } = useDestinyReveal(results.length, setup)
+  const { half, beat, revealing } = useDestinyReveal(results.length)
   const current = revealing ? results[half] : undefined
   const called = current !== undefined && beat >= DESTINY_BEAT.called
   const scored = results.slice(0, called ? half + 1 : half)
@@ -87,7 +87,7 @@ interface HalfViewProps {
 /** One half: the choice while it is played, then its reveal. Mounted fresh per half. */
 function HalfView({ half, setup, me, moves, revealing, beat, result, players, sendMove }: HalfViewProps) {
   const phase = destinyPhase(half, me, moves, setup, revealing)
-  const ganker = gankerOf(half, setup)
+  const ganker = gankerOf(setup)
   const gankerArt = players[ganker].champion
   const guesserArt = players[other(ganker)].champion
   const them = other(me)
@@ -157,10 +157,10 @@ function Prompt({ phase, ganker, myGank, them }: PromptProps) {
       </div>
     </div>
   )
-  if (phase === 'gank') return line('Pick a lane to gank', 'They score if they guess it')
+  if (phase === 'gank') return line('Pick a lane to gank', 'Gets through: +1 · they guess it: +2 them')
   if (phase === 'ganked' && myGank !== null) return line(`Ganking ${LANE_NAMES[myGank]}…`, 'Will they guess it?')
   if (phase === 'waitGank') return line(`${them} picks a lane to gank`, 'Get ready to guess')
-  if (phase === 'guess') return line('Which lane are they ganking?', 'Guess right: +1')
+  if (phase === 'guess') return line('Which lane are they ganking?', 'Right guess: +2 · wrong: +1 them')
   return null
 }
 
@@ -237,7 +237,7 @@ const miniIcon = (champion: string, ring: string) => (
   <img src={championIconById(champion)} alt="" className={`aspect-square w-full rounded-full border-2 ${ring}`} />
 )
 
-/** 1: the ganker picks a lane. 2: the other one guesses. 3: a right guess +1, else the gank +1. */
+/** 1: the ganker picks a lane. 2: the other one guesses. 3: a right guess +2, else the gank +1. */
 export function DestinyTutorialArt({ step }: TutorialArtProps) {
   if (step === 0) {
     return (
@@ -281,7 +281,7 @@ export function DestinyTutorialArt({ step }: TutorialArtProps) {
         {miniIcon(NOCTURNE, 'border-red-400')}
       </span>
       <span style={{ left: '62%', top: '22%' }} className="absolute -translate-x-1/2 -translate-y-1/2 rounded bg-red-500/85 px-1 text-[10px] font-black text-white sm:text-xs">
-        +1
+        +2
       </span>
     </MiniMap>
   )

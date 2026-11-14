@@ -39,12 +39,12 @@ The screens (`src/components/minigames/`) get `{ setup, me, moves, sendMove, onS
 | **Unstoppable Force** (`ult`) | Malphite vs Amumu | A marker sweeps a bar at one steady speed (0.9–1.2 bar lengths a second). Press ULT in the gold zone: 100 at the centre, 60 at the edge. 3 bars, total score. | 1 bar. |
 | **Noxian Guillotine** (`execute`) | Darius vs Draven | 8 low-health enemies pop up on a 3×3 grid for 700 → 370 ms. Tap to execute. Kills in a row score more, capped at 5 (KILL! … PENTAKILL!). No decoys. | Same wave for both, at the same time. |
 | **Shadow Shuffle** (`shadows`) | Zed vs Akali | The real Zed is shown, turns into a shadow, then the three swap: 11 / 13 / 16 swaps at 240 / 200 / 165 ms, with 3 / 4 / 6 feints (the last round is close to impossible). No clock: only a right pick counts. Most found wins; as many found is a tie. | Same shuffle for both. |
-| **Unstoppable Onslaught** (`race`) | Sion vs Vi | At GO Sion charges by himself, faster and faster. Tap STOP: he stops right there. Stop on the enemy team: the middle is 100, the tower behind them is a CRASH for 0. 3 tracks. | Same tracks; the other's stop shows as a ghost. |
+| **Unstoppable Onslaught** (`race`) | Sion vs Vi | At GO Sion charges by himself, faster and faster (about 40 m/s at the target). Tap STOP: he stops right there. 100 only within 0.4 m of the middle (about 10 ms), 10 points less per meter; the tower behind is a CRASH for 0. 3 tracks. | Same tracks; the other's stop shows as a ghost. |
 | **Wind Wall** (`windwall`) | Yasuo vs Yone | 12 skillshots from the four sides, faster each time, sometimes two at once. Tap that side (or arrow keys) to wall it. Most blocked wins, then speed. | Same volley for both. |
-| **Global Gank** (`destiny`) | Twisted Fate vs Nocturne | Take turns: the ganker picks a lane in secret, then the other one guesses it. Right guess +1 for the guesser, otherwise +1 for the ganker. When Nocturne ganks, the lights go out. 6 rounds, alternating. | One round each role (or one). |
+| **Global Gank** (`destiny`) | Twisted Fate vs Nocturne | One player ganks all game, the other guesses (no switching; in solo you gank). Each of 5 rounds the ganker picks a lane in secret, then the guesser guesses it. A gank that gets through is +1, a right guess +2: 2 right guesses win it, and it can't tie. When Nocturne ganks, the lights go out. | Same, one chance. |
 | **Baron Steal** (`smite`) | Lee Sin vs Lillia | Baron (then Elder) loses health in small hits, a little faster near the line. Smite deals 1,600: the first smite at 1,600 or less steals it; above that is too early. | One fight: Baron, or Elder late in the match. |
 
-The bots are tuned so a good player wins about 55–70%: Jhin taps in 0.38–0.6 s; Thresh lands 60% of his hooks; the Riven Main gets about 13 of 17 keys; Bot Ornn takes 1.3–2.1 s per part; El Macho Mundo and Rengar read your habits half the time; Amumu presses within about 0.11 s; Draven gets about 4 kills; Akali finds Zed about 1.3 times a game; Vi averages about 85 a run and sometimes crashes; Yone blocks about 8 of 12; Nocturne ganks at random and sometimes guesses the lane you gank most; Lillia smites 190–750 ms after it hits 1,600 depending on her mood.
+The bots are tuned so a good player wins about 55–70%: Jhin taps in 0.38–0.6 s; Thresh lands 60% of his hooks; the Riven Main gets about 13 of 17 keys; Bot Ornn takes 1.3–2.1 s per part; El Macho Mundo and Rengar read your habits half the time; Amumu presses within about 0.11 s; Draven gets about 4 kills; Akali finds Zed about 1.3 times a game; Vi averages about 75 a run and sometimes crashes; Yone blocks about 8 of 12; Nocturne sometimes guesses the lane you gank most (about 53% wins against random ganks); Lillia smites 190–750 ms after it hits 1,600 depending on her mood.
 
 ## Choices made
 
@@ -53,8 +53,8 @@ The bots are tuned so a good player wins about 55–70%: Jhin taps in 0.38–0.6
 - **Teemo:** booms and dodges are both points; one role each, 2 booms wins it for the planter.
 - **Noxian Guillotine:** kills in a row score more (penta = 15, all eight 30); no decoys; ties go to kills, then speed.
 - **Shadow Shuffle:** no clock and no speed: only right picks count.
-- **Unstoppable Onslaught:** no holding: Sion runs by himself and a tap stops him on the spot.
-- **Global Gank:** one game for Twisted Fate and Nocturne (Destiny and Paranoia were merged; Tahm Kench's Devour was removed).
+- **Unstoppable Onslaught:** no holding: Sion runs by himself and a tap stops him on the spot. 100 is a hair-thin window, so it is rare.
+- **Global Gank:** one game for Twisted Fate and Nocturne (Destiny and Paranoia were merged; Tahm Kench's Devour was removed). Fixed roles: one ganks, one guesses, all game.
 - **Live events:** the host plays the game's first champion, the guest the second, so both see the same matchup and finisher.
 - **Ties:** in five lanes a tied lane is a draw; in the match a tied live event goes to a coin flip, shown on screen.
 - **Personal bests** are cleared when a game's scoring changes (`SCORING_VERSION` in `records.ts`); wins and streaks stay.

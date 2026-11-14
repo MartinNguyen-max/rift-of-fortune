@@ -77,17 +77,26 @@ describe('the run', () => {
 })
 
 describe('scoring', () => {
-  it('gives 100 near the middle and 5 less for every meter further', () => {
+  it('gives 100 only within a hair of the middle, and 10 less for every meter further', () => {
     expect(runScore(0)).toBe(100)
     expect(runScore(RACE_SCORE.perfect)).toBe(100)
-    expect(runScore(RACE_SCORE.perfect + 4)).toBe(80)
-    expect(runScore(30)).toBe(0)
+    expect(runScore(RACE_SCORE.perfect + 2)).toBe(80)
+    expect(runScore(1.4)).toBe(90)
+    expect(runScore(12)).toBe(0)
+  })
+
+  it('makes 100 a tap within about 10 ms at full speed', () => {
+    for (let seed = 1; seed <= 100; seed++) {
+      const at = raceTrack(seed)
+      const window = secondsTo(at, at.target + RACE_SCORE.perfect) - secondsTo(at, at.target - RACE_SCORE.perfect)
+      expect(window).toBeLessThan(0.03)
+    }
   })
 
   it('scores short and long stops the same way, and a crash 0', () => {
     // Holds are whole ms, so the two stops can be a few centimeters apart.
-    expect(Math.abs(runOutcome(track, holdTo(track, -10)).score - runOutcome(track, holdTo(track, 10)).score)).toBeLessThanOrEqual(1)
-    expect(runOutcome(track, holdTo(track, 14)).score).toBeGreaterThan(0)
+    expect(Math.abs(runOutcome(track, holdTo(track, -4)).score - runOutcome(track, holdTo(track, 4)).score)).toBeLessThanOrEqual(1)
+    expect(runOutcome(track, holdTo(track, 8)).score).toBeGreaterThan(0)
     expect(runOutcome(track, holdTo(track, 16)).score).toBe(0)
   })
 
@@ -113,12 +122,12 @@ describe('scoring', () => {
 describe('RACE_RULES', () => {
   it('settles once both ran all three tracks', () => {
     const holds = [0, 1, 2].map((run) => holdTo(trackOfRun(live, run), 0))
-    const short = [0, 1, 2].map((run) => holdTo(trackOfRun(live, run), -10))
+    const short = [0, 1, 2].map((run) => holdTo(trackOfRun(live, run), -3))
     expect(RACE_RULES.settle([holds, short.slice(0, 2)], live)).toBeNull()
     const settled = RACE_RULES.settle([holds, short], live)
     expect(settled).toMatchObject({ winner: 0, scores: [300, expect.any(Number)] })
-    expect(settled?.scores[1]).toBeGreaterThan(160)
-    expect(settled?.scores[1]).toBeLessThan(185)
+    expect(settled?.scores[1]).toBeGreaterThan(210)
+    expect(settled?.scores[1]).toBeLessThan(230)
   })
 
   it('owes each player their next run', () => {

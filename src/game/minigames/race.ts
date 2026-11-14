@@ -10,20 +10,23 @@ export const RACE = {
   /** Runs per game, solo and Multiplayer alike: the same seeded tracks for both players. */
   runs: 3,
   /** Sion's speed at GO (m/s), and how fast it grows (m/s²). Each track is a little different. */
-  start: { min: 8, max: 12 },
-  accel: { min: 6, max: 10 },
+  start: { min: 10, max: 14 },
+  accel: { min: 9, max: 14 },
   /** The middle of the target zone. */
   target: { min: 45, max: 78 },
   /** From the target to the tower; some tracks put the target close to it. */
   gap: { min: 11, max: 22 },
-  nearGap: { min: 7, max: 10 },
+  nearGap: { min: 5, max: 8 },
   nearChance: 0.3,
   /** The longest a run can last: Sion always reaches the tower before this. */
   maxRunSeconds: 6,
 } as const
 
-/** Scoring around the target's middle: 100 within `perfect`, then `perMeter` less for each meter off. `zone` is drawn. */
-export const RACE_SCORE = { perfect: 1.5, zone: 6, perMeter: 5 } as const
+/**
+ * Scoring around the target's middle: 100 within `perfect` (a hair: about 10 ms at full speed),
+ * then `perMeter` less for each meter off. `zone` is drawn.
+ */
+export const RACE_SCORE = { perfect: 0.4, zone: 3, perMeter: 10 } as const
 
 export interface RaceTrack {
   /** The middle of the target zone, in meters. */
@@ -86,7 +89,7 @@ export function runOutcome(track: RaceTrack, stopMs: number): RunOutcome {
   return { stop, crashed, offset, score: crashed ? 0 : runScore(Math.abs(offset)) }
 }
 
-/** 100 within 1.5 m of the middle, 5 points less for every meter further, never below 0. */
+/** 100 within 0.4 m of the middle, 10 points less for every meter further, never below 0. */
 export function runScore(distance: number): number {
   if (distance <= RACE_SCORE.perfect) return 100
   return Math.max(0, Math.round(100 - (distance - RACE_SCORE.perfect) * RACE_SCORE.perMeter))
@@ -146,13 +149,13 @@ function owed(moves: BothMoves): Owed[] {
  */
 export const BOT_RACE = {
   plans: [
-    { chance: 0.3, aim: -5 },
+    { chance: 0.3, aim: -2.5 },
     { chance: 0.45, aim: 0 },
-    { chance: 0.25, aim: 8 },
+    { chance: 0.25, aim: 6 },
   ],
   /** Timing error in seconds: up to this much early or late, more near the tower. */
-  error: 0.07,
-  nearError: 0.09,
+  error: 0.05,
+  nearError: 0.065,
 } as const
 
 export function botRun(track: RaceTrack, seed: number): number {

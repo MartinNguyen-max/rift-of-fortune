@@ -15,7 +15,7 @@ describe('race screen', () => {
 
   it('names each stop', () => {
     expect(callAt(0)).toBe('bullseye')
-    expect(callAt(4)).toBe('zone')
+    expect(callAt(2)).toBe('zone')
     expect(callAt(-10)).toBe('short')
     expect(callAt(10)).toBe('long')
     expect(callAt(20)).toBe('crash')

@@ -3,11 +3,11 @@ import type { Player } from './versus'
 
 /**
  * Bumped when a game's scoring changes, so a best from the old rules is cleared (wins and
- * streaks stay). Latest: Sion taps STOP instead of holding, Shadow Shuffle counts only the Zeds
- * found (no speed) on harder rounds, Global Gank replaces Destiny's card bluff, and smite fights
- * speed up near the line.
+ * streaks stay). Latest: a harder Sion run (a tiny perfect zone, 10 points a meter), Global Gank
+ * with fixed roles (+1 a gank, +2 a right guess), Shadow Shuffle counting only the Zeds found, and
+ * smite fights that speed up near the line.
  */
-const SCORING_VERSION: Partial<Record<MiniGameId, number>> = { duel: 2, combo: 3, shrooms: 2, ult: 4, smite: 4, execute: 3, shadows: 4, race: 2, destiny: 2 }
+const SCORING_VERSION: Partial<Record<MiniGameId, number>> = { duel: 2, combo: 3, shrooms: 2, ult: 4, smite: 4, execute: 3, shadows: 4, race: 3, destiny: 3 }
 
 export const scoringVersion = (id: MiniGameId): number => SCORING_VERSION[id] ?? 1
 

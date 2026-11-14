@@ -156,10 +156,10 @@ export const MINI_GAMES: Record<MiniGameId, MiniGameInfo> = {
     champion: 'TwistedFate',
     botChampion: 'Nocturne',
     botName: 'Nocturne',
-    tagline: 'Take turns: one picks a lane to gank, the other guesses it.',
+    tagline: 'You gank, Nocturne guesses the lane. 5 ganks. A right guess is worth 2.',
     tutorial: {
-      solo: ['Ganker: pick a lane', 'The other one guesses the lane', 'Right guess +1, else +1 for the gank'],
-      live: ['Ganker: pick a lane', 'The other one guesses the lane', 'Right guess +1, else +1 for the gank'],
+      solo: ['You gank: pick a lane', 'Nocturne guesses the lane', 'Gank +1 · right guess +2. 5 ganks'],
+      live: ['One ganks: pick a lane', 'The other guesses the lane', 'Gank +1 · right guess +2. 5 ganks'],
     },
   },
   smite: {

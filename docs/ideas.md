@@ -22,7 +22,7 @@ Ideas collected while building, so they're not lost. Nothing here is approved un
 
 | Idea | What it is | Status |
 |---|---|---|
-| **Twisted Fate: Destiny** | Guess which lane TF Gates to; he shows a card first and may bluff. | Merged into **Global Gank** (`destiny`): TF and Nocturne take turns ganking a lane, the other guesses. No card. |
+| **Twisted Fate: Destiny** | Guess which lane TF Gates to; he shows a card first and may bluff. | Merged into **Global Gank** (`destiny`): one ganks a lane all game, the other guesses. No card. |
 | **Nocturne: Paranoia** | The lights go out; call the lane Nocturne flies at from brief flickers. | Merged into **Global Gank** (the lights go out when Nocturne ganks) |
 | **Yasuo: Wind Wall** | Shots from every side; put the wall up on the right side in time. | **Built** (`windwall`) |
 | **Tahm Kench: Devour** | Swallow your carry just before Jinx's rocket lands. | Built, then removed (the owner didn't like it) |

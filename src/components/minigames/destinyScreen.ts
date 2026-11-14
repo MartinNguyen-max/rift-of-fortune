@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { destinyHalves, gankerOf, halfScorer, type DestinyHalf } from '../../game/minigames/destiny'
+import { destinyHalves, gankerOf, halfPoints, halfScorer, type DestinyHalf } from '../../game/minigames/destiny'
 import type { BothMoves, GameSetup, Player } from '../../game/minigames/versus'
 import type { Tone } from './parts'
 
@@ -8,7 +8,7 @@ export type DestinyPhase = 'gank' | 'ganked' | 'waitGank' | 'guess' | 'reveal'
 
 export function destinyPhase(half: number, me: Player, moves: BothMoves, setup: GameSetup, revealing: boolean): DestinyPhase {
   if (revealing) return 'reveal'
-  const ganker = gankerOf(half, setup)
+  const ganker = gankerOf(setup)
   if (ganker === me) return moves[me][half] !== undefined ? 'ganked' : 'gank'
   return moves[ganker][half] === undefined ? 'waitGank' : 'guess'
 }
@@ -16,7 +16,7 @@ export function destinyPhase(half: number, me: Player, moves: BothMoves, setup: 
 export interface DestinyCall {
   text: string
   tone: Extract<Tone, 'win' | 'lose'>
-  /** "+1 Twisted Fate" */
+  /** "+2 Nocturne" */
   sub: string
   scorer: Player
 }
@@ -25,7 +25,7 @@ export interface DestinyCall {
 export function destinyCall(half: DestinyHalf, me: Player, names: readonly [string, string]): DestinyCall {
   const scorer = halfScorer(half)
   const text = half.countered ? 'COUNTERED!' : half.guess === null && half.ganker !== me ? 'TOO SLOW!' : 'GANKED!'
-  return { text, tone: scorer === me ? 'win' : 'lose', sub: `+1 ${names[scorer]}`, scorer }
+  return { text, tone: scorer === me ? 'win' : 'lose', sub: `+${halfPoints(half)} ${names[scorer]}`, scorer }
 }
 
 /** The moments of a half's reveal: the guess shows, the ganker lands, the result is called. */
@@ -43,11 +43,11 @@ export interface DestinyCursor {
 }
 
 /** Walks through each finished half's reveal, one at a time, then moves on. Stays on the last one. */
-export function useDestinyReveal(finished: number, setup: GameSetup): DestinyCursor {
+export function useDestinyReveal(finished: number): DestinyCursor {
   const [cursor, setCursor] = useState<{ half: number; beat: DestinyBeat }>({ half: 0, beat: DESTINY_BEAT.playing })
   const { half } = cursor
   const revealing = half < finished
-  const halves = destinyHalves(setup)
+  const halves = destinyHalves()
 
   useEffect(() => {
     if (!revealing) return

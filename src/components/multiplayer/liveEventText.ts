@@ -16,7 +16,8 @@ export function roleNote(game: MiniGameId, setup: GameSetup, me: Player): string
   const words = ROLE_WORDS[game]
   if (!words) return undefined
   const word = firstPlayer(setup) === me ? words[0] : words[1]
-  const oneRole = MINI_GAME_RULES[game].chances === 2 && !setup.bothRoles
+  // A role game keeps its roles with one chance: always, or without the both-roles box.
+  const oneRole = MINI_GAME_RULES[game].chances === 1 || !setup.bothRoles
   return oneRole ? `You ${word}` : `You ${word} first`
 }
 
