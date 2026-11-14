@@ -392,7 +392,7 @@ function PickSide({ contestant, you, pick, right, won }: PickSideProps) {
       <div className={`flex flex-col leading-tight ${you ? 'items-end' : 'items-start'}`}>
         <span className={`font-display text-2xl font-black ${right ? 'text-gold' : 'text-red-400'}`}>{right ? '✓' : '✗'}</span>
         <span className={`text-xs tabular-nums ${won ? 'font-bold text-gold' : 'text-gold-light/70'}`}>
-          {pick.spot === null ? 'no pick' : `${(pick.ms / 1000).toFixed(2)} s`}
+          {pick.spot === null ? 'no pick' : `${(pick.ms / 1000).toFixed(2)}\u00a0s`}
         </span>
       </div>
     </div>

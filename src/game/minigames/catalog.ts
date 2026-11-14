@@ -107,12 +107,12 @@ export const MINI_GAMES: Record<MiniGameId, MiniGameInfo> = {
   },
   execute: {
     id: 'execute',
-    name: 'Noxian Guillotine',
-    champion: 'Darius',
-    botChampion: 'Draven',
-    botName: 'Draven',
-    tagline: 'Eight enemies, up for a blink. Dunk the low ones, never the tank. Chain the penta.',
-    tutorial: { solo: ['8 enemies, each up for a blink', 'Tap the low one. Never the full-health tank', 'In a row: +1, +2… up to +5 a kill'] },
+    name: 'Demacian Justice',
+    champion: 'Garen',
+    botChampion: 'Vayne',
+    botName: 'Vayne',
+    tagline: 'Eight enemies, low on health, up for a blink. Drop the sword on them all and chain the penta.',
+    tutorial: { solo: ['8 enemies, each up for a blink', 'Tap it: the sword falls', 'In a row: +1, +2… up to +5 a kill'] },
   },
   shadows: {
     id: 'shadows',

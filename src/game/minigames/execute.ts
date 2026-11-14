@@ -2,12 +2,12 @@ import { seededRandom, type RandomFn } from '../random'
 import { stepSeed, type BothMoves, type GameSetup, type MiniGameRules, type Moves, type Owed, type Player, type Settled } from './versus'
 
 /**
- * Darius, Noxian Guillotine: eight low-health enemies pop up one after another, each for a blink
- * only, sometimes next to a full-health tank that must not be tapped. Tap the low one in time and
- * the Guillotine executes it. Kills in a row are a streak, and each kill is worth its place in the
- * streak up to a pentakill: a kill 1, a double kill 2... a pentakill 5, and every kill in a row
- * after that 5 again. A miss ends the streak; the next kill starts a new one. All eight is near
- * impossible: the last ones are up for less time than most people need to react.
+ * Garen, Demacian Justice: eight low-health enemies pop up one after another, each for a blink
+ * only. Tap one in time and the giant sword falls on it. Kills in a row are a streak, and each
+ * kill is worth its place in the streak up to a pentakill: a kill 1, a double kill 2... a
+ * pentakill 5, and every kill in a row after that 5 again. A miss ends the streak; the next kill
+ * starts a new one. All eight is near impossible: the last ones are up for less time than most
+ * people need to react.
  *
  * A move is the reaction time in ms from the enemy showing up to the tap, or MISSED.
  */
@@ -17,8 +17,6 @@ export const EXECUTE = {
   windowsMs: [700, 640, 580, 530, 480, 440, 400, 370],
   /** The wait before each enemy shows (after the last one died or escaped), in ms. */
   gapMs: { min: 150, max: 750 },
-  /** From the third enemy on, this often a full-health tank shows up at the same time. */
-  decoy: { from: 2, chance: 0.45 },
   /** Enemies show up on a 3 by 3 grid. */
   columns: 3,
   rows: 3,
@@ -27,10 +25,10 @@ export const EXECUTE = {
 /** A pentakill is the top of the streak: later kills in a row are worth this much too. */
 export const MAX_STREAK_POINTS = 5
 
-/** A move for an enemy that escaped: no tap in time, or a tap beside it (or on the tank). */
+/** A move for an enemy that escaped: no tap in time, or a tap beside it. */
 export const MISSED = 60_000
 
-/** Squishy carries and mages, low on health: perfect Guillotine targets. */
+/** Squishy carries and mages, low on health: perfect targets for Demacian Justice. */
 export const EXECUTE_TARGETS = [
   'Jinx',
   'Lux',
@@ -44,7 +42,7 @@ export const EXECUTE_TARGETS = [
   'Caitlyn',
   'Sona',
   'Lulu',
-  'Vayne',
+  'Draven',
   'Katarina',
   'Seraphine',
   'MissFortune',
@@ -54,9 +52,6 @@ export const EXECUTE_TARGETS = [
   'Ekko',
 ] as const
 
-/** Full-health tanks: the Guillotine can't execute them, so a tap on one is a miss. */
-export const DECOY_TANKS = ['Malphite', 'Sion', 'Braum', 'Ornn', 'Leona', 'Nautilus', 'Maokai', 'Rammus', 'Zac', 'Shen'] as const
-
 export interface ExecuteEnemy {
   champion: string
   /** Grid cell, 0–8, left to right and top to bottom. */
@@ -65,8 +60,6 @@ export interface ExecuteEnemy {
   gapMs: number
   /** How long it stays up, in ms. */
   windowMs: number
-  /** A full-health tank shown at the same time on another spot, or null. */
-  decoy: { champion: string; spot: number } | null
 }
 
 const between = (min: number, max: number, random: RandomFn) => Math.round(min + random() * (max - min))
@@ -82,14 +75,12 @@ export function executeWave(seed: number): ExecuteEnemy[] {
   const random = seededRandom(stepSeed(seed, 0, 61))
   const pool: string[] = [...EXECUTE_TARGETS]
   let lastSpot = -1
-  return EXECUTE.windowsMs.map((windowMs, index) => {
+  return EXECUTE.windowsMs.map((windowMs) => {
     const [champion = 'Jinx'] = pool.splice(Math.floor(random() * pool.length), 1)
     const spot = otherCell(lastSpot, random)
     lastSpot = spot
     const gapMs = between(EXECUTE.gapMs.min, EXECUTE.gapMs.max, random)
-    const hasDecoy = index >= EXECUTE.decoy.from && random() < EXECUTE.decoy.chance
-    const decoy = hasDecoy ? { champion: DECOY_TANKS[Math.floor(random() * DECOY_TANKS.length)] ?? 'Malphite', spot: otherCell(spot, random) } : null
-    return { champion, spot, gapMs, windowMs, decoy }
+    return { champion, spot, gapMs, windowMs }
   })
 }
 
@@ -188,8 +179,8 @@ function owed(moves: BothMoves): Owed[] {
 }
 
 /**
- * Draven, the bot: quick but greedy. He reacts in 0.32–0.66 s, too slow for most of the last
- * enemies, and sometimes swings at nothing (or the tank). About 4 kills of 8 a game.
+ * Vayne, the bot: quick but greedy. She reacts in 0.32–0.66 s, too slow for most of the last
+ * enemies, and sometimes taps at nothing. About 4 kills of 8 a game.
  */
 export const BOT_EXECUTE = { reaction: { min: 320, max: 660 }, missChance: 0.05, missPerEnemy: 0.02 } as const
 
@@ -205,11 +196,14 @@ export function botExecute(seed: number, step: number): number | undefined {
 /** The longest a wave can take: every enemy's longest wait and its whole window. */
 const longestWaveSeconds = (EXECUTE.enemies * EXECUTE.gapMs.max + EXECUTE.windowsMs.reduce((total, ms) => total + ms, 0)) / 1000
 
-const formatPoints = (points: number) => `${points} ${points === 1 ? 'pt' : 'pts'}`
+/** A space that never breaks, so a number stays with its unit on a narrow card. */
+const NBSP = '\u00a0'
 
-/** "10 pts · 2.4 s": the points, and how long the kills took in total. */
+const formatPoints = (points: number) => `${points}${NBSP}${points === 1 ? 'pt' : 'pts'}`
+
+/** "10 pts · 2.4 s": the points, and how long the kills took in total. Each value stays on one line. */
 export const formatExecuteScore = (score: number): string =>
-  score === 0 ? formatPoints(0) : `${formatPoints(pointsOf(score))} · ${(timeOf(score) / 1000).toFixed(1)} s`
+  score === 0 ? formatPoints(0) : `${formatPoints(pointsOf(score))} · ${(timeOf(score) / 1000).toFixed(1)}${NBSP}s`
 
 export const EXECUTE_RULES: MiniGameRules = {
   chances: 1,

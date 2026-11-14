@@ -128,11 +128,11 @@ describe('rounds and scores', () => {
   })
 
   it('shows rounds won and time, and the personal best as Zeds found', () => {
-    expect(formatShadowScore(shadowScore(2, [right(800), right(1100)]))).toBe('2 rounds · 1.9 s')
-    expect(formatShadowScore(shadowScore(0, [right(500)]))).toBe('0 rounds · 0.5 s')
-    expect(formatShadowScore(0)).toBe('0 rounds')
-    expect(formatFound(foundScore([right(800), wrong(300), right(1100)]))).toBe('2/3 found · 1.9 s')
-    expect(formatFound(0)).toBe('0/3 found')
+    expect(formatShadowScore(shadowScore(2, [right(800), right(1100)]))).toBe('2\u00a0rounds · 1.9\u00a0s')
+    expect(formatShadowScore(shadowScore(0, [right(500)]))).toBe('0\u00a0rounds · 0.5\u00a0s')
+    expect(formatShadowScore(0)).toBe('0\u00a0rounds')
+    expect(formatFound(foundScore([right(800), wrong(300), right(1100)]))).toBe('2/3\u00a0found · 1.9\u00a0s')
+    expect(formatFound(0)).toBe('0/3\u00a0found')
   })
 })
 
@@ -180,7 +180,7 @@ describe('SHADOW_RULES', () => {
     const moves: BothMoves = [rightPicks(solo, 700), [NO_PICK, NO_PICK, NO_PICK]]
     expect(SHADOW_RULES.best?.lowerIsBetter).toBe(false)
     const best = SHADOW_RULES.best?.of(moves, solo) ?? 0
-    expect(SHADOW_RULES.best?.format(best)).toBe('3/3 found · 2.1 s')
+    expect(SHADOW_RULES.best?.format(best)).toBe('3/3\u00a0found · 2.1\u00a0s')
     expect(SHADOW_RULES.best?.of([moves[0].slice(0, 2), []], solo)).toBeNull()
   })
 
@@ -190,7 +190,7 @@ describe('SHADOW_RULES', () => {
     expect(seconds).toBeLessThan(60)
   })
 
-  it('has a bot that finds Zed about 1.5 times a game: often at first, rarely at the end', () => {
+  it('has a bot that finds Zed about once a game: often at first, rarely at the end', () => {
     const accuracy = (step: number) => {
       let right = 0
       for (let seed = 0; seed < 600; seed++) {
@@ -201,8 +201,8 @@ describe('SHADOW_RULES', () => {
     }
     const rounds = [accuracy(0), accuracy(1), accuracy(2)]
     const perGame = rounds.reduce((total, rate) => total + rate, 0)
-    expect(perGame).toBeGreaterThan(1.3)
-    expect(perGame).toBeLessThan(1.7)
+    expect(perGame).toBeGreaterThan(0.95)
+    expect(perGame).toBeLessThan(1.25)
     expect(rounds[0]).toBeGreaterThan(rounds[2] ?? 1)
   })
 

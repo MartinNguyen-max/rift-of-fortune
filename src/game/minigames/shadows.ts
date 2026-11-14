@@ -28,21 +28,21 @@ export interface ShadowRound {
 }
 
 /**
- * Each round: real swaps, how fast, and how many feints are mixed in. Tuned so most people find
- * Zed about 1.5 times in 3 rounds: usually in the first, a coin flip in the second, rarely in the last.
+ * Each round: real swaps, how fast, and how many feints are mixed in. Hard from the start: most
+ * people find Zed about once in 3 rounds, the first round is a fair chance and the last a real test.
  */
 export const SHADOW_ROUNDS = [
-  { swaps: 7, swapMs: 380, feints: 1 },
   { swaps: 9, swapMs: 300, feints: 2 },
   { swaps: 11, swapMs: 240, feints: 3 },
+  { swaps: 13, swapMs: 200, feints: 4 },
 ] as const
 
 export const SHADOW_TIMING = {
   /** The real Zed is pointed out this long (longer in the first round, to get ready)... */
-  showMs: 1300,
-  firstShowMs: 2200,
+  showMs: 1100,
+  firstShowMs: 1800,
   /** ...then he turns into a shadow like the others. */
-  blendMs: 500,
+  blendMs: 400,
   /** Time to pick once the shuffle stops. Speed wins rounds, so it is short. */
   pickMs: 4000,
   /** A finished round stays up this long before the next one. */
@@ -171,21 +171,24 @@ export const shadowScore = (roundsWon: number, picks: readonly Pick[]): number =
 /** The personal best: how often you found Zed, then how fast. */
 export const foundScore = (picks: readonly Pick[]): number => picks.filter((pick) => pick.right).length * SCORE_BASE + speedBonus(picks)
 
+/** A space that never breaks, so a number stays with its unit on a narrow card ("1.0 s", never "1.0" and "s"). */
+const NBSP = '\u00a0'
+
 const countOfScore = (score: number): number => Math.floor(score / SCORE_BASE)
 const secondsOfScore = (score: number): string | null =>
-  score % SCORE_BASE === 0 ? null : `${((SCORE_BASE - 1 - (score % SCORE_BASE)) / 1000).toFixed(1)} s`
+  score % SCORE_BASE === 0 ? null : `${((SCORE_BASE - 1 - (score % SCORE_BASE)) / 1000).toFixed(1)}${NBSP}s`
 
-/** "2 rounds · 1.9 s": rounds won, and the time the right picks took. */
+/** "2 rounds · 1.9 s": rounds won, and the time the right picks took. Each value stays on one line. */
 export function formatShadowScore(score: number): string {
   const won = countOfScore(score)
-  const rounds = `${won} ${won === 1 ? 'round' : 'rounds'}`
+  const rounds = `${won}${NBSP}${won === 1 ? 'round' : 'rounds'}`
   const seconds = secondsOfScore(score)
   return seconds ? `${rounds} · ${seconds}` : rounds
 }
 
 /** "2/3 found · 1.9 s": right picks, and how long they took. */
 export function formatFound(score: number): string {
-  const found = `${countOfScore(score)}/${SHADOW_ROUNDS.length} found`
+  const found = `${countOfScore(score)}/${SHADOW_ROUNDS.length}${NBSP}found`
   const seconds = secondsOfScore(score)
   return seconds ? `${found} · ${seconds}` : found
 }
@@ -232,10 +235,10 @@ function owed(moves: BothMoves): Owed[] {
 }
 
 /**
- * Akali, the bot: like most people she finds Zed about 1.5 times a game (usually in the first
- * round, rarely in the last), picking in 0.5–1.2 s like a quick human.
+ * Akali, the bot: like most people she finds Zed about once a game (often in the first round,
+ * rarely in the last), picking in 0.5–1.2 s like a quick human.
  */
-export const BOT_SHADOWS = { accuracy: [0.72, 0.5, 0.3], pickMs: { min: 500, max: 1200 }, slowerPerRound: 80 } as const
+export const BOT_SHADOWS = { accuracy: [0.55, 0.35, 0.2], pickMs: { min: 500, max: 1200 }, slowerPerRound: 80 } as const
 
 export function botPick(round: ShadowRound, step: number, seed: number): number {
   const random = seededRandom(seed ^ 0x2c1b3c6d)

@@ -4,7 +4,6 @@ import {
   BOT_EXECUTE,
   botExecute,
   compareScores,
-  DECOY_TANKS,
   packScore,
   enemyResults,
   EXECUTE,
@@ -31,23 +30,12 @@ describe('the wave', () => {
     expect(wave).toHaveLength(8)
     expect(new Set(wave.map(({ champion }) => champion)).size).toBe(EXECUTE.enemies)
     const ids = new Set(gameData.champions.map(({ id }) => id))
-    for (const id of [...EXECUTE_TARGETS, ...DECOY_TANKS]) expect(ids).toContain(id)
+    for (const id of EXECUTE_TARGETS) expect(ids).toContain(id)
   })
 
-  it('sometimes puts a full-health tank next to an enemy, from the third one on', () => {
-    let decoys = 0
-    for (let seed = 0; seed < 300; seed++) {
-      executeWave(seed).forEach((enemy, index) => {
-        if (!enemy.decoy) return
-        decoys += 1
-        expect(index).toBeGreaterThanOrEqual(EXECUTE.decoy.from)
-        expect(enemy.decoy.spot).not.toBe(enemy.spot)
-        expect(DECOY_TANKS).toContain(enemy.decoy.champion)
-      })
-    }
-    // About 45% of the six enemies that can have one.
-    expect(decoys / 300).toBeGreaterThan(2.2)
-    expect(decoys / 300).toBeLessThan(3.2)
+  it('never has the bot or the player among the targets', () => {
+    expect(EXECUTE_TARGETS).not.toContain('Garen')
+    expect(EXECUTE_TARGETS).not.toContain('Vayne')
   })
 
   it('never shows two enemies in a row on the same spot, and each is up a little shorter', () => {
@@ -122,7 +110,7 @@ describe('the winner', () => {
     expect(EXECUTE_RULES.settle([play('KKKKMMMM'), play('KMKKKMM')], live)).toBeNull()
     const settled = EXECUTE_RULES.settle(moves, live)
     expect(settled?.winner).toBe(0)
-    expect(settled?.scores.map((score) => EXECUTE_RULES.formatScore(score, live).split(' · ')[0])).toEqual(['10 pts', '7 pts'])
+    expect(settled?.scores.map((score) => EXECUTE_RULES.formatScore(score, live).split(' · ')[0])).toEqual(['10\u00a0pts', '7\u00a0pts'])
   })
 
   it('packs the score so higher is always better, and shows the time for a tie on points', () => {
@@ -130,8 +118,8 @@ describe('the winner', () => {
     expect(packScore(s(6, 4, 3000))).toBeGreaterThan(packScore(s(6, 3, 100)))
     expect(packScore(s(7, 3, 4000))).toBeGreaterThan(packScore(s(6, 5, 100)))
     expect(packScore(s(0, 0, 0))).toBe(0)
-    expect(EXECUTE_RULES.formatScore(packScore(s(15, 5, 2400)), live)).toBe('15 pts · 2.4 s')
-    expect(EXECUTE_RULES.formatScore(0, live)).toBe('0 pts')
+    expect(EXECUTE_RULES.formatScore(packScore(s(15, 5, 2400)), live)).toBe('15\u00a0pts · 2.4\u00a0s')
+    expect(EXECUTE_RULES.formatScore(0, live)).toBe('0\u00a0pts')
   })
 
   it('calls equal waves a tie', () => {
@@ -153,8 +141,8 @@ describe('the winner', () => {
   it('keeps your points (then speed) as the personal best', () => {
     const setup = soloSetup(SEED)
     const best = EXECUTE_RULES.best?.of([play('KKKMKMMM'), play('MMMMMMMM')], setup) ?? 0
-    expect(EXECUTE_RULES.best?.format(best)).toMatch(/^7 pts · \d\.\d s$/)
-    expect(EXECUTE_RULES.formatScore(packScore(s(1, 1, 500)), setup)).toBe('1 pt · 0.5 s')
+    expect(EXECUTE_RULES.best?.format(best)).toMatch(/^7\u00a0pts · \d\.\d\u00a0s$/)
+    expect(EXECUTE_RULES.formatScore(packScore(s(1, 1, 500)), setup)).toBe('1\u00a0pt · 0.5\u00a0s')
   })
 
   it('fits the whole wave in the Multiplayer time limit', () => {
