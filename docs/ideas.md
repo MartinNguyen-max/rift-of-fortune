@@ -7,8 +7,8 @@ Ideas collected while building, so they're not lost. Nothing here is approved un
 | Mode | What it is | Size | Status |
 |---|---|---|---|
 | **Match vs Bots** | Your team plays a simulated match against a level 1–3 bot, with a live play-by-play. See [match-simulation.md](match-simulation.md). | Medium | **Approved**, "Coming soon" card |
-| **Mini-games** | Eleven quick games vs a bot, also the live events of Multiplayer. See [minigames.md](minigames.md). | Medium | **Built** |
-| **Multiplayer** | Two players draft, then their teams play each other; the host picks which mini-games are the live events. | Large | **Built** (real time, see DECISIONS.md) |
+| **Mini-games** | Sixteen quick games vs a bot, also the live events of Multiplayer. See [minigames.md](minigames.md). | Medium | **Built** |
+| **Multiplayer** | Draft battle (draft, then a live match with mini-game live events) or Five lanes (no draft: five lanes, five mini-games, five lives). | Large | **Built** (real time, see DECISIONS.md) |
 | **Challenge a Friend** | Share a link and your friend gets the exact same rolls; compare results. No server needed (seeded rolls already exist). | Small | Idea |
 | **ARAM** | Howling Abyss: 5 random champions, no roles, rated on team comp and items only. | Small–medium | Idea |
 | **Blind Pick** | Choose the slot *before* the roll, so you never know who's coming. | Small | Idea |
@@ -18,18 +18,16 @@ Ideas collected while building, so they're not lost. Nothing here is approved un
 | **Async PvP** | Your saved team fights other players' saved teams. From SPEC.md. | Large | Idea |
 | **Ultimate Team campaign** | Starter team, win matches to earn currency, open packs, upgrade with duplicates, climb a ladder of bot teams to a final boss. From SPEC.md. | Large | Idea |
 
-## Mini-game ideas (saved in round 3, not now)
+## Mini-game ideas (from round 3)
 
-From the owner's notes. Nothing here is approved.
-
-| Idea | What it is | Priority |
+| Idea | What it is | Status |
 |---|---|---|
-| **Tahm Kench: Devour** | Eat an ally just before a Jinx ult (or a similar big ult) lands, to save them. Too early and the ult is not coming yet, too late and they are dead. The owner thinks it is not so strong. | Low |
-| **Twisted Fate: Destiny** | Guess which lane TF teleports to: top, mid or bot. Like the bushes in "I Was Hiding", but with a lane layout, and TF can bluff. | Medium |
-| **Nocturne: Paranoia** | The same lane guess, but the screen goes dark. Use the finisher animations where they exist. | Medium |
-| **Yasuo: Wind Wall** | Yasuo stands in the middle; champions fire from the left, right, top and bottom. Put the wall up on the right side before the shot lands. Rules still open. | Medium |
-| **Shaco: Hallucinate** | The shell game ("Zed shadows") with Shaco and his clone instead. Decide after the animation feature. | Low |
-| **Race: hold to speed up** | See [race_proposal.md](race_proposal.md). Waiting for the owner's decision. | Owner decides |
+| **Twisted Fate: Destiny** | Guess which lane TF Gates to; he shows a card first and may bluff. | **Built** (`destiny`) |
+| **Nocturne: Paranoia** | The lights go out; call the lane Nocturne flies at from brief flickers. | **Built** (`paranoia`) |
+| **Yasuo: Wind Wall** | Shots from every side; put the wall up on the right side in time. | **Built** (`windwall`) |
+| **Tahm Kench: Devour** | Swallow your carry just before Jinx's rocket lands. | **Built** (`devour`) |
+| **Race: Sion's charge** | Hold to speed up, let go to stop on the target. See [race_proposal.md](race_proposal.md). | **Built** (`race`) |
+| **Shaco: Hallucinate** | The shell game with Shaco and his clone instead of Zed's shadows. | Idea |
 
 ## Features for every mode
 

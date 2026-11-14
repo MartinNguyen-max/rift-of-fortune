@@ -24,68 +24,28 @@ After a game, show a short animation, like Mortal Kombat: something cool for the
 
 - A checkbox in the lobby settings to turn animations on or off. **On by default.**
 
-## Next step
+## Built
 
-1. Read the two YouTube descriptions and make a list: champion, skin, animation.
-2. Tell the owner which exact video files to add, and where to put them.
-3. Match each mini-game to a champion that has an animation, and list the mismatches as questions.
-
-## Built (round 3)
-
-- After every mini-game (solo, and live events in Multiplayer) the **winner's champion** plays its finisher under a huge **WON** or **LOST**. It plays to the end; there is a Skip button. Then the normal result shows.
+- After every mini-game (solo, and live events in Multiplayer) the **winner's champion** plays its finisher under a huge **WON** or **LOST**. It plays to the end; there is a Skip button. Then the normal result shows. A tie has no finisher.
 - Multiplayer lobby: **Finisher animations** checkbox, on by default.
 - In live events the host plays the game's first champion and the guest the second (Caitlyn vs Jhin), so both see the same matchup and the same finisher.
-- The table of finishers is `src/game/finishers.ts`: one clip per champion. Changing a champion's clip is one line there.
+- The table of finishers is `src/game/finishers.ts`: one clip per champion. Changing a champion's clip is one line there. The game art (the face-off before each game) uses the clip's skin where League has it.
 - A clip that is not added yet is skipped without a trace, so the game works before the files are in.
+- **Champion swaps (approved by the owner):** Udyr → Riven, Master Yi → Ezreal, Ornn → Gwen, Dr. Mundo → Katarina, Shaco → Akali, Rengar → Warwick, Nunu → Lillia, Darius → Garen, Draven → Vayne. The new games use champions with clips where they can (Vi, Yasuo, Yone, Yuumi, Ahri, Lux, Ekko); Sion, Tahm Kench and Twisted Fate have none.
 
 ## Files to add (for the owner)
 
-The short checklist is in [finisher_clips.md](finisher_clips.md).
+The checklist with every clip, its time in the videos and its file name is in **[finisher_clips.md](finisher_clips.md)**.
 
-Put the clips in **`public/finishers/`** with exactly these names. MP4 (H.264), cut to just the animation (about 10 s), 720p is plenty; around 1–2 MB each keeps the site fast.
+## Five lanes, no champ select (built)
 
-**Needed now** (the champions the mini-games use today):
+A Multiplayer mode with no draft, chosen in the lobby next to "Draft battle":
 
-| Mini-game | Champion | Clip from the list | File name |
-|---|---|---|---|
-| Headshot at High Noon | Caitlyn | Chibi Arcane Caitlyn (6:23) | `arcane-caitlyn.mp4` |
-| Headshot at High Noon | Jhin | Dark Cosmic Jhin Unbound (8:08) | `dark-cosmic-jhin.mp4` |
-| Rocket Grab Gold Rush | Blitzcrank | Chibi Space Groove Blitzcrank (5:03) | `space-groove-blitzcrank.mp4` |
-| Rocket Grab Gold Rush | Thresh | High Noon Thresh Unbound (2nd video, 0:58) | `high-noon-thresh.mp4` |
-| Shroom Hopscotch | Teemo | Chibi Little Devil Teemo (1:33) | `little-devil-teemo.mp4` |
-| Unstoppable Force | Malphite | Chibi Mecha Malphite (1:22) | `mecha-malphite.mp4` |
-| Unstoppable Force | Amumu | Chibi Surprise Party Amumu (8:18) | `surprise-party-amumu.mp4` |
-| Baron Steal | Lee Sin | Chibi Prestige Dragon Fist Lee Sin (3:18) | `dragon-fist-lee-sin.mp4` |
-| Shadow Shuffle | Zed | Chibi PROJECT: Zed (1:12) | `project-zed.mp4` |
-| Shadow Shuffle | Akali | Chibi KDA ALL OUT Akali (2:37) | `kda-all-out-akali.mp4` |
-
-**Only if you say yes to a swap below:** `dawnbringer-riven.mp4`, `battle-academia-ezreal.mp4`, `cafe-cuties-gwen.mp4`, `battle-academia-katarina.mp4`, `arcane-warwick.mp4`, `spirit-blossom-lillia.mp4`, `god-king-garen.mp4`, `project-vayne.mp4`. The file names of every other clip in the list are in `src/game/finishers.ts`.
-
-## Questions for the owner: champions without an animation
-
-These champions have no clip in the list. Switch? (Nothing has been switched yet.)
-
-| Mini-game | Today | No clip for | Suggestion | Why |
-|---|---|---|---|---|
-| Udyr Has No Combo | Udyr vs Udyr | Udyr | **Riven** (Dawnbringer) | Riven is *the* combo champion. The name would change too ("Riven Has No Combo"?). |
-| Shroom Hopscotch | Teemo vs Master Yi | Master Yi | **Ezreal** (Battle Academia) | An explorer walking into traps. |
-| Ornn's Rush Order | Ornn vs Ornn | Ornn | **Gwen** (Cafe Cuties) | She sews: building items stitch by stitch. |
-| Mundo Goes Where He Pleases | Mundo vs Mundo | Dr. Mundo | **Katarina** (Battle Academia) | Throwing and dodging daggers instead of cleavers. |
-| I Was Hiding | Shaco vs Rengar | both | **Akali** (K/DA ALL OUT) hides, **Warwick** (Arcane) hunts | Akali vanishes in her shroud; Warwick hunts by scent. |
-| Baron Steal | Lee Sin vs Nunu | Nunu | **Lillia** (Spirit Blossom) | Another jungler. |
-| Noxian Guillotine | Darius vs Draven | both | **Garen** (God-King) vs **Vayne** (PROJECT) | Garen's ult also executes ("Demacian Justice"); Vayne is a hunter with an Unbound clip. |
-
-Skins: the game art uses the clip's skin where League has the same skin (Mecha Malphite, PROJECT: Zed...). **Headshot at High Noon** keeps Sheriff Caitlyn and High Noon Jhin for now, because the game is themed "High Noon" and the clips are Arcane Caitlyn and Dark Cosmic Jhin. Switch the art to the clip skins anyway?
-
-## Later: fast mode, five lanes ("no champ select")
-
-A Multiplayer mode with no draft:
-
-- Each player gets a random team with real positions. The champions only stand for **5 lives**.
-- Five fights in order: top, jungle, mid, ADC, support. Each fight is a mini-game against the friend. Games can be random, or better: matched to the animations, so the random top laner is a champion with an animation.
-- After each fight the animation plays. This time the screen shows both teams side by side with VS in the middle. The champion that lost looks dead on their map, and the health bar at the top goes down.
-- An easy way to play five mini-games against a friend.
-
+- Each player gets a random team with real positions (every champion's main role). The champions are **5 lives**.
+- Five fights in order: top, jungle, mid, ADC, support. Each is one of **5 random mini-games** (locked to 5, can be shuffled).
+- Both teams side by side with VS in the middle and a lives bar each. The champion who loses their lane is dead (skull, greyed out) and their team loses a life. A tied lane is a draw: both live.
+- The finisher plays after each lane (if animations are on).
+- After five lanes the most lives left wins. Level lives go to a coin flip, shown on screen.
 
 ## list:
 
