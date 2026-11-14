@@ -12,7 +12,6 @@ import { Button } from '../Button'
 import { Game } from '../Game'
 import { nextChampion, offerChampions, randomItems, rerollChampion, rerollItem } from '../matchDraft'
 import { useCountdown } from '../useCountdown'
-import { PACE_TEXT } from './paceText'
 import type { Room } from './useRoom'
 
 /** The last seconds of the draft timer turn red. */
@@ -22,7 +21,7 @@ const membersOf = (rating: TeamRating): TeamMember[] =>
   rating.champions.map(({ role, champion, items }) => ({ role, champion, items: items.map(({ item }) => item) }))
 
 /**
- * Both players draft at the same time with the lobby's rules (pace and rerolls). Pressing Ready
+ * Both players draft at the same time with the lobby's rules (rerolls). Pressing Ready
  * locks the team in; when the timer runs out, whatever is missing is filled in at random.
  */
 export function DraftStage({ room, round }: { room: Room; round: RoundState }) {
@@ -56,7 +55,7 @@ export function DraftStage({ room, round }: { room: Room; round: RoundState }) {
       <DraftTimer remaining={remaining} total={round.draftSeconds} opponentLocked={opponentLocked} />
       <div className="relative w-full">
         <Game
-          title={`Multiplayer draft · ${PACE_TEXT[round.settings.pace].label}`}
+          title="Multiplayer draft"
           nextChampion={nextChampion}
           drawItems={randomItems}
           rules={rules}

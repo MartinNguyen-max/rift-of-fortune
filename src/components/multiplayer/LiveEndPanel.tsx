@@ -29,9 +29,41 @@ interface LiveEndPanelProps {
 /** On phones the result is below the map: scroll to it once the ending has played. */
 const SCROLL_DELAY_MS = 1200
 
+/** Rematch once both are back in the lobby, or back to the lobby if the opponent left. */
+export function RematchControls({ room, round }: { room: Room; round: RoundState }) {
+  const { me, opponent, setReady, leaveRound } = room
+  const opponentInfo = round.players.find(({ id }) => id !== me.id)
+  const opponentHere = opponent !== null && opponent.id === opponentInfo?.id
+  return (
+    <div className="flex flex-col items-center gap-2">
+      {opponentHere ? (
+        <>
+          <Button onClick={() => setReady(!me.ready)} className={me.ready ? 'bg-gold/20' : ''}>
+            {me.ready ? 'Rematch ✓' : 'Rematch'}
+          </Button>
+          <p className="text-sm text-gold-light/70" aria-live="polite">
+            {me.ready && opponent.ready
+              ? 'Starting a new game…'
+              : opponent.ready
+                ? `${opponent.name} wants a rematch!`
+                : me.ready
+                  ? `Waiting for ${opponent.name}…`
+                  : 'New teams, same lobby.'}
+          </p>
+        </>
+      ) : (
+        <>
+          <p className="text-sm text-gold-light/70">Your opponent left the lobby.</p>
+          <Button onClick={leaveRound}>Back to lobby</Button>
+        </>
+      )}
+    </div>
+  )
+}
+
 /** Victory or Defeat, the live events, the series, Rematch and emotes. Nothing else. */
 export function LiveEndPanel({ room, round, events, mySide, won, match }: LiveEndPanelProps) {
-  const { me, opponent, setReady, leaveRound, wins, sendEmote } = room
+  const { me, wins, sendEmote } = room
   const panel = useRef<HTMLElement>(null)
   useEffect(() => {
     if (!window.matchMedia('(max-width: 1023px)').matches) return
@@ -39,7 +71,6 @@ export function LiveEndPanel({ room, round, events, mySide, won, match }: LiveEn
     return () => window.clearTimeout(id)
   }, [])
   const opponentInfo = round.players.find(({ id }) => id !== me.id)
-  const opponentHere = opponent !== null && opponent.id === opponentInfo?.id
   const last = match?.events[match.events.length - 1]
 
   const howItEnded = round.surrendered
@@ -77,29 +108,7 @@ export function LiveEndPanel({ room, round, events, mySide, won, match }: LiveEn
 
       {opponentInfo && <SeriesScore me={me} opponent={opponentInfo} wins={wins} />}
 
-      <div className="flex flex-col items-center gap-2">
-        {opponentHere ? (
-          <>
-            <Button onClick={() => setReady(!me.ready)} className={me.ready ? 'bg-gold/20' : ''}>
-              {me.ready ? 'Rematch ✓' : 'Rematch'}
-            </Button>
-            <p className="text-sm text-gold-light/70" aria-live="polite">
-              {me.ready && opponent.ready
-                ? 'Starting a new draft…'
-                : opponent.ready
-                  ? `${opponent.name} wants a rematch!`
-                  : me.ready
-                    ? `Waiting for ${opponent.name}…`
-                    : 'New teams, same lobby.'}
-            </p>
-          </>
-        ) : (
-          <>
-            <p className="text-sm text-gold-light/70">Your opponent left the lobby.</p>
-            <Button onClick={leaveRound}>Back to lobby</Button>
-          </>
-        )}
-      </div>
+      <RematchControls room={room} round={round} />
 
       <EmoteBar onEmote={sendEmote} />
 

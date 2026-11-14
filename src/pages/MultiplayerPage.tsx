@@ -36,7 +36,8 @@ function StartScreen() {
       <section className="flex min-w-0 flex-col gap-3 rounded-xl border border-gold/30 bg-panel/70 p-5 shadow-2xl shadow-black/50 backdrop-blur">
         <h2 className="font-display text-2xl font-black text-gold">Create game</h2>
         <p className="flex-1 text-sm text-gold-light/80">
-          Send a friend the link. Draft at the same time, then fight it out in four live mini-games.
+          Send a friend the link. Draft a team and fight a live match, or skip champ select and fight five lanes of
+          mini-games.
         </p>
         <Button onClick={() => (window.location.hash = roomHref(createRoomCode()))}>Create game</Button>
       </section>

@@ -11,6 +11,7 @@ import {
 } from '../../game/multiplayer/protocol'
 import { hostMessages, mergeRounds, roundReducer, shiftRound, type RoundState } from '../../game/multiplayer/session'
 import { defaultSettings, DRAFT_SECONDS, type LobbySettings } from '../../game/multiplayer/settings'
+import { laneTeam } from '../../game/multiplayer/lanes'
 import { randomEncodedTeam } from '../../game/multiplayer/teamCode'
 import { randomTeamName } from '../../game/multiplayer/teamNames'
 import { joinRoom, type ConnectionStatus, type RoomConnection } from '../../services/realtime'
@@ -200,7 +201,7 @@ export function useRoom(code: string) {
           send({
             type: 'startDraft',
             round: crypto.randomUUID().slice(0, 8),
-            seconds: DRAFT_SECONDS[lobbySettings.pace],
+            seconds: lobbySettings.mode === 'lanes' ? 0 : DRAFT_SECONDS,
             players: [host, guest].map(({ id, name }) => ({ id, name })),
             settings: lobbySettings,
           })
@@ -221,7 +222,8 @@ export function useRoom(code: string) {
         online,
         goneSince: Object.fromEntries(goneSince.current),
         random: Math.random,
-        randomTeam: () => randomEncodedTeam(gameData, Math.random),
+        randomTeam: () =>
+          current.settings.mode === 'lanes' ? laneTeam(gameData.champions, Math.random) : randomEncodedTeam(gameData, Math.random),
       })
       for (const message of messages) {
         const key = messageKey(message)

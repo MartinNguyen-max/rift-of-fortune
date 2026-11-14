@@ -6,12 +6,13 @@ import {
   RANDOM_EVENT_COUNT,
   toggleGame,
   withEventMode,
+  withMode,
   type EventMode,
+  type GameMode,
   type LobbySettings,
-  type Pace,
 } from '../../game/multiplayer/settings'
 import { championIconById } from '../minigames/miniGameArt'
-import { PACE_TEXT } from './paceText'
+import { MODE_TEXT } from './modeText'
 
 interface LobbySettingsPanelProps {
   settings: LobbySettings
@@ -21,7 +22,7 @@ interface LobbySettingsPanelProps {
   onChange: (settings: LobbySettings) => void
 }
 
-const PACES: { value: Pace; label: string; hint: string }[] = (['normal', 'fast'] as const).map((value) => ({ value, ...PACE_TEXT[value] }))
+const MODES: { value: GameMode; label: string; hint: string }[] = (['draft', 'lanes'] as const).map((value) => ({ value, ...MODE_TEXT[value] }))
 
 const EVENT_MODES: { value: EventMode; label: string }[] = [
   { value: 'random3', label: `${RANDOM_EVENT_COUNT.random3} random` },
@@ -29,10 +30,11 @@ const EVENT_MODES: { value: EventMode; label: string }[] = [
   { value: 'custom', label: 'Custom' },
 ]
 
-/** The game settings in the lobby: pace, rerolls and which mini-games are the live events. */
+/** The game settings in the lobby: the mode, rerolls and which mini-games are the live events. */
 export function LobbySettingsPanel({ settings, editable, hostName, onChange }: LobbySettingsPanelProps) {
   const change = (patch: Partial<LobbySettings>) => onChange({ ...settings, ...patch })
   const hasRoleGame = settings.games.some((id) => MINI_GAME_RULES[id].chances === 2)
+  const lanes = settings.mode === 'lanes'
 
   return (
     <section className="flex w-full flex-col gap-3 rounded-xl border border-gold/30 bg-panel/70 p-4" aria-label="Game settings">
@@ -41,29 +43,35 @@ export function LobbySettingsPanel({ settings, editable, hostName, onChange }: L
         <span className="text-xs text-gold-light/60 [overflow-wrap:anywhere]">{editable ? 'You set the rules' : `Set by ${hostName}`}</span>
       </div>
 
-      <Row label="Pace">
-        {PACES.map(({ value, label, hint }) => (
-          <Choice key={value} active={settings.pace === value} disabled={!editable} onClick={() => change({ pace: value })} hint={hint}>
+      <Row label="Mode">
+        {MODES.map(({ value, label, hint }) => (
+          <Choice key={value} active={settings.mode === value} disabled={!editable} onClick={() => onChange(withMode(settings, value))} hint={hint}>
             {label}
           </Choice>
         ))}
       </Row>
 
-      <Row label="Rerolls">
-        <Choice active={settings.rerolls} disabled={!editable} onClick={() => change({ rerolls: true })} hint="3 champs + 3 items">
-          On
-        </Choice>
-        <Choice active={!settings.rerolls} disabled={!editable} onClick={() => change({ rerolls: false })} hint="What you roll is what you get">
-          Off
-        </Choice>
-      </Row>
-
-      <Row label="Live events">
-        {EVENT_MODES.map(({ value, label }) => (
-          <Choice key={value} active={settings.eventMode === value} disabled={!editable} onClick={() => onChange(withEventMode(settings, value))}>
-            {label}
+      {!lanes && (
+        <Row label="Rerolls">
+          <Choice active={settings.rerolls} disabled={!editable} onClick={() => change({ rerolls: true })} hint="3 champs + 3 items">
+            On
           </Choice>
-        ))}
+          <Choice active={!settings.rerolls} disabled={!editable} onClick={() => change({ rerolls: false })} hint="What you roll is what you get">
+            Off
+          </Choice>
+        </Row>
+      )}
+
+      <Row label={lanes ? 'Lanes' : 'Live events'}>
+        {lanes ? (
+          <p className="pt-1 text-sm text-gold-light/70">5 random mini-games, one per lane: top, jungle, mid, ADC, support.</p>
+        ) : (
+          EVENT_MODES.map(({ value, label }) => (
+            <Choice key={value} active={settings.eventMode === value} disabled={!editable} onClick={() => onChange(withEventMode(settings, value))}>
+              {label}
+            </Choice>
+          ))
+        )}
       </Row>
 
       {settings.eventMode === 'custom' && editable ? (

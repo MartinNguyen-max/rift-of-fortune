@@ -56,7 +56,9 @@ export function Lobby({ room, code }: { room: Room; code: string }) {
                 ? 'Both ready. Starting the draft…'
                 : me.ready
                   ? 'Waiting for your opponent to press Ready.'
-                  : `When you are both ready, you get ${DRAFT_SECONDS[settings.pace]} seconds to draft your team.`}
+                  : settings.mode === 'lanes'
+                    ? 'When you are both ready, you both get a random team and the five lanes begin.'
+                    : `When you are both ready, you get ${DRAFT_SECONDS} seconds to draft your team.`}
         </p>
       </div>
 

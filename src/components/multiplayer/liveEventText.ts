@@ -32,3 +32,19 @@ export function eventPrize(kind: LiveEventKind, won: boolean): string {
       return won ? 'You win the teamfight!' : 'They win the teamfight.'
   }
 }
+
+/** How long the coin spins before it lands, for a tie that must have a winner. */
+export const COIN_FLIP_MS = 1800
+
+/** In five lanes: which champion falls, or both live on a tie. */
+export interface LaneMatchup {
+  /** "Top lane". */
+  label: string
+  mine: string
+  theirs: string
+}
+
+export function lanePrize({ mine, theirs }: LaneMatchup, outcome: 'won' | 'lost' | 'tie'): string {
+  if (outcome === 'tie') return `${mine} and ${theirs} both live on.`
+  return outcome === 'won' ? `Their ${theirs} falls!` : `Your ${mine} falls.`
+}

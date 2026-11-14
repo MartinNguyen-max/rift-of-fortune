@@ -214,7 +214,7 @@ export interface HostContext {
   /** When each player who is not connected was last seen (local time, ms). */
   goneSince: Partial<Record<PlayerId, number>>
   random: RandomFn
-  /** A random full team, for a player who never sent theirs. */
+  /** A random full team, for a player who never sent theirs (or for five lanes, where nobody drafts). */
   randomTeam: () => EncodedTeam
 }
 
@@ -242,7 +242,8 @@ export function hostMessages(round: RoundState, context: HostContext): RoomMessa
 }
 
 function draftMessages(round: RoundState, { now, online, random, randomTeam }: HostContext): RoomMessage[] {
-  const timeUp = now >= round.startedAt + seconds(round.draftSeconds + TIMINGS.draftGrace)
+  // Five lanes has no draft: both get a random team at once.
+  const timeUp = round.settings.mode === 'lanes' || now >= round.startedAt + seconds(round.draftSeconds + TIMINGS.draftGrace)
   const teams = round.players.map(({ id }) => round.teams[id] ?? (timeUp || !online.includes(id) ? randomTeam() : undefined))
   if (!teams.every((team) => team !== undefined)) return []
   return [{ type: 'startMatch', round: round.id, seed: Math.floor(random() * 2 ** 32), teams }]

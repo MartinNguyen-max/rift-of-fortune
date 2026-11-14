@@ -140,6 +140,11 @@ describe('hostMessages: draft', () => {
     expect(hostMessages(round, context({ now: 30_000 }))).toEqual([])
   })
 
+  it('starts five lanes at once with random teams: nobody drafts', () => {
+    const round = play([{ ...startDraft, seconds: 0, settings: { ...settings, mode: 'lanes' } }])
+    expect(hostMessages(round, context())[0]).toMatchObject({ type: 'startMatch', teams: [randomTeam(), randomTeam()] })
+  })
+
   it('drafts a random team for a player who ran out of time or left', () => {
     const round = play([startDraft, { type: 'team', round: ROUND, player: HOST, team: teamA }])
     const timeUp = (90 + TIMINGS.draftGrace) * 1000
