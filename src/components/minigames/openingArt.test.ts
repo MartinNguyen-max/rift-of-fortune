@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { openingArt } from './gameOpening'
+import { openingArt } from './openingArt'
 
 describe('openingArt', () => {
   it('keeps the High Noon skins whoever plays which side', () => {

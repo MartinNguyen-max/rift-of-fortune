@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import type { MiniGameInfo } from '../../game/minigames/catalog'
 import { TIMINGS } from '../../game/multiplayer/session'
 import { playSound } from '../../services/sound'
-import { openingArt } from './gameOpening'
+import { openingArt } from './openingArt'
 import type { Contestant } from './types'
 
 interface GameOpeningProps {

@@ -1,6 +1,8 @@
 # Finisher clips to add
 
-The winner's finisher animation plays after every mini-game, solo and in Multiplayer. Add the clips below and they show up by themselves; a clip that isn't there yet is just skipped.
+The winner's finisher animation plays after a mini-game: in solo only when the player ticks "Play the winner's finisher animation" on the start screen (off by default, remembered in the browser), and in Multiplayer when the lobby's "Finisher animations" setting is on (on by default). A clip that isn't there is just skipped.
+
+**Status: all 16 clips are in `public/finishers/` (720p H.264, 1–3 MB each).**
 
 ## How
 

@@ -6,6 +6,7 @@ import type { RecordUpdate } from '../../game/minigames/records'
 import { finisherFor } from '../../game/finishers'
 import { MINI_GAME_RULES } from '../../game/minigames/registry'
 import { botMoves, soloSetup, withMove, type BothMoves, type Moves, type Settled } from '../../game/minigames/versus'
+import { readSoloFinishers, saveSoloFinishers } from '../../services/finisherSetting'
 import { saveOutcome } from '../../services/miniGameRecords'
 import { playSound, prepareChampionVoice } from '../../services/sound'
 import { Button } from '../Button'
@@ -22,6 +23,11 @@ const newSeed = () => Math.floor(Math.random() * 2 ** 32)
 /** One mini-game against the bot: the tutorial, then the game, then Victory or Defeat with a rematch button. */
 export function MiniGameShell({ info }: { info: MiniGameInfo }) {
   const [seed, setSeed] = useState<number | null>(null)
+  const [finishers, setFinishers] = useState(readSoloFinishers)
+  const toggleFinishers = (on: boolean) => {
+    setFinishers(on)
+    saveSoloFinishers(on)
+  }
   const players = useMemo<[Contestant, Contestant]>(
     () => [
       { name: 'You', champion: info.champion, isBot: false },
@@ -51,12 +57,27 @@ export function MiniGameShell({ info }: { info: MiniGameInfo }) {
         {seed === null ? (
           <MiniGameIntro info={info} you={players[0]} them={players[1]} live={false}>
             <Button onClick={start}>Start</Button>
+            <FinisherToggle on={finishers} onChange={toggleFinishers} />
           </MiniGameIntro>
         ) : (
-          <SoloGame key={seed} info={info} seed={seed} players={players} onRematch={start} />
+          <SoloGame key={seed} info={info} seed={seed} players={players} finishers={finishers} onRematch={start} />
         )}
       </div>
     </div>
+  )
+}
+
+function FinisherToggle({ on, onChange }: { on: boolean; onChange: (on: boolean) => void }) {
+  return (
+    <label className="flex cursor-pointer items-center gap-2 text-sm text-gold-light">
+      <input
+        type="checkbox"
+        checked={on}
+        onChange={(event) => onChange(event.target.checked)}
+        className="size-4 accent-hextech"
+      />
+      Play the winner's finisher animation
+    </label>
   )
 }
 
@@ -64,6 +85,7 @@ interface SoloGameProps {
   info: MiniGameInfo
   seed: number
   players: [Contestant, Contestant]
+  finishers: boolean
   onRematch: () => void
 }
 
@@ -74,7 +96,7 @@ interface Outcome {
 }
 
 /** Your moves come from the game screen; the bot answers each one at once. */
-function SoloGame({ info, seed, players, onRematch }: SoloGameProps) {
+function SoloGame({ info, seed, players, finishers, onRematch }: SoloGameProps) {
   const rules = MINI_GAME_RULES[info.id]
   const { Game } = MINI_GAME_VIEWS[info.id]
   const setup = useMemo(() => soloSetup(seed), [seed])
@@ -103,7 +125,7 @@ function SoloGame({ info, seed, players, onRematch }: SoloGameProps) {
   }, [rules, moves, setup, info.id])
 
   if (!opened) return <GameOpening info={info} you={players[0]} them={players[1]} onDone={open} />
-  const finisher = outcome && !finished ? finisherOf(outcome.settled, players) : null
+  const finisher = finishers && outcome && !finished ? finisherOf(outcome.settled, players) : null
   return (
     <>
       <div className={outcome ? 'pointer-events-none opacity-30 blur-[2px]' : ''} aria-hidden={outcome !== null}>
