@@ -6,6 +6,7 @@ import { ExecuteGame, ExecuteTutorialArt } from './ExecuteGame'
 import { ForgeGame, ForgeTutorialArt } from './ForgeGame'
 import { GankGame, GankReveal, GankTutorialArt } from './GankGame'
 import { HookGame, HookTutorialArt } from './HookGame'
+import { RaceGame, RaceTutorialArt } from './RaceGame'
 import { ShadowsGame, ShadowsTutorialArt } from './ShadowsGame'
 import { ShroomGame, ShroomTutorialArt } from './ShroomGame'
 import { SmiteGame, SmiteReveal, SmiteTutorialArt } from './SmiteGame'
@@ -24,5 +25,6 @@ export const MINI_GAME_VIEWS: Record<MiniGameId, MiniGameView> = {
   ult: { Game: UltGame, TutorialArt: UltTutorialArt },
   execute: { Game: ExecuteGame, TutorialArt: ExecuteTutorialArt },
   shadows: { Game: ShadowsGame, TutorialArt: ShadowsTutorialArt },
+  race: { Game: RaceGame, TutorialArt: RaceTutorialArt },
   smite: { Game: SmiteGame, TutorialArt: SmiteTutorialArt, Reveal: SmiteReveal },
 }

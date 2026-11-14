@@ -7,6 +7,7 @@ import { EXECUTE_RULES } from './execute'
 import { forgeRules } from './forge'
 import { GANK_RULES } from './gank'
 import { hookRules } from './hook'
+import { RACE_RULES } from './race'
 import { SHADOW_RULES } from './shadows'
 import { SHROOM_RULES } from './shrooms'
 import { SMITE_RULES } from './smite'
@@ -25,5 +26,6 @@ export const MINI_GAME_RULES: Record<MiniGameId, MiniGameRules> = {
   ult: ULT_RULES,
   execute: EXECUTE_RULES,
   shadows: SHADOW_RULES,
+  race: RACE_RULES,
   smite: SMITE_RULES,
 }

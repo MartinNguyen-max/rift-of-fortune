@@ -1,5 +1,5 @@
 /** The mini-games, in the order they are shown. Each is played against a bot, or as a live event in Multiplayer. */
-export const MINI_GAME_IDS = ['duel', 'hook', 'combo', 'shrooms', 'forge', 'cleaver', 'gank', 'ult', 'execute', 'shadows', 'smite'] as const
+export const MINI_GAME_IDS = ['duel', 'hook', 'combo', 'shrooms', 'forge', 'cleaver', 'gank', 'ult', 'execute', 'shadows', 'race', 'smite'] as const
 export type MiniGameId = (typeof MINI_GAME_IDS)[number]
 
 /** Three short captions, one under each tutorial picture. */
@@ -124,6 +124,18 @@ export const MINI_GAMES: Record<MiniGameId, MiniGameInfo> = {
     tutorial: {
       solo: ['Watch the real Zed', 'The shadows swap fast. Follow him', 'Tap Zed first. Fastest right pick wins'],
       live: ['Watch the real Zed', 'The same shuffle for both of you', 'Tap Zed first. Fastest right pick wins'],
+    },
+  },
+  race: {
+    id: 'race',
+    name: 'Unstoppable Onslaught',
+    champion: 'Sion',
+    botChampion: 'Vi',
+    botName: 'Vi',
+    tagline: 'Hold to charge, let go to slide. Stop on the enemy team, not their tower.',
+    tutorial: {
+      solo: ['Hold: Sion charges, faster and faster', 'Let go: he slides. Stop in the gold zone', 'Middle = 100. Hit the tower = 0. 3 runs'],
+      live: ['Hold: Sion charges, faster and faster', 'Let go: he slides. Stop in the gold zone', 'Same 3 tracks for both. Most points wins'],
     },
   },
   smite: {
