@@ -106,7 +106,7 @@ export function LobbySettingsPanel({ settings, editable, hostName, onChange }: L
         <span>
           <span className="font-semibold text-gold-light">Both play both roles</span>
           <span className="block text-xs text-gold-light/60">
-            In 2-chance games (hide/guess, plant/walk) each player gets each role. Still one event each.
+            In 2-chance games (hide/guess, plant/walk, gate/guard) each player gets each role. Still one event each.
             {!hasRoleGame && ' None of the chosen games has roles.'}
           </span>
         </span>

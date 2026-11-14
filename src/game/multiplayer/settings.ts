@@ -10,7 +10,7 @@ import type { GameRules } from '../rules'
  * - rerolls (draft only): 3 champion and 3 item rerolls, or none.
  * - events: 3 or 5 random mini-games, or a custom list. They are rolled in the lobby, so both
  *   players see which games they will play.
- * - bothRoles: in role games (hide/guess, plant/walk) each player plays each role. Still one event.
+ * - bothRoles: in role games (hide/guess, plant/walk, gate/guard) each player plays each role. Still one event.
  * - animations: the winner's finisher animation after each live event.
  */
 export type GameMode = 'draft' | 'lanes'
