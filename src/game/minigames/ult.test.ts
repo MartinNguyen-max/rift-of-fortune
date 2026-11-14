@@ -16,7 +16,7 @@ import {
 } from './ult'
 import { soloSetup, type GameSetup } from './versus'
 
-const bar: UltBar = { zoneCenter: 0.5, speed: 0.6 }
+const bar: UltBar = { zoneCenter: 0.5, speed: 1 }
 
 /** The first moment the marker reaches `position`. */
 function timeAt(position: number): number {
@@ -45,10 +45,10 @@ describe('markerAt', () => {
     }
   })
 
-  it('speeds up over time', () => {
+  it('keeps one steady speed: it never speeds up', () => {
     const step = 0.01
     const speedAt = (time: number) => Math.abs(markerAt(bar, time + step) - markerAt(bar, time)) / step
-    expect(speedAt(6.2)).toBeGreaterThan(speedAt(0.2))
+    expect(speedAt(5.31)).toBeCloseTo(speedAt(0.2), 5)
   })
 
   it('crosses the zone a few times before time runs out', () => {
@@ -68,16 +68,18 @@ describe('ultScore', () => {
     expect(ultScore(bar, timeAt(0.5 - ULT_ZONES.perfect + 0.005))).toBe(100)
   })
 
-  it('scores less the further from the middle', () => {
+  it('scores less the further from the middle: 60 at the zone edge, less outside it', () => {
     const great = ultScore(bar, timeAt(0.5 - ULT_ZONES.great))
-    const good = ultScore(bar, timeAt(0.5 - ULT_ZONES.good))
+    const edge = ultScore(bar, timeAt(0.5 - ULT_ZONES.good))
+    const outside = ultScore(bar, timeAt(0.5 - ULT_ZONES.good - 0.05))
     expect(great).toBeLessThan(100)
-    expect(good).toBeLessThan(great)
-    expect(good).toBeGreaterThan(50)
+    expect(edge).toBeLessThan(great)
+    expect(edge).toBeGreaterThanOrEqual(ULT_ZONES.edgeScore - 1)
+    expect(outside).toBeLessThan(edge - 5)
   })
 
   it('gives any press in time at least 10, so 0–0 duels are rare', () => {
-    const farBar = { zoneCenter: 0.7, speed: 0.6 }
+    const farBar = { zoneCenter: 0.7, speed: 1 }
     expect(ultScore(farBar, 0)).toBe(ULT_ZONES.min.score)
     expect(ultScore(bar, 0)).toBeGreaterThanOrEqual(ULT_ZONES.min.score)
   })

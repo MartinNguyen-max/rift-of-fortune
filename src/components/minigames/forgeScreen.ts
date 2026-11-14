@@ -3,7 +3,7 @@ import type { Item, ItemComponent } from '../../data/types'
 import { forgeableItems } from '../../game/minigames/forge'
 
 /**
- * Seconds on your forge clock. It stops while `running` is false (the "FORGED!" moment)
+ * Seconds on your forge clock. It stops while `running` is false (the "STITCHED!" moment)
  * and goes on from there. `read()` gives the exact time at a tap, not the last frame's.
  */
 export function useForgeClock(running: boolean) {

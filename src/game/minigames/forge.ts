@@ -127,7 +127,7 @@ export function missingParts(order: ForgeOrder, placed: readonly string[]): Item
 
 export type PartResult = 'added' | 'wrong' | 'complete'
 
-/** Puts a part on the anvil: right if the build still needs it. */
+/** Adds a part to the item being stitched: right if the build still needs it. */
 export function addPart(order: ForgeOrder, placed: readonly string[], partId: string): PartResult {
   const missing = missingParts(order, placed)
   if (!missing.some((part) => part.id === partId)) return 'wrong'

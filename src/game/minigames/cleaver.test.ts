@@ -20,7 +20,7 @@ const solo = soloSetup(3)
 const live: GameSetup = { seed: 3, variant: 'live', bothRoles: false, late: false }
 
 describe('spots', () => {
-  it('lets a Mundo move at most one spot', () => {
+  it('lets a fighter move at most one spot', () => {
     expect(reachable(0)).toEqual([0, 1])
     expect(reachable(1)).toEqual([0, 1, 2])
     expect(reachable(2)).toEqual([1, 2])
@@ -43,7 +43,7 @@ describe('turns', () => {
     expect([0, 1, 2, 3].map((turn) => throwerOf(turn, solo))).toEqual([0, 1, 0, 1])
   })
 
-  it('hits when the cleaver lands on the dodger’s new spot, and keeps where each Mundo stands', () => {
+  it('hits when the dagger lands on the dodger’s new spot, and keeps where each fighter stands', () => {
     // Turn 0: you throw top, the bot dodges mid → top: hit. Turn 1: the bot throws bot, you dodge mid → top.
     const turns = cleaverTurns([[0, 0], [0, 2]], solo)
     expect(turns).toEqual([

@@ -2,28 +2,29 @@ import { seededRandom } from '../random'
 import { stepSeed, type BothMoves, type GameSetup, type MiniGameRules, type Owed, type Player, type Settled } from './versus'
 
 /**
- * The teamfight ult: a marker sweeps back and forth over a bar, faster each second.
- * Stop it as close to the middle of the zone as you can. `seconds` is the time limit.
+ * The teamfight ult, like the original live event: a marker sweeps back and forth over a bar at
+ * one steady speed. Stop it as close to the middle of the zone as you can. `seconds` is the time limit.
  */
 export const ULT = {
-  seconds: 9,
-  /** Bar lengths per second at the start, and how much faster it gets each second. */
-  speed: { min: 1.45, max: 1.75 },
-  acceleration: 0.35,
+  seconds: 6,
+  /** Bar lengths per second: steady, it never speeds up. */
+  speed: { min: 0.9, max: 1.2 },
   /** Where the marker starts, so it is never stuck at the very edge. */
   start: 0.08,
 } as const
 
 /**
  * Score bands around the zone's middle, as half-widths (share of the bar), shown on the bar.
- * Inside `perfect` scores 100; from there the score drops smoothly to `min.score` at `min.distance`.
- * Any press scores at least `min.score`, so a duel is rarely decided at 0–0.
+ * `good` is the zone itself. Inside `perfect` scores 100; from there the score drops to
+ * `edgeScore` at the zone's edge, then quickly to `min.score` at `min.distance` outside it.
+ * Any press in time scores at least `min.score`, so a duel is rarely decided at 0–0.
  */
 export const ULT_ZONES = {
-  perfect: 0.022,
-  great: 0.06,
-  good: 0.12,
-  min: { distance: 0.4, score: 10 },
+  perfect: 0.012,
+  great: 0.04,
+  good: 0.08,
+  edgeScore: 60,
+  min: { distance: 0.33, score: 10 },
 } as const
 
 export interface UltBar {
@@ -41,19 +42,19 @@ export function ultBar(seed: number): UltBar {
 
 /** The marker's position (0–1) at `seconds`: it starts near the left and bounces off both ends. */
 export function markerAt(bar: UltBar, seconds: number): number {
-  const distance = ULT.start + bar.speed * seconds + (ULT.acceleration * bar.speed * seconds * seconds) / 2
-  const lap = distance % 2
+  const lap = (ULT.start + bar.speed * seconds) % 2
   return lap <= 1 ? lap : 2 - lap
 }
 
-/** 100 in the perfect band, then smoothly less the further off; 0 only without a press in time. */
+/** 100 in the perfect band, down to 60 at the zone's edge, then quickly less; 0 only without a press in time. */
 export function ultScore(bar: UltBar, seconds: number | null): number {
   if (seconds === null || seconds > ULT.seconds) return 0
   const distance = Math.abs(markerAt(bar, seconds) - bar.zoneCenter)
-  if (distance <= ULT_ZONES.perfect) return 100
-  const { min } = ULT_ZONES
-  const share = (distance - ULT_ZONES.perfect) / (min.distance - ULT_ZONES.perfect)
-  return Math.max(min.score, Math.round(100 - share * (100 - min.score)))
+  const { perfect, good, edgeScore, min } = ULT_ZONES
+  if (distance <= perfect) return 100
+  if (distance <= good) return Math.round(100 - ((distance - perfect) / (good - perfect)) * (100 - edgeScore))
+  const outside = (distance - good) / (min.distance - good)
+  return Math.max(min.score, Math.round(edgeScore - outside * (edgeScore - min.score)))
 }
 
 // ── The mini-game: moves are press times ─────────────────────────
@@ -83,7 +84,7 @@ export function zoneCrossings(bar: UltBar): number[] {
 }
 
 /** The bot waits for one of the first passes over the zone and presses a little early or late. */
-export const BOT_ULT = { error: 0.12 } as const
+export const BOT_ULT = { error: 0.11 } as const
 
 export function botPress(bar: UltBar, seed: number): number {
   const random = seededRandom(seed ^ 0x1b873593)

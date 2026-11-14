@@ -13,6 +13,7 @@ import {
   rightKeys,
   type ComboKey,
 } from '../../game/minigames/combo'
+import { MINI_GAMES } from '../../game/minigames/catalog'
 import { other, type GameSetup, type Player, type Settled } from '../../game/minigames/versus'
 import { useComboKeys } from './comboScreen'
 import { GetReady } from './GetReady'
@@ -22,27 +23,27 @@ import { useShownWhen } from './timing'
 import type { Contestant, MiniGameViewProps, TutorialArtProps } from './types'
 
 const SPELLS: Record<ComboKey, { name: string; icon: string; color: string }> = {
-  Q: { name: 'Wilding Claw', icon: 'UdyrQ.png', color: 'border-red-400 shadow-red-500/50' },
-  W: { name: 'Iron Mantle', icon: 'UdyrW.png', color: 'border-sky-300 shadow-sky-400/50' },
-  E: { name: 'Blazing Stampede', icon: 'UdyrE.png', color: 'border-orange-300 shadow-orange-400/50' },
-  R: { name: 'Wingborne Storm', icon: 'UdyrR.png', color: 'border-cyan-200 shadow-cyan-300/50' },
+  Q: { name: 'Broken Wings', icon: 'RivenTriCleave.png', color: 'border-red-400 shadow-red-500/50' },
+  W: { name: 'Ki Burst', icon: 'RivenMartyr.png', color: 'border-sky-300 shadow-sky-400/50' },
+  E: { name: 'Valor', icon: 'RivenFeint.png', color: 'border-orange-300 shadow-orange-400/50' },
+  R: { name: 'Blade of the Exile', icon: 'RivenFengShuiEngine.png', color: 'border-cyan-200 shadow-cyan-300/50' },
 }
 
-/** "Watch Udyr!" stays up this long before each spam, so nobody misses the start. */
+/** "Watch Riven!" stays up this long before each combo, so nobody misses the start. */
 const WATCH_SECONDS = 1.2
 /** Pause between two flashed keys, so the same key twice in a row can be seen. */
 const GAP_SECONDS = 0.14
-/** How long a spam's right and wrong keys stay up before the next spam. */
+/** How long a combo's right and wrong keys stay up before the next combo. */
 const ROUND_RESULT_SECONDS = 1.8
 /** The last call and both scores stay up this long before the result covers the game. */
 const FINAL_MOMENT_MS = 2600
 
-/** Udyr Has No Combo: three new spams of 3, 5 and 7 keys. A wrong key doesn't end a spam: every right key counts. */
+/** Riven's combos: three new combos of 4, 6 and 7 keys. A wrong key doesn't end a combo: every right key counts. */
 export function ComboGame({ setup, me, moves, sendMove, onShown, players }: MiniGameViewProps) {
   const them = other(me)
   const spams = useMemo(() => comboSpams(setup.seed), [setup.seed])
   const mine = moves[me]
-  // Rebuilt from your moves: a player who reconnects goes on with the next spam.
+  // Rebuilt from your moves: a player who reconnects goes on with the next combo.
   const [round, setRound] = useState(() => Math.min(playedRounds(mine), COMBO_ROUNDS - 1))
   const [stage, setStage] = useState<Stage>('ready')
   const [typed, setTyped] = useState<ComboKey[]>([])
@@ -50,7 +51,7 @@ export function ComboGame({ setup, me, moves, sendMove, onShown, players }: Mini
   useShownWhen(settled !== null, onShown, FINAL_MOMENT_MS)
 
   const spam = spams[round] ?? NO_KEYS
-  /** This spam's score once sent: by you, or by the host when your time ran out. */
+  /** This combo's score once sent: by you, or by the host when your time ran out. */
   const scored = mine[round]
   const allSent = playedRounds(mine) >= COMBO_ROUNDS
   const roundOver = stage === 'result' || scored !== undefined
@@ -127,14 +128,14 @@ type Stage = 'ready' | 'watch' | 'input' | 'result'
 
 const NO_KEYS: readonly ComboKey[] = []
 
-/** Spams played in a row from the first. */
+/** Combos played in a row from the first. */
 function playedRounds(moves: readonly (number | undefined)[]): number {
   let count = 0
   while (count < COMBO_ROUNDS && moves[count] !== undefined) count += 1
   return count
 }
 
-/** One spam's score, big, over the keys you typed: right ones green, wrong ones red. */
+/** One combo's score, big, over the keys you typed: right ones green, wrong ones red. */
 function RoundResult({ spam, typed, right }: { spam: readonly ComboKey[]; typed: readonly ComboKey[]; right: number }) {
   const perfect = right === spam.length
   return (
@@ -147,12 +148,12 @@ function RoundResult({ spam, typed, right }: { spam: readonly ComboKey[]; typed:
 
 interface SpamChipsProps {
   spams: readonly (readonly ComboKey[])[]
-  /** Your right keys per spam, once played. */
+  /** Your right keys per combo, once played. */
   scores: readonly (number | undefined)[]
   round: number
 }
 
-/** The three spams: right keys once played, the length before. */
+/** The three combos: right keys once played, the length before. */
 function SpamChips({ spams, scores, round }: SpamChipsProps) {
   return (
     <div className="flex items-center gap-1">
@@ -176,9 +177,9 @@ function SpamChips({ spams, scores, round }: SpamChipsProps) {
   )
 }
 
-/** Flashes the spam one key at a time, the first one a little longer, then hands over to you. */
+/** Flashes the combo one key at a time, the first one a little longer, then hands over to you. */
 function Flasher({ keys, onDone }: { keys: readonly ComboKey[]; onDone: () => void }) {
-  /** -1 while Udyr winds up, then the key on screen. */
+  /** -1 while Riven winds up, then the key on screen. */
   const [index, setIndex] = useState(-1)
   const [visible, setVisible] = useState(false)
   const flash = flashSeconds(keys.length)
@@ -203,13 +204,13 @@ function Flasher({ keys, onDone }: { keys: readonly ComboKey[]; onDone: () => vo
     <div className="flex flex-col items-center gap-3">
       <div className="flex items-center gap-3">
         <motion.img
-          src={championIconById('Udyr')}
+          src={championIconById(MINI_GAMES.combo.champion)}
           alt=""
           animate={windingUp ? { scale: [1, 1.18, 1] } : { scale: 1 }}
           transition={windingUp ? { duration: 0.6, repeat: Infinity } : { duration: 0.2 }}
           className="size-10 rounded-full border-2 border-gold/70"
         />
-        <p className="font-display text-xl font-black text-gold-light">Watch Udyr!</p>
+        <p className="font-display text-xl font-black text-gold-light">Watch Riven!</p>
       </div>
       <div className="flex size-24 items-center justify-center">
         <AnimatePresence>{visible && spell && <SpellFlash key={index} spell={spell} />}</AnimatePresence>
@@ -296,7 +297,7 @@ function KeyBox({ typed, answer, judged, order }: KeyBoxProps) {
   )
 }
 
-/** Q W E R as big tap buttons with Udyr's spell icons, and the same keys on a keyboard. */
+/** Q W E R as big tap buttons with Riven's spell icons, and the same keys on a keyboard. */
 function KeyPad({ enabled, onPress }: { enabled: boolean; onPress: (key: ComboKey) => void }) {
   const [pressed, setPressed] = useState<{ key: ComboKey; count: number } | null>(null)
   const press = useCallback(
@@ -393,7 +394,7 @@ function Tally({ contestant, you, value, won }: { contestant: Contestant; you: b
   )
 }
 
-/** 1: Udyr flashes a spell. 2: Q W E R, pressed in turn. 3: three new spams, 3, 5 then 7 keys. */
+/** 1: Riven flashes a spell. 2: Q W E R, pressed in turn. 3: three new combos, 4, 6 then 7 keys. */
 export function ComboTutorialArt({ step }: TutorialArtProps) {
   if (step === 0) return <WatchArt />
   if (step === 1) return <KeyCapsArt />
@@ -403,7 +404,7 @@ export function ComboTutorialArt({ step }: TutorialArtProps) {
 function WatchArt() {
   return (
     <div className="relative flex size-full items-center justify-center">
-      <img src={championIconById('Udyr')} alt="" className="absolute bottom-1.5 left-1.5 size-1/3 rounded-full border-2 border-gold/70" />
+      <img src={championIconById(MINI_GAMES.combo.champion)} alt="" className="absolute bottom-1.5 left-1.5 size-1/3 rounded-full border-2 border-gold/70" />
       <motion.div
         animate={{ scale: [0.5, 1, 1, 0.5], opacity: [0, 1, 1, 0] }}
         transition={{ duration: 1.6, times: [0, 0.15, 0.75, 1], repeat: Infinity }}
@@ -440,10 +441,10 @@ function KeyCapsArt() {
   )
 }
 
-/** Three rows of keys: 3, 5 and 7 long, each a different spam. */
+/** Three rows of keys: 4, 6 and 7 long, each a different combo. */
 const TUTORIAL_SPAMS: readonly (readonly ComboKey[])[] = [
-  ['E', 'Q', 'R'],
-  ['W', 'W', 'R', 'Q', 'E'],
+  ['E', 'Q', 'R', 'W'],
+  ['W', 'W', 'R', 'Q', 'E', 'Q'],
   ['R', 'E', 'Q', 'Q', 'W', 'E', 'R'],
 ]
 

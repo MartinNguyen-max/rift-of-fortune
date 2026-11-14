@@ -6,7 +6,7 @@ import { seededRandom } from '../../game/random'
 /** The THROW / DODGE banner at the start of a turn; the first one stays longer so nobody is caught cold. */
 export const ANNOUNCE_MS = 750
 export const FIRST_ANNOUNCE_MS = 1500
-/** The cleaver waits a moment (the dodger hops first), then flies. */
+/** The dagger waits a moment (the dodger hops first), then flies. */
 export const LAUNCH_DELAY_S = 0.15
 export const FLIGHT_S = 0.55
 const FLIGHT_MS = (LAUNCH_DELAY_S + FLIGHT_S) * 1000
@@ -14,7 +14,7 @@ const FLIGHT_MS = (LAUNCH_DELAY_S + FLIGHT_S) * 1000
 export const IMPACT_MS = 950
 
 /**
- * Where a turn is on screen: the banner, your choice, waiting for the opponent, the cleaver in the
+ * Where a turn is on screen: the banner, your choice, waiting for the opponent, the dagger in the
  * air, the landing, and finally the end of the game.
  */
 export type StageKind = 'announce' | 'choose' | 'waiting' | 'flight' | 'impact' | 'over'

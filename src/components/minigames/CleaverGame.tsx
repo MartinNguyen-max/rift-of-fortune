@@ -18,6 +18,7 @@ import {
   type CleaverTurn,
   type Spot,
 } from '../../game/minigames/cleaver'
+import { MINI_GAMES } from '../../game/minigames/catalog'
 import { other, type Player } from '../../game/minigames/versus'
 import { FLIGHT_S, LAUNCH_DELAY_S, timeoutSpot, useCleaverStage, useSpotKeys } from './cleaverScreen'
 import { championIconById, SKINS } from './miniGameArt'
@@ -25,21 +26,23 @@ import { BigCall, ChoiceTimer, Waiting, type Tone } from './parts'
 import { useShownWhen } from './timing'
 import type { MiniGameViewProps, TutorialArtProps } from './types'
 
-/** Shown health: each cleaver takes a third. Mundo's Q really does hit hard. */
-const MUNDO_MAX_HP = 3000
-const DAMAGE = MUNDO_MAX_HP / CLEAVER_HITS_TO_WIN
+/** Shown health: each dagger takes a third. */
+const MAX_HP = 2400
+const DAMAGE = MAX_HP / CLEAVER_HITS_TO_WIN
 const SHOWN_DELAY_MS = 500
 const TRAIL_GAP_S = 0.035
 const ALL_SPOTS: readonly Spot[] = [0, 1, 2]
-const CLEAVER_ICON = spellIconUrl('DrMundoQ.png')
+const DAGGER_ICON = spellIconUrl('KatarinaQ.png')
 
-/** Your Mundo is always on the left (blue), theirs on the right (red). */
+/** You are always on the left (blue), the opponent on the right (red). */
 type Side = 'me' | 'them'
 const SIDES: readonly Side[] = ['me', 'them']
-const MUNDO_ART: Record<Side, string> = {
-  me: championLoadingUrl('DrMundo', 0),
-  them: championLoadingUrl('DrMundo', SKINS.elMachoMundo),
+
+/** In the mirror match each side wears its own Katarina skin, so you can tell them apart. */
+const SIDE_SKINS: Readonly<Record<string, Record<Side, number>>> = {
+  Katarina: { me: SKINS.battleAcademiaKatarina, them: SKINS.bloodMoonKatarina },
 }
+const fighterArt = (champion: string, side: Side) => championLoadingUrl(champion, SIDE_SKINS[champion]?.[side] ?? 0)
 
 /** A place in the arena, in percent of its width and height. */
 interface Point {
@@ -57,7 +60,7 @@ interface Picked {
   spot: Spot
 }
 
-/** Mundo Goes Where He Pleases: one throws, one dodges, both at once. Three cleavers and Mundo goes down. */
+/** Katarina's Dagger Dance: one throws, one dodges, both at once. Three daggers and she goes down. */
 export function CleaverGame({ setup, me, moves, sendMove, onShown, players }: MiniGameViewProps) {
   const them = other(me)
   const turns = useMemo(() => cleaverTurns(moves, setup), [moves, setup])
@@ -97,6 +100,7 @@ export function CleaverGame({ setup, me, moves, sendMove, onShown, players }: Mi
   const yourPick = kind === 'waiting' && yourMove !== undefined ? asSpot(yourMove) : null
   const hits = hitsLanded(turns.slice(0, kind === 'impact' ? turn + 1 : turn))
   const taken: Record<Side, number> = { me: hits[them], them: hits[me] }
+  const art: Record<Side, string> = { me: fighterArt(players[me].champion, 'me'), them: fighterArt(players[them].champion, 'them') }
 
   return (
     <div className="mx-auto flex w-full max-w-lg flex-col items-center gap-2">
@@ -120,6 +124,7 @@ export function CleaverGame({ setup, me, moves, sendMove, onShown, players }: Mi
         {kind !== 'over' && <RoleLabel youThrow={youThrow} />}
       </div>
       <Arena
+        art={art}
         spots={standingSpots(landing, before, me, youThrow ? null : yourPick)}
         throwerSide={youThrow ? 'me' : 'them'}
         holding={kind === 'announce' || choosing || kind === 'waiting'}
@@ -150,7 +155,7 @@ export function CleaverGame({ setup, me, moves, sendMove, onShown, players }: Mi
   )
 }
 
-/** Where both Mundos stand right now: the dodger hops as soon as their spot is known. */
+/** Where both fighters stand right now: the dodger hops as soon as their spot is known. */
 function standingSpots(landing: CleaverTurn | undefined, before: [Spot, Spot], me: Player, yourDodge: Spot | null): Record<Side, Spot> {
   const them = other(me)
   if (landing) {
@@ -160,7 +165,7 @@ function standingSpots(landing: CleaverTurn | undefined, before: [Spot, Spot], m
   return { me: yourDodge === null ? before[me] : dodgeTo(before[me], yourDodge), them: before[them] }
 }
 
-/** The spot a cleaver is aimed at: yours once you chose, theirs once revealed. */
+/** The spot a dagger is aimed at: yours once you chose, theirs once revealed. */
 function targetOf(landing: CleaverTurn | undefined, me: Player, yourThrow: Spot | null): Target | null {
   if (landing) {
     const yours = landing.thrower === me
@@ -215,9 +220,11 @@ function circleLook(choice: Choice | null, side: Side, spot: Spot): CircleLook {
 }
 
 interface ArenaProps {
+  /** Each side's champion art. */
+  art: Record<Side, string>
   spots: Record<Side, Spot>
   throwerSide: Side
-  /** The thrower still holds the cleaver. */
+  /** The thrower still holds the dagger. */
   holding: boolean
   choice: Choice | null
   /** The keyboard aim, when shown. */
@@ -226,14 +233,14 @@ interface ArenaProps {
   onAim: (spot: Spot) => void
   target: Target | null
   flight: Flight | null
-  /** The cleaver has landed (or whiffed). */
+  /** The dagger has landed (or whiffed). */
   landed: boolean
   down: Record<Side, boolean>
   children: ReactNode
 }
 
-/** Three spots a side, both Mundos on theirs, and the cleaver flying between them. */
-function Arena({ spots, throwerSide, holding, choice, aim, onPick, onAim, target, flight, landed, down, children }: ArenaProps) {
+/** Three spots a side, both fighters on theirs, and the dagger flying between them. */
+function Arena({ art, spots, throwerSide, holding, choice, aim, onPick, onAim, target, flight, landed, down, children }: ArenaProps) {
   const impact = landed && flight?.hit === true
   const hurt: Side | null = impact && flight ? (flight.yours ? 'them' : 'me') : null
   return (
@@ -259,8 +266,9 @@ function Arena({ spots, throwerSide, holding, choice, aim, onPick, onAim, target
         )),
       )}
       {SIDES.map((side) => (
-        <MundoToken
+        <FighterToken
           key={side}
+          art={art[side]}
           side={side}
           spot={spots[side]}
           holding={holding && throwerSide === side}
@@ -269,8 +277,8 @@ function Arena({ spots, throwerSide, holding, choice, aim, onPick, onAim, target
         />
       ))}
       {target && <TargetMark key={`${target.point.x}-${target.point.y}`} {...target} />}
-      {flight && !landed && <FlyingCleaver {...flight} />}
-      {flight && landed && <CleaverLanding {...flight} />}
+      {flight && !landed && <FlyingDagger {...flight} />}
+      {flight && landed && <DaggerLanding {...flight} />}
       {children}
     </motion.div>
   )
@@ -338,7 +346,8 @@ function SpotCircle({ side, spot, look, aimed, onPick, onAim }: SpotCircleProps)
   )
 }
 
-interface MundoTokenProps {
+interface FighterTokenProps {
+  art: string
   side: Side
   spot: Spot
   holding: boolean
@@ -346,8 +355,8 @@ interface MundoTokenProps {
   down: boolean
 }
 
-/** A Mundo on their spot. Hops when they dodge, flashes red when hit, falls when out of health. */
-function MundoToken({ side, spot, holding, hurt, down }: MundoTokenProps) {
+/** A fighter on their spot. Hops when they dodge, flashes red when hit, falls when out of health. */
+function FighterToken({ art, side, spot, holding, hurt, down }: FighterTokenProps) {
   const yours = side === 'me'
   return (
     <motion.div
@@ -358,8 +367,8 @@ function MundoToken({ side, spot, holding, hurt, down }: MundoTokenProps) {
       className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-1/2"
     >
       <motion.img
-        src={MUNDO_ART[side]}
-        alt={yours ? 'Your Mundo' : 'Their Mundo'}
+        src={art}
+        alt={yours ? 'You' : 'Your opponent'}
         draggable={false}
         animate={tokenPose(yours, hurt, down)}
         transition={{ duration: 0.4 }}
@@ -378,7 +387,7 @@ function MundoToken({ side, spot, holding, hurt, down }: MundoTokenProps) {
       )}
       {holding && (
         <motion.img
-          src={CLEAVER_ICON}
+          src={DAGGER_ICON}
           alt=""
           animate={{ rotate: yours ? [-25, 15, -25] : [25, -15, 25] }}
           transition={{ duration: 0.8, repeat: Infinity }}
@@ -396,7 +405,7 @@ function tokenPose(yours: boolean, hurt: boolean, down: boolean) {
   return { rotate: 0, opacity: 1, x: 0 }
 }
 
-/** A ring with four ticks on the spot a cleaver goes to. */
+/** A ring with four ticks on the spot a dagger goes to. */
 function TargetMark({ point, yours }: Target) {
   const color = yours ? 'bg-hextech' : 'bg-red-400'
   return (
@@ -420,16 +429,16 @@ function TargetMark({ point, yours }: Target) {
 
 const TRAIL = [3, 2, 1, 0] as const
 
-/** The spinning cleaver on its way, with a fading trail behind it. */
-function FlyingCleaver({ from, to, yours }: Flight) {
+/** The spinning dagger on its way, with a fading trail behind it. */
+function FlyingDagger({ from, to, yours }: Flight) {
   const spin = to.x > from.x ? 900 : -900
   return (
     <>
       {TRAIL.map((index) => (
         <motion.img
           key={index}
-          src={CLEAVER_ICON}
-          alt={index === 0 ? 'Cleaver' : ''}
+          src={DAGGER_ICON}
+          alt={index === 0 ? 'Dagger' : ''}
           initial={{ ...placeAt(from), rotate: 0, opacity: 0, scale: 1 - index * 0.16 }}
           animate={{ ...placeAt(to), rotate: spin, opacity: index === 0 ? 1 : 0.55 - index * 0.13 }}
           transition={{
@@ -447,15 +456,15 @@ function FlyingCleaver({ from, to, yours }: Flight) {
   )
 }
 
-/** The landing: stuck in Mundo with a burst and the damage, or a whiff past an empty spot. */
-function CleaverLanding({ from, to, hit, yours }: Flight) {
+/** The landing: a hit with a burst and the damage, or a whiff past an empty spot. */
+function DaggerLanding({ from, to, hit, yours }: Flight) {
   const spin = to.x > from.x ? 1 : -1
   if (!hit) {
     const past = { x: to.x + (to.x - from.x) * 0.35, y: to.y + (to.y - from.y) * 0.35 }
     return (
       <>
         <motion.img
-          src={CLEAVER_ICON}
+          src={DAGGER_ICON}
           alt=""
           initial={{ ...placeAt(to), rotate: spin * 900, opacity: 1 }}
           animate={{ ...placeAt(past), rotate: spin * 1260, opacity: 0 }}
@@ -477,7 +486,7 @@ function CleaverLanding({ from, to, hit, yours }: Flight) {
         aria-hidden="true"
       />
       <motion.img
-        src={CLEAVER_ICON}
+        src={DAGGER_ICON}
         alt=""
         initial={{ scale: 1.6, rotate: spin * 900, opacity: 1 }}
         animate={{ scale: 1, rotate: spin * 930, opacity: [1, 1, 0] }}
@@ -501,7 +510,7 @@ function CleaverLanding({ from, to, hit, yours }: Flight) {
   )
 }
 
-/** A swoosh where the cleaver went through nobody. */
+/** A swoosh where the dagger went through nobody. */
 function Whiff({ point }: { point: Point }) {
   return (
     <>
@@ -552,7 +561,7 @@ function RoleLabel({ youThrow }: { youThrow: boolean }) {
       className="flex items-center gap-2 text-hextech"
     >
       {youThrow ? (
-        <img src={CLEAVER_ICON} alt="" className="size-7 rounded-full border-2 border-hextech" />
+        <img src={DAGGER_ICON} alt="" className="size-7 rounded-full border-2 border-hextech" />
       ) : (
         <DodgeArrows className="h-7 w-5" />
       )}
@@ -590,7 +599,7 @@ function TurnCounter({ turn, max }: { turn: number; max: number }) {
   )
 }
 
-/** Mundo's health in three chunks: each cleaver takes one. */
+/** Health in three chunks: each dagger takes one. */
 function HealthBar({ name, taken, side }: { name: string; taken: number; side: Side }) {
   const yours = side === 'me'
   const left = Math.max(0, CLEAVER_HITS_TO_WIN - taken)
@@ -610,14 +619,14 @@ function HealthBar({ name, taken, side }: { name: string; taken: number; side: S
           <span key={index} className="absolute inset-y-0 w-0.5 bg-black/80" style={{ left: `${((index + 1) / CLEAVER_HITS_TO_WIN) * 100}%` }} />
         ))}
         <span className="absolute inset-0 flex items-center justify-center font-mono text-[11px] font-bold text-white drop-shadow">
-          {left * DAMAGE} / {MUNDO_MAX_HP}
+          {left * DAMAGE} / {MAX_HP}
         </span>
       </div>
     </div>
   )
 }
 
-/** 1: a cleaver flying at one of their three spots. 2: from top, only top and mid. 3: three hits empty the bar. */
+/** 1: a dagger flying at one of their three spots. 2: from top, only top and mid. 3: three hits empty the bar. */
 export function CleaverTutorialArt({ step }: TutorialArtProps) {
   if (step === 0) return <ThrowArt />
   if (step === 1) return <DodgeArt />
@@ -629,7 +638,7 @@ const ART_ICON = 'absolute -translate-x-1/2 -translate-y-1/2 rounded-full'
 function ThrowArt() {
   return (
     <div className="relative size-full bg-linear-to-r from-cyan-950/70 to-red-950/70">
-      <img src={championIconById('DrMundo')} alt="" style={placeAt({ x: 17, y: 50 })} className={`${ART_ICON} size-[26%] border-2 border-hextech`} />
+      <img src={championIconById(MINI_GAMES.cleaver.champion)} alt="" style={placeAt({ x: 17, y: 50 })} className={`${ART_ICON} size-[26%] border-2 border-hextech`} />
       {ALL_SPOTS.map((spot) => (
         <span
           key={spot}
@@ -638,7 +647,7 @@ function ThrowArt() {
         />
       ))}
       <motion.img
-        src={CLEAVER_ICON}
+        src={DAGGER_ICON}
         alt=""
         initial={placeAt({ x: 26, y: 50 })}
         animate={{ left: ['26%', '78%'], top: ['50%', `${spotY(0)}%`], rotate: [0, 720], opacity: [0, 1, 1, 0] }}
@@ -662,7 +671,7 @@ function DodgeArt() {
         />
       ))}
       <motion.img
-        src={championIconById('DrMundo')}
+        src={championIconById(MINI_GAMES.cleaver.champion)}
         alt=""
         initial={placeAt({ x: 42, y: spotY(0) })}
         animate={{ top: [`${spotY(0)}%`, `${spotY(0)}%`, `${spotY(1)}%`, `${spotY(1)}%`] }}
@@ -690,7 +699,7 @@ function HitsArt() {
         {HIT_TIMES.map((at) => (
           <motion.img
             key={at}
-            src={CLEAVER_ICON}
+            src={DAGGER_ICON}
             alt=""
             animate={{ scale: [0.7, 0.7, 1.3, 1, 1], opacity: [0.3, 0.3, 1, 1, 1] }}
             transition={{ duration: 3, times: [0, at, at + 0.05, at + 0.1, 1], repeat: Infinity }}
