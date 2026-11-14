@@ -1,6 +1,6 @@
 # Mini-games
 
-Nine short games at `#/minigames` (one game at `#/minigames/<id>`), played against a bot. The same games are the **live events in Multiplayer**, in shorter versions.
+Sixteen short games at `#/minigames` (one game at `#/minigames/<id>`), played against a bot. The same games are the **live events in Multiplayer**, in shorter versions.
 
 ## One model for solo and Multiplayer
 

@@ -205,6 +205,16 @@ From the owner's two feedback files (`docs/feedback/`). The owner said: "Don't a
 
 # Summary
 
+## Feedback rounds 3–5 (2026-11-13 to 2026-11-14)
+
+- **Multiplayer stability:** Supabase closes a client's channel after more than 5 Presence updates in 30 seconds, and every Ready press and settings click was one. Presence is now tracked once per connection; status (name, ready, settings) goes over Broadcast. A lost connection reconnects by itself, and a reload keeps the player id (sessionStorage per lobby) and gets the running round sent again by the other player (`sync`), landing at the same live event.
+- **Modes instead of paces:** the fast pace ("Settle it in fights") is gone. The lobby offers **Draft battle** (draft, then the live match) and **Five lanes, no champ select** (random teams with real positions, five lanes, five random mini-games, five lives; `lanes.ts`, `LanesView`).
+- **Ties:** in five lanes a tied lane is a draw and level lives at the end go to a coin flip shown on screen. In the match a live event must have a winner, so a tie shows a coin flip before WON/LOST.
+- **Every mini-game:** a face-off opening (both champions' loading art and VS) and the winner's finisher animation (clips in `public/finishers/`, list in `docs/finisher_clips.md`; lobby checkbox, on by default). In live events the host plays the game's first champion, the guest the second.
+- **Champions with finisher clips** replace those without (Riven, Ezreal, Gwen, Katarina, Akali, Warwick, Lillia, Garen, Vayne). Five new games: Unstoppable Onslaught (Sion), Wind Wall (Yasuo), Devour (Tahm Kench), Destiny (Twisted Fate), Paranoia (Nocturne, played as Lux).
+- **Personal bests** are cleared when a game's scoring changes (`SCORING_VERSION` in `records.ts`).
+- The mini-game rules and tuning are in [docs/minigames.md](docs/minigames.md).
+
 ## What was built
 
 The full MVP loop from SPEC.md:
