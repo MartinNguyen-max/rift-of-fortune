@@ -1,52 +1,35 @@
 import { useEffect, useState } from 'react'
-import { destinyHalves, gaterOf, halfScore, type DestinyHalf } from '../../game/minigames/destiny'
+import { destinyHalves, gankerOf, halfScorer, type DestinyHalf } from '../../game/minigames/destiny'
 import type { BothMoves, GameSetup, Player } from '../../game/minigames/versus'
 import type { Tone } from './parts'
 
-/**
- * What the screen shows for the half being played. As Twisted Fate: pick the card's lane, then
- * the Gate's lane, then wait. As the guard: wait for the card, then guard a lane.
- */
-export type DestinyPhase = 'card' | 'gate' | 'gated' | 'waitCard' | 'guard' | 'reveal'
+/** What the screen shows for the half being played: pick a lane to gank, or wait and guess it. */
+export type DestinyPhase = 'gank' | 'ganked' | 'waitGank' | 'guess' | 'reveal'
 
-export function destinyPhase(half: number, me: Player, moves: BothMoves, setup: GameSetup, revealing: boolean, cardPicked: boolean): DestinyPhase {
+export function destinyPhase(half: number, me: Player, moves: BothMoves, setup: GameSetup, revealing: boolean): DestinyPhase {
   if (revealing) return 'reveal'
-  const gater = gaterOf(half, setup)
-  if (gater === me) return moves[me][half] !== undefined ? 'gated' : cardPicked ? 'gate' : 'card'
-  return moves[gater][half] === undefined ? 'waitCard' : 'guard'
+  const ganker = gankerOf(half, setup)
+  if (ganker === me) return moves[me][half] !== undefined ? 'ganked' : 'gank'
+  return moves[ganker][half] === undefined ? 'waitGank' : 'guess'
 }
 
 export interface DestinyCall {
   text: string
   tone: Extract<Tone, 'win' | 'lose'>
-  /** "+2 Twisted Fate" */
+  /** "+1 Twisted Fate" */
   sub: string
   scorer: Player
 }
 
-/** A half's result in a word, from your side. */
+/** A half's result in a word, from your side: the gank got through, or it was read. */
 export function destinyCall(half: DestinyHalf, me: Player, names: readonly [string, string]): DestinyCall {
-  const { scorer, points } = halfScore(half)
-  const mine = scorer === me
-  const youGated = half.gater === me
-  const text = half.guarded
-    ? youGated
-      ? 'GUARDED!'
-      : 'CAUGHT!'
-    : half.honest
-      ? youGated
-        ? 'GOLD CARD!'
-        : 'THE TRUTH!'
-      : youGated
-        ? 'BLUFFED!'
-        : half.guard === null
-          ? 'TOO SLOW!'
-          : 'BLUFFED!'
-  return { text, tone: mine ? 'win' : 'lose', sub: `+${points} ${names[scorer]}`, scorer }
+  const scorer = halfScorer(half)
+  const text = half.countered ? 'COUNTERED!' : half.guess === null && half.ganker !== me ? 'TOO SLOW!' : 'GANKED!'
+  return { text, tone: scorer === me ? 'win' : 'lose', sub: `+1 ${names[scorer]}`, scorer }
 }
 
-/** The moments of a half's reveal: the guard shows, Twisted Fate lands, the result is called. */
-export const DESTINY_BEAT = { playing: 0, guard: 1, landed: 2, called: 3 } as const
+/** The moments of a half's reveal: the guess shows, the ganker lands, the result is called. */
+export const DESTINY_BEAT = { playing: 0, guess: 1, landed: 2, called: 3 } as const
 export type DestinyBeat = (typeof DESTINY_BEAT)[keyof typeof DESTINY_BEAT]
 
 const LAND_MS = 650
@@ -70,7 +53,7 @@ export function useDestinyReveal(finished: number, setup: GameSetup): DestinyCur
     if (!revealing) return
     const at = (ms: number, next: { half: number; beat: DestinyBeat }) => window.setTimeout(() => setCursor(next), ms)
     const timers = [
-      at(0, { half, beat: DESTINY_BEAT.guard }),
+      at(0, { half, beat: DESTINY_BEAT.guess }),
       at(LAND_MS, { half, beat: DESTINY_BEAT.landed }),
       at(CALL_MS, { half, beat: DESTINY_BEAT.called }),
     ]

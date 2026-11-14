@@ -2,9 +2,9 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { championLoadingUrl, spellIconUrl } from '../../data'
 import {
+  foundCount,
   isRightPick,
   NO_PICK,
-  pickMove,
   readPick,
   realSpot,
   roundOfStep,
@@ -18,10 +18,10 @@ import {
 } from '../../game/minigames/shadows'
 import { other, type Player } from '../../game/minigames/versus'
 import { championIconById, SKINS } from './miniGameArt'
-import { BigCall, ChoiceTimer, ContestantTag, Waiting } from './parts'
+import { BigCall, ContestantTag, Waiting } from './parts'
 import { figurePlaces, shadowPhase, type ShadowPhase } from './shadowsScreen'
 import { useStepFlow } from './stepFlow'
-import { useShownWhen } from './timing'
+import { useShownWhen, useTimeout } from './timing'
 import type { Contestant, MiniGameViewProps, TutorialArtProps } from './types'
 import { useStopwatch } from './useStopwatch'
 
@@ -43,7 +43,7 @@ type RoundResult = 'won' | 'lost' | 'nobody'
 /** From `roundWinner(yours, theirs)`: 0 is you. */
 const resultFor = (winner: Player | null): RoundResult => (winner === null ? 'nobody' : winner === 0 ? 'won' : 'lost')
 
-/** Zed and two Living Shadows: watch the real one, follow the shuffle, tap him first. Three rounds, faster each time. */
+/** Zed and two Living Shadows: watch the real one, follow the shuffle, tap him. No clock. Three rounds, harder each time. */
 export function ShadowsGame({ setup, me, moves, sendMove, onShown, players }: MiniGameViewProps) {
   const them = other(me)
   const rounds = shadowRoundCount()
@@ -54,7 +54,7 @@ export function ShadowsGame({ setup, me, moves, sendMove, onShown, players }: Mi
   const round = useMemo(() => roundOfStep(setup, step), [setup, step])
   const picks = useMemo(() => shadowPicks(moves, setup), [moves, setup])
   // Rounds are decided once both picks show: the ones before this one, and this one when revealed.
-  const pickOf = (move: number) => ({ ...readPick(move), right: isRightPick(round, move) })
+  const pickOf = (move: number) => ({ spot: readPick(move), right: isRightPick(round, move) })
   const current =
     flow.myMove === undefined || flow.theirMove === undefined ? [] : [roundWinner(pickOf(flow.myMove), pickOf(flow.theirMove))]
   const decided = [
@@ -66,14 +66,15 @@ export function ShadowsGame({ setup, me, moves, sendMove, onShown, players }: Mi
   ]
   // roundWinner takes your pick first, so its 0 is you.
   const results = decided.map(resultFor)
-  const wins = (result: RoundResult) => results.filter((entry) => entry === result).length
+  // Found counts as both picks show.
+  const shown = decided.length
 
   return (
     <div className="flex flex-col items-center gap-3">
       <div className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-2">
-        <ContestantTag contestant={players[me]} you value={`${wins('won')}`} />
+        <ContestantTag contestant={players[me]} you value={`${foundCount(picks[me].slice(0, shown))}`} />
         <RoundDots rounds={rounds} current={step} results={results} />
-        <ContestantTag contestant={players[them]} you={false} value={`${wins('lost')}`} />
+        <ContestantTag contestant={players[them]} you={false} value={`${foundCount(picks[them].slice(0, shown))}`} />
       </div>
       <ShadowRoundView
         key={step}
@@ -86,7 +87,7 @@ export function ShadowsGame({ setup, me, moves, sendMove, onShown, players }: Mi
         players={players}
         onPick={flow.send}
       />
-      <p className="text-center text-xs text-gold-light/60">Tap the real Zed first, or press 1, 2 or 3. The fastest right pick wins the round.</p>
+      <p className="text-center text-xs text-gold-light/60">Tap the real Zed, or press 1, 2 or 3. No rush: only a right pick counts.</p>
     </div>
   )
 }
@@ -97,7 +98,7 @@ const DOT_COLORS: Record<RoundResult, string> = {
   nobody: 'border-gold-light/40 bg-gold-light/10',
 }
 
-/** One dot per round: gold when you won it, red when they did, grey when nobody found Zed, a ring on the round being played. */
+/** One dot per round: gold when only you found Zed, red when only they did, grey when it was even, a ring on the round being played. */
 function RoundDots({ rounds, current, results }: { rounds: number; current: number; results: readonly RoundResult[] }) {
   return (
     <div className="flex items-center gap-2" aria-label={`Round ${current + 1} of ${rounds}`}>
@@ -126,10 +127,9 @@ interface ShadowRoundViewProps {
 /** One round: Zed is pointed out, turns into a shadow, the three swap, you pick. Mounted fresh per round. */
 function ShadowRoundView({ round, step, myMove, theirMove, waitingFor, me, players, onPick }: ShadowRoundViewProps) {
   const picked = myMove !== undefined
-  const { seconds, read } = useStopwatch(!picked)
+  const { seconds } = useStopwatch(!picked)
   const { phase, shuffleAt } = picked ? { phase: 'pick' as const, shuffleAt: shuffleMs(round) } : shadowPhase(round, step, seconds * 1000)
   const places = figurePlaces(round, shuffleAt)
-  const pickOpensAt = shuffleMs(round) + (step === 0 ? SHADOW_TIMING.firstShowMs : SHADOW_TIMING.showMs) + SHADOW_TIMING.blendMs
   const canPick = phase === 'pick' && !picked
 
   const fired = useRef(false)
@@ -141,7 +141,9 @@ function ShadowRoundView({ round, step, myMove, theirMove, waitingFor, me, playe
     },
     [onPick],
   )
-  const pick = useCallback((spot: Spot) => fire(pickMove(spot, read() * 1000 - pickOpensAt)), [fire, read, pickOpensAt])
+  const pick = useCallback((spot: Spot) => fire(spot), [fire])
+  // No clock shows: this only ends a round when nobody picks at all.
+  useTimeout(() => fire(NO_PICK), SHADOW_TIMING.pickMs, canPick)
 
   useEffect(() => {
     if (!canPick) return
@@ -156,8 +158,8 @@ function ShadowRoundView({ round, step, myMove, theirMove, waitingFor, me, playe
   }, [canPick, pick])
 
   const real = realSpot(round)
-  const myPick = myMove === undefined ? null : readPick(myMove)
-  const theirPick = theirMove === undefined ? null : readPick(theirMove)
+  const myPick = myMove === undefined ? null : { spot: readPick(myMove) }
+  const theirPick = theirMove === undefined ? null : { spot: readPick(theirMove) }
 
   return (
     <div className="flex w-full flex-col items-center gap-2">
@@ -165,7 +167,7 @@ function ShadowRoundView({ round, step, myMove, theirMove, waitingFor, me, playe
         {myPick ? (
           <PickCall right={myPick.spot === real} missed={myPick.spot === null} real={real} />
         ) : canPick ? (
-          <ChoiceTimer seconds={SHADOW_TIMING.pickMs / 1000} onTimeout={() => fire(NO_PICK)} label="Where is Zed?" />
+          <BigCall text="Where is Zed?" tone="you" size="large" sub="Take your time" />
         ) : (
           <PhaseCall phase={phase} step={step} />
         )}
@@ -316,7 +318,7 @@ function PickBadge({ champion, you }: { champion: string; you: boolean }) {
 /** What happens before the pick, in one big word. */
 function PhaseCall({ phase, step }: { phase: ShadowPhase; step: number }) {
   if (phase === 'show') {
-    return <BigCall text="Watch Zed!" tone="plain" size="large" sub={step === 0 ? undefined : step === 1 ? 'Round 2: faster' : 'Last round: fastest'} />
+    return <BigCall text="Watch Zed!" tone="plain" size="large" sub={step === 0 ? undefined : step === 1 ? 'Round 2: faster' : 'Last round: almost impossible'} />
   }
   if (phase === 'blend') return <BigCall text="Shadows!" tone="them" size="large" />
   return (
@@ -332,32 +334,29 @@ function PhaseCall({ phase, step }: { phase: ShadowPhase; step: number }) {
 
 function PickCall({ right, missed, real }: { right: boolean; missed: boolean; real: Spot }) {
   if (right) return <BigCall text="Found him!" tone="win" size="large" />
-  return <BigCall text={missed ? 'Too slow' : 'Shadow!'} tone="lose" size="large" sub={`Zed was on the ${SPOT_NAMES[real]}`} />
+  return <BigCall text={missed ? 'No pick' : 'Shadow!'} tone="lose" size="large" sub={`Zed was on the ${SPOT_NAMES[real]}`} />
 }
 
 interface RoundVersusProps {
-  mine: { spot: Spot | null; ms: number }
-  theirs: { spot: Spot | null; ms: number }
+  mine: { spot: Spot | null }
+  theirs: { spot: Spot | null }
   real: Spot
   me: Player
   players: readonly [Contestant, Contestant]
 }
 
-/** Both picks of the round side by side: found or fooled, how fast, and who took the round. */
+/** Both picks of the round side by side: found or fooled. */
 function RoundVersus({ mine, theirs, real, me, players }: RoundVersusProps) {
   const right = { mine: mine.spot === real, theirs: theirs.spot === real }
   const result = resultFor(roundWinner({ ...mine, right: right.mine }, { ...theirs, right: right.theirs }))
-  const fasterBoth = right.mine && right.theirs
   const line =
-    result === 'nobody'
-      ? 'Nobody found him'
-      : result === 'won'
-        ? fasterBoth
-          ? 'Faster! Your round'
-          : 'Your round'
-        : fasterBoth
-          ? `${players[other(me)].name} was faster`
-          : `${players[other(me)].name}'s round`
+    result === 'won'
+      ? 'Only you found him'
+      : result === 'lost'
+        ? `Only ${players[other(me)].name} found him`
+        : right.mine
+          ? 'You both found him'
+          : 'Nobody found him'
   return (
     <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex w-full max-w-xs flex-col items-center gap-1" aria-live="polite">
       <div className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-3">
@@ -375,9 +374,9 @@ function RoundVersus({ mine, theirs, real, me, players }: RoundVersusProps) {
 interface PickSideProps {
   contestant: Contestant
   you: boolean
-  pick: { spot: Spot | null; ms: number }
+  pick: { spot: Spot | null }
   right: boolean
-  /** Took the round: the fastest right pick. */
+  /** The only one who found Zed this round. */
   won: boolean
 }
 
@@ -391,8 +390,8 @@ function PickSide({ contestant, you, pick, right, won }: PickSideProps) {
       />
       <div className={`flex flex-col leading-tight ${you ? 'items-end' : 'items-start'}`}>
         <span className={`font-display text-2xl font-black ${right ? 'text-gold' : 'text-red-400'}`}>{right ? '✓' : '✗'}</span>
-        <span className={`text-xs tabular-nums ${won ? 'font-bold text-gold' : 'text-gold-light/70'}`}>
-          {pick.spot === null ? 'no pick' : `${(pick.ms / 1000).toFixed(2)}\u00a0s`}
+        <span className={`text-xs ${won ? 'font-bold text-gold' : 'text-gold-light/70'}`}>
+          {pick.spot === null ? 'no pick' : right ? 'found' : 'fooled'}
         </span>
       </div>
     </div>

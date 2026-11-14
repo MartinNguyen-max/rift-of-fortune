@@ -21,20 +21,20 @@ import { useShownWhen, useTimeout } from './timing'
 import type { Contestant, MiniGameViewProps, TutorialArtProps } from './types'
 
 const FORGE_RULES = MINI_GAME_RULES.forge
-/** The "STITCHED!" moment after each item. Your clock stops meanwhile: it isn't your time. */
-const STITCHED_PAUSE_MS = 1000
+/** The "FORGED!" moment after each item. Your clock stops meanwhile: it isn't your time. */
+const FORGED_PAUSE_MS = 1000
 /** The last call and both times stay up this long before the result covers the game. */
 const FINAL_MOMENT_MS = 2600
 
 interface PlacedPart {
   part: ItemComponent
-  /** Where it flew in from: the tray button, relative to its slot on the workbench. */
+  /** Where it flew in from: the tray button, relative to its anvil slot. */
   from: Offset
 }
 
 type Ending = 'forged' | 'late'
 
-/** Gwen's Rush Order: stitch 3 items together from their parts. Your time (plus 2 s per wrong part) is your move. */
+/** Ornn's Rush Order: build 3 items from their parts. Your time (plus 2 s per wrong part) is your move. */
 export function ForgeGame({ setup, me, moves, sendMove, onShown, players }: MiniGameViewProps) {
   const them = other(me)
   const solo = setup.variant === 'solo'
@@ -54,7 +54,7 @@ export function ForgeGame({ setup, me, moves, sendMove, onShown, players }: Mini
   const [wrongPart, setWrongPart] = useState<string | null>(null)
   const [forging, setForging] = useState(false)
   const [ending, setEnding] = useState<Ending | null>(null)
-  const workbench = useRef<HTMLDivElement>(null)
+  const anvil = useRef<HTMLDivElement>(null)
 
   // Your move may also be filled in by the host when you are too slow: either way you are done.
   const myMs = moves[me][0]
@@ -85,7 +85,7 @@ export function ForgeGame({ setup, me, moves, sendMove, onShown, players }: Mini
       setWrongPart(null)
       setForging(false)
     },
-    STITCHED_PAUSE_MS,
+    FORGED_PAUSE_MS,
     forging && !finished,
   )
   const start = useCallback(() => setStarted(true), [])
@@ -106,7 +106,7 @@ export function ForgeGame({ setup, me, moves, sendMove, onShown, players }: Mini
       animate(button, { x: [0, -7, 7, -4, 4, 0] }, { duration: 0.35 })
       return
     }
-    const slot = workbench.current?.querySelectorAll('[data-slot]')[placed.length]
+    const slot = anvil.current?.querySelectorAll('[data-slot]')[placed.length]
     setPlaced([...placed, { part, from: offsetBetween(button, slot) }])
     if (result === 'added') return
     setForging(true)
@@ -122,9 +122,9 @@ export function ForgeGame({ setup, me, moves, sendMove, onShown, players }: Mini
   return (
     <div className="flex flex-col items-center gap-4">
       <div className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-2">
-        <TailorTrack contestant={players[me]} you orders={orders} done={myItems} />
+        <SmithTrack contestant={players[me]} you orders={orders} done={myItems} />
         <Clock seconds={shownSeconds} mistakes={mistakes} />
-        <TailorTrack contestant={players[them]} you={false} orders={orders} done={solo ? botItems : null} />
+        <SmithTrack contestant={players[them]} you={false} orders={orders} done={solo ? botItems : null} />
       </div>
 
       <div className="relative flex w-full flex-col items-center gap-4">
@@ -140,7 +140,7 @@ export function ForgeGame({ setup, me, moves, sendMove, onShown, players }: Mini
               Order {orderIndex + 1} / {orders.length}
             </p>
             <ItemPlate item={order.item} forged={forging} />
-            <Workbench ref={workbench} order={order} placed={placed} forged={forging} />
+            <Anvil ref={anvil} order={order} placed={placed} forged={forging} />
           </motion.div>
           {mistakes > 0 && <PenaltyPop key={`penalty-${mistakes}`} />}
           {ending === 'late' ? (
@@ -152,7 +152,7 @@ export function ForgeGame({ setup, me, moves, sendMove, onShown, players }: Mini
               sub={solo ? `${players[them].name} finished first` : 'Not finished'}
             />
           ) : (
-            forging && <BigCall overlay text="Stitched!" tone="win" />
+            forging && <BigCall overlay text="Forged!" tone="win" />
           )}
         </div>
 
@@ -189,7 +189,7 @@ function Clock({ seconds, mistakes }: { seconds: number; mistakes: number }) {
   )
 }
 
-interface TailorTrackProps {
+interface SmithTrackProps {
   contestant: Contestant
   you: boolean
   orders: readonly ForgeOrder[]
@@ -197,8 +197,8 @@ interface TailorTrackProps {
   done: number | null
 }
 
-/** A tailor and the three items: lit once stitched. */
-function TailorTrack({ contestant, you, orders, done }: TailorTrackProps) {
+/** A smith and the three items: lit once built. */
+function SmithTrack({ contestant, you, orders, done }: SmithTrackProps) {
   return (
     <div className={`flex min-w-0 items-center gap-1.5 ${you ? '' : 'flex-row-reverse text-right'}`}>
       <img
@@ -232,7 +232,7 @@ function TailorTrack({ contestant, you, orders, done }: TailorTrackProps) {
   )
 }
 
-/** The item to stitch. It glows once done. */
+/** The item to build. It glows once forged. */
 function ItemPlate({ item, forged }: { item: Item; forged: boolean }) {
   return (
     <div className="flex max-w-full items-center gap-3">
@@ -259,7 +259,7 @@ function ItemPlate({ item, forged }: { item: Item; forged: boolean }) {
   )
 }
 
-interface WorkbenchProps {
+interface AnvilProps {
   ref: Ref<HTMLDivElement>
   order: ForgeOrder
   placed: readonly PlacedPart[]
@@ -267,7 +267,7 @@ interface WorkbenchProps {
 }
 
 /** One slot per part of the recipe: filled as right parts fly in. */
-function Workbench({ ref, order, placed, forged }: WorkbenchProps) {
+function Anvil({ ref, order, placed, forged }: AnvilProps) {
   return (
     <div
       ref={ref}

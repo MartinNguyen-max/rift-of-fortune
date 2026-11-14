@@ -9,7 +9,7 @@ The winner's finisher animation plays after every mini-game, solo and in Multipl
 - The file name must match exactly.
 - The time is where the clip starts in your YouTube videos (video 1 unless it says video 2).
 
-## All clips needed (25)
+## All clips needed (16)
 
 | Mini-game | Champion | Clip | Time | File name |
 |---|---|---|---|---|
@@ -20,25 +20,22 @@ The winner's finisher animation plays after every mini-game, solo and in Multipl
 | Combo Like a Riven Main | Riven | Chibi Dawnbringer Riven | 9:09 | `dawnbringer-riven.mp4` |
 | Shroom Hopscotch | Teemo | Chibi Little Devil Teemo | 1:33 | `little-devil-teemo.mp4` |
 | Shroom Hopscotch | Ezreal | Chibi Battle Academia Ezreal | 4:01 | `battle-academia-ezreal.mp4` |
-| Gwen's Rush Order | Gwen | Chibi Prestige Cafe Cuties Gwen | 4:34 | `cafe-cuties-gwen.mp4` |
-| Katarina's Dagger Dance | Katarina | Chibi Battle Academia Katarina | 5:23 | `battle-academia-katarina.mp4` |
-| I Was Hiding · Shadow Shuffle | Akali | Chibi KDA ALL OUT Akali | 2:37 | `kda-all-out-akali.mp4` |
-| I Was Hiding | Warwick | Arcane Warwick Unbound | 7:04 | `arcane-warwick.mp4` |
 | Unstoppable Force | Malphite | Chibi Mecha Malphite | 1:22 | `mecha-malphite.mp4` |
 | Unstoppable Force | Amumu | Chibi Surprise Party Amumu | 8:18 | `surprise-party-amumu.mp4` |
-| Demacian Justice | Garen | God-King Garen Unbound | video 2, 0:10 | `god-king-garen.mp4` |
-| Demacian Justice | Vayne | PROJECT: Vayne Unbound | 8:58 | `project-vayne.mp4` |
 | Shadow Shuffle | Zed | Chibi PROJECT: Zed | 1:12 | `project-zed.mp4` |
+| Shadow Shuffle | Akali | Chibi KDA ALL OUT Akali | 2:37 | `kda-all-out-akali.mp4` |
 | Unstoppable Onslaught | Vi | Chibi Arcane Vi | 6:12 | `arcane-vi.mp4` |
 | Wind Wall | Yasuo | Chibi Dragonmancer Yasuo | 0:00 | `dragonmancer-yasuo.mp4` |
 | Wind Wall | Yone | Chibi Spirit Blossom Yone | 3:50 | `spirit-blossom-yone.mp4` |
-| Devour | Yuumi | Chibi Bewitching Yuumi | 5:52 | `bewitching-yuumi.mp4` |
-| Destiny | Ahri | Chibi Spirit Blossom Ahri | 3:29 | `spirit-blossom-ahri.mp4` |
-| Paranoia | Lux | Chibi Star Guardian Lux | 0:40 | `star-guardian-lux.mp4` |
-| Paranoia | Ekko | Chibi Firelight Ekko | 6:33 | `firelight-ekko.mp4` |
 | Baron Steal | Lee Sin | Chibi Prestige Dragon Fist Lee Sin | 3:18 | `dragon-fist-lee-sin.mp4` |
 | Baron Steal | Lillia | Chibi Spirit Blossom Lillia | video 2, 1:08 | `spirit-blossom-lillia.mp4` |
 
-No clip exists for **Sion** (Unstoppable Onslaught), **Tahm Kench** (Devour) and **Twisted Fate** (Destiny); when they win, the game simply skips the finisher.
+## No clip (skipped when they win)
+
+Ornn (Ornn's Rush Order), Dr. Mundo (Mundo Goes Where He Pleases), Shaco and Rengar (I Was Hiding), Darius and Draven (Noxian Guillotine), Sion (Unstoppable Onslaught), Twisted Fate and Nocturne (Global Gank). No video exists for them, so nothing to add.
+
+## No longer needed
+
+If you already cut these, they can stay out: `cafe-cuties-gwen.mp4`, `battle-academia-katarina.mp4`, `arcane-warwick.mp4`, `god-king-garen.mp4`, `project-vayne.mp4`, `bewitching-yuumi.mp4`, `spirit-blossom-ahri.mp4`, `star-guardian-lux.mp4`, `firelight-ekko.mp4`.
 
 Every other clip in your list also has a file name ready in `src/game/finishers.ts`, so a later swap is one line of code.

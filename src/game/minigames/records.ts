@@ -3,10 +3,11 @@ import type { Player } from './versus'
 
 /**
  * Bumped when a game's scoring changes, so a best from the old rules is cleared (wins and
- * streaks stay). Latest: Riven's combos of 4, 6 and 7 keys, a steady Malphite bar, Garen's
- * eight enemies without decoys and a harder Shadow Shuffle.
+ * streaks stay). Latest: Sion taps STOP instead of holding, Shadow Shuffle counts only the Zeds
+ * found (no speed) on harder rounds, Global Gank replaces Destiny's card bluff, and smite fights
+ * speed up near the line.
  */
-const SCORING_VERSION: Partial<Record<MiniGameId, number>> = { duel: 2, combo: 3, shrooms: 2, ult: 4, smite: 3, execute: 3, shadows: 3 }
+const SCORING_VERSION: Partial<Record<MiniGameId, number>> = { duel: 2, combo: 3, shrooms: 2, ult: 4, smite: 4, execute: 3, shadows: 4, race: 2, destiny: 2 }
 
 export const scoringVersion = (id: MiniGameId): number => SCORING_VERSION[id] ?? 1
 

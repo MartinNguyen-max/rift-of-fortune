@@ -63,7 +63,7 @@ interface Scene {
 
 const EMPTY_SCENE: Scene = { hider: null, guess: null }
 
-/** Akali vs Warwick: hide in a bush, then sniff out the bush they hide in. A right guess scores. */
+/** Shaco vs Rengar: hide your jungler in a bush, then guess the bush they hide in. A right guess scores. */
 export function GankGame({ setup, me, moves, sendMove, onShown, players }: MiniGameViewProps) {
   const them = other(me)
   const halves = gankHalves(setup)
@@ -674,7 +674,7 @@ function TutorialBushes({ inside, over }: { inside?: Partial<Record<Bush, ReactN
   )
 }
 
-/** 1: Akali peeking out of a bush. 2: a tap on one bush, question marks over the others. 3: Warwick found, +1. */
+/** 1: Shaco peeking out of a bush. 2: a tap on one bush, question marks over the others. 3: Rengar found, +1. */
 export function GankTutorialArt({ step }: TutorialArtProps) {
   if (step === 0) {
     return (

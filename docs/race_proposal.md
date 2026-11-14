@@ -1,6 +1,6 @@
 # Proposal: the race mini-game
 
-> **Built:** the owner picked option A. It is the mini-game **Unstoppable Onslaught** (`race`, Sion vs Vi).
+> **Built:** the owner picked option A. It is the mini-game **Unstoppable Onslaught** (`race`, Sion vs Vi). Later the owner dropped the hold: Sion now runs by himself from GO and a tap stops him on the spot (no slide).
 
 The owner's idea (round 3): a fast champion, you hold a button and the champion gets faster and faster; the skill is letting go at the right moment. No rules yet, so here is a proposal. **Nothing is built until the owner picks.**
 

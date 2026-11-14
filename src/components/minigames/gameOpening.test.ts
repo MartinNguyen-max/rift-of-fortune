@@ -10,10 +10,6 @@ describe('openingArt', () => {
   it('uses the finisher skin elsewhere, and flips a mirror match', () => {
     expect(openingArt('ult', 'Malphite', 'Amumu')).toMatchObject({ you: expect.stringContaining('Malphite_6'), them: expect.stringContaining('Amumu_8') })
     expect(openingArt('combo', 'Udyr', 'Udyr').mirror).toBe(true)
-    expect(openingArt('cleaver', 'Katarina', 'Katarina')).toMatchObject({
-      you: expect.stringContaining('Katarina_12'),
-      them: expect.stringContaining('Katarina_21'),
-      mirror: false,
-    })
+    expect(openingArt('cleaver', 'DrMundo', 'DrMundo')).toMatchObject({ them: expect.stringContaining('DrMundo_9'), mirror: false })
   })
 })

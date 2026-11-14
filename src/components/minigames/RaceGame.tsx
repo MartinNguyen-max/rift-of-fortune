@@ -1,14 +1,15 @@
 import { motion } from 'framer-motion'
-import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { mapIconUrl, spellIconUrl } from '../../data'
 import {
-  holdDistance,
-  holdSpeed,
-  NO_RUN,
+  crashSeconds,
+  NO_STOP,
   RACE,
   RACE_SCORE,
   raceOutcomes,
+  runDistance,
   runOutcome,
+  runSpeed,
   totalScore,
   trackOfRun,
   type RaceTrack,
@@ -18,20 +19,20 @@ import { other, type Player } from '../../game/minigames/versus'
 import { GetReady } from './GetReady'
 import { championIconById } from './miniGameArt'
 import { BigCall, ContestantTag, Waiting } from './parts'
-import { describeStop, laneShare, RUN_CALLS, runCall, slideAt, slideDuration } from './raceScreen'
+import { describeStop, laneShare, RUN_CALLS, runCall } from './raceScreen'
 import { useStepFlow } from './stepFlow'
-import { useShownWhen, useTimeout } from './timing'
+import { useShownWhen } from './timing'
 import type { Contestant, MiniGameViewProps, TutorialArtProps } from './types'
-import { useStopwatch } from './useStopwatch'
+import { usePressKey, useStopwatch } from './useStopwatch'
 
 /** Sion's ult, Unstoppable Onslaught. */
 const SION_R = spellIconUrl('SionR.png')
 const TOWER = mapIconUrl('tower')
-/** Your slide plays out before the opponent's stop shows. */
-const REVEAL_MS = 2600
+/** Your stop shows on its own for a moment before the opponent's. */
+const REVEAL_MS = 1600
 /**
- * How long a run stays up once both are in, before the next one: your slide, the opponent's
- * stop and a moment to compare. Against the bot both are in the moment you let go.
+ * How long a run stays up once both are in, before the next one: your stop, the opponent's
+ * and a moment to compare. Against the bot both are in the moment you tap.
  */
 const BETWEEN_RUNS_MS = 5600
 /** How long the last run shows before Victory or Defeat. */
@@ -46,7 +47,7 @@ const ENEMIES = [
 const percent = (share: number) => `${share * 100}%`
 
 /**
- * Sion vs Vi: hold to charge, let go to slide, stop on the enemy team before their tower.
+ * Sion vs Vi: Sion charges by himself, faster and faster. Tap STOP on the enemy team, before their tower.
  * Three runs on the same tracks for both players; the most points wins.
  */
 export function RaceGame({ setup, me, moves, sendMove, onShown, players }: MiniGameViewProps) {
@@ -79,7 +80,7 @@ export function RaceGame({ setup, me, moves, sendMove, onShown, players }: MiniG
         players={players}
         onRun={flow.send}
       />
-      <p className="text-center text-xs text-gold-light/60">Hold anywhere (or Space) to charge. Let go to slide.</p>
+      <p className="text-center text-xs text-gold-light/60">Tap anywhere (or Space) to stop Sion.</p>
     </div>
   )
 }
@@ -107,81 +108,62 @@ function RunDots({ current, mine, theirs }: { current: number; mine: readonly Ru
   )
 }
 
-type Phase = 'countdown' | 'ready' | 'holding' | 'sliding' | 'done'
+type Phase = 'countdown' | 'running' | 'done'
 
 interface RaceRunProps {
   track: RaceTrack
-  /** Your hold for this run once it is in. */
+  /** Your tap for this run once it is in. */
   myMove: number | undefined
-  /** The opponent's hold, once it may be shown. */
+  /** The opponent's tap, once it may be shown. */
   theirMove: number | undefined
   /** The opponent's name while their run hasn't arrived. */
   waitingFor: string | null
   me: Player
   players: readonly [Contestant, Contestant]
-  onRun: (holdMs: number) => void
+  onRun: (stopMs: number) => void
 }
 
 /**
- * One run: 3-2-1, then hold to charge and let go to slide. Mounted fresh per run. A run that is
+ * One run: 3-2-1, then Sion charges and you tap STOP. Mounted fresh per run. A run that is
  * already in (after a reconnect) shows where Sion stopped at once.
  */
 function RaceRun({ track, myMove, theirMove, waitingFor, me, players, onRun }: RaceRunProps) {
   const [phase, setPhase] = useState<Phase>(() => (myMove === undefined ? 'countdown' : 'done'))
-  const [holdMs, setHoldMs] = useState<number | null>(null)
-  const { seconds: holdSeconds, read: readHold } = useStopwatch(phase === 'holding')
-  const { seconds: slideSeconds } = useStopwatch(phase === 'sliding')
+  const [stopMs, setStopMs] = useState<number | null>(null)
+  const { seconds, read } = useStopwatch(phase === 'running')
   const sent = useRef(false)
 
   const finish = useCallback(
     (ms: number) => {
       if (sent.current) return
       sent.current = true
-      setHoldMs(ms)
+      setStopMs(ms)
       onRun(ms)
-      setPhase(ms === NO_RUN ? 'done' : 'sliding')
+      setPhase('done')
     },
     [onRun],
   )
-  const go = useCallback(() => setPhase('ready'), [])
-  const startHold = useCallback(() => setPhase((current) => (current === 'ready' ? 'holding' : current)), [])
-  // A hold always counts as at least 1 ms, so it is never mistaken for no run at all.
-  const release = useCallback(() => {
-    if (phase === 'holding') finish(Math.max(1, Math.round(readHold() * 1000)))
-  }, [phase, finish, readHold])
+  const go = useCallback(() => setPhase('running'), [])
+  const stop = useCallback(() => {
+    if (phase === 'running') finish(Math.round(read() * 1000))
+  }, [phase, finish, read])
+  usePressKey(stop, phase === 'running')
 
-  useHoldKey(startHold, release, phase === 'ready' || phase === 'holding')
-  useTimeout(() => finish(NO_RUN), RACE.startSeconds * 1000, phase === 'ready')
-
-  // Holding all the way into the tower ends the run.
+  // No tap before the tower: Sion runs into it.
   useEffect(() => {
-    if (phase === 'holding' && holdDistance(track, holdSeconds) >= track.tower) finish(Math.round(holdSeconds * 1000))
-  }, [phase, track, holdSeconds, finish])
+    if (phase === 'running' && seconds >= crashSeconds(track)) finish(NO_STOP)
+  }, [phase, track, seconds, finish])
 
-  const held = (holdMs ?? myMove ?? 0) / 1000
-  const slide = slideAt(track, held, slideSeconds)
-  useTimeout(() => setPhase('done'), slideDuration(track, held) * 1000, phase === 'sliding')
-
-  const move = holdMs ?? myMove
+  const move = stopMs ?? myMove
   const outcome = move === undefined ? null : runOutcome(track, move)
-  const position =
-    phase === 'holding' ? holdDistance(track, holdSeconds) : phase === 'sliding' ? slide.position : phase === 'done' && outcome ? outcome.stop : 0
-  const speed = phase === 'holding' ? holdSpeed(track, holdSeconds) : phase === 'sliding' ? slide.speed : 0
+  const position = phase === 'running' ? runDistance(track, seconds) : phase === 'done' && outcome ? outcome.stop : 0
+  const speed = phase === 'running' ? runSpeed(track, seconds) : 0
   const theirOutcome = theirMove === undefined ? null : runOutcome(track, theirMove)
-
-  const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
-    if (phase !== 'ready') return
-    event.currentTarget.setPointerCapture(event.pointerId)
-    startHold()
-  }
 
   return (
     <div
       className="flex w-full cursor-pointer touch-none flex-col items-center gap-3 select-none [-webkit-touch-callout:none]"
-      onPointerDown={onPointerDown}
-      onPointerUp={release}
-      onPointerCancel={release}
-      onLostPointerCapture={release}
+      onPointerDown={stop}
       onContextMenu={(event) => event.preventDefault()}
     >
       <div className="flex w-full justify-between text-xs font-semibold text-gold-light/70">
@@ -197,17 +179,15 @@ function RaceRun({ track, myMove, theirMove, waitingFor, me, players, onRun }: R
         position={position}
         speed={speed}
         champion={players[me].champion}
-        call={phase === 'done' && outcome && move !== undefined ? runCall(outcome, move) : null}
+        call={phase === 'done' && outcome ? runCall(outcome) : null}
         ghost={theirOutcome && { outcome: theirOutcome, champion: players[other(me)].champion }}
       >
         {phase === 'countdown' && <GetReady onGo={go} />}
-        {phase === 'done' && outcome && move !== undefined && <StopCall outcome={outcome} move={move} />}
+        {phase === 'done' && outcome && <StopCall outcome={outcome} />}
       </Lane>
       <div className="flex h-28 w-full items-center justify-center">
-        {phase === 'ready' || phase === 'holding' || phase === 'countdown' ? (
-          <HoldButton holding={phase === 'holding'} enabled={phase !== 'countdown'} speed={speed} />
-        ) : phase === 'sliding' ? (
-          <Speedometer speed={speed} />
+        {phase !== 'done' ? (
+          <StopButton enabled={phase === 'running'} speed={speed} />
         ) : outcome && theirOutcome ? (
           <RunVersus mine={outcome} theirs={theirOutcome} me={me} players={players} />
         ) : (
@@ -216,30 +196,6 @@ function RaceRun({ track, myMove, theirMove, waitingFor, me, players, onRun }: R
       </div>
     </div>
   )
-}
-
-/** Space (or Enter) works like a finger: down to charge, up to let go. */
-function useHoldKey(onDown: () => void, onUp: () => void, enabled: boolean) {
-  useEffect(() => {
-    if (!enabled) return
-    const isHoldKey = (event: KeyboardEvent) => event.code === 'Space' || event.code === 'Enter'
-    const down = (event: KeyboardEvent) => {
-      if (!isHoldKey(event)) return
-      event.preventDefault()
-      if (!event.repeat) onDown()
-    }
-    const up = (event: KeyboardEvent) => {
-      if (!isHoldKey(event)) return
-      event.preventDefault()
-      onUp()
-    }
-    window.addEventListener('keydown', down)
-    window.addEventListener('keyup', up)
-    return () => {
-      window.removeEventListener('keydown', down)
-      window.removeEventListener('keyup', up)
-    }
-  }, [onDown, onUp, enabled])
 }
 
 interface LaneProps {
@@ -347,8 +303,8 @@ function Ghost({ track, outcome, champion }: { track: RaceTrack; outcome: RunOut
 }
 
 /** Your stop, big: BULLSEYE!, SHORT!, CRASH!, with the distance and points. */
-function StopCall({ outcome, move }: { outcome: RunOutcome; move: number }) {
-  const call = runCall(outcome, move)
+function StopCall({ outcome }: { outcome: RunOutcome }) {
+  const call = runCall(outcome)
   const { text, tone } = RUN_CALLS[call]
   return (
     <div className="mt-1 flex flex-col items-center gap-0.5">
@@ -359,38 +315,29 @@ function StopCall({ outcome, move }: { outcome: RunOutcome; move: number }) {
         transition={{ delay: 0.2 }}
         className="rounded bg-abyss/80 px-2 py-0.5 text-sm font-semibold text-gold-light"
       >
-        {call === 'none' ? 'Sion never moved' : describeStop(outcome)} · {outcome.score} pts
+        {describeStop(outcome)} · {outcome.score} pts
       </motion.span>
     </div>
   )
 }
 
-/** The big round button: it only shows what to do; the whole run area takes the hold. */
-function HoldButton({ holding, enabled, speed }: { holding: boolean; enabled: boolean; speed: number }) {
+/** The big round button: it only shows what to do; a tap anywhere on the run stops Sion. */
+function StopButton({ enabled, speed }: { enabled: boolean; speed: number }) {
   return (
     <motion.div
       aria-hidden="true"
-      animate={holding ? { scale: 0.9 } : enabled ? { scale: [1, 1.06, 1] } : { scale: 1 }}
-      transition={holding || !enabled ? { duration: 0.15 } : { duration: 0.8, repeat: Infinity }}
-      className={`relative flex size-28 items-center justify-center overflow-hidden rounded-full border-4 bg-abyss shadow-lg ${
-        holding ? 'border-gold shadow-gold/50' : 'border-hextech shadow-cyan-500/40'
-      } ${enabled ? '' : 'opacity-40'}`}
+      animate={enabled ? { scale: [1, 1.06, 1] } : { scale: 1 }}
+      transition={enabled ? { duration: 0.5, repeat: Infinity } : { duration: 0.15 }}
+      className={`relative flex size-28 items-center justify-center overflow-hidden rounded-full border-4 border-gold bg-abyss shadow-lg shadow-gold/40 ${
+        enabled ? '' : 'opacity-40'
+      }`}
     >
       <img src={SION_R} alt="" draggable={false} className="absolute inset-0 size-full object-cover opacity-80" />
       <span className="relative flex flex-col items-center font-display font-black text-white drop-shadow-[0_2px_4px_black]">
-        <span className={holding ? 'text-lg' : 'text-2xl'}>{holding ? 'CHARGE' : 'HOLD'}</span>
-        {holding && <span className="font-mono text-sm tabular-nums">{Math.round(speed)} m/s</span>}
+        <span className="text-2xl">STOP</span>
+        {enabled && <span className="font-mono text-sm tabular-nums">{Math.round(speed)} m/s</span>}
       </span>
     </motion.div>
-  )
-}
-
-function Speedometer({ speed }: { speed: number }) {
-  return (
-    <div className="flex flex-col items-center" aria-live="off">
-      <span className="font-mono text-4xl font-black text-hextech tabular-nums">{Math.round(speed)}</span>
-      <span className="text-xs tracking-widest text-gold-light/60 uppercase">m/s · sliding</span>
-    </div>
   )
 }
 
@@ -449,7 +396,7 @@ function MiniLane({ children, crash = false }: { children?: ReactNode; crash?: b
 
 const tutorialSion = 'absolute top-[65%] size-[24%] max-w-none -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-hextech'
 
-/** 1: hold and Sion charges. 2: let go and he slides into the zone. 3: middle = 100, the tower = crash. */
+/** 1: Sion charges by himself. 2: tap STOP in the zone. 3: middle = 100, the tower = crash. */
 export function RaceTutorialArt({ step }: TutorialArtProps) {
   if (step === 0) {
     return (
@@ -457,11 +404,11 @@ export function RaceTutorialArt({ step }: TutorialArtProps) {
         <motion.img
           src={championIconById('Sion')}
           alt=""
-          animate={{ left: ['10%', '48%'] }}
+          animate={{ left: ['10%', '80%'] }}
           transition={{ duration: 1.4, repeat: Infinity, ease: 'easeIn', repeatDelay: 0.4 }}
           className={tutorialSion}
         />
-        <span className="absolute top-[6%] left-[6%] rounded bg-hextech/80 px-1 font-display text-[9px] font-black text-abyss sm:text-xs">HOLD</span>
+        <span className="absolute top-[6%] left-[6%] rounded bg-hextech/80 px-1 font-display text-[9px] font-black text-abyss sm:text-xs">GO!</span>
       </MiniLane>
     )
   }
@@ -471,11 +418,11 @@ export function RaceTutorialArt({ step }: TutorialArtProps) {
         <motion.img
           src={championIconById('Sion')}
           alt=""
-          animate={{ left: ['30%', '65%'] }}
-          transition={{ duration: 1.2, repeat: Infinity, ease: 'easeOut', repeatDelay: 0.7 }}
+          animate={{ left: ['10%', '65%', '65%'] }}
+          transition={{ duration: 1.8, repeat: Infinity, ease: 'easeIn', times: [0, 0.6, 1] }}
           className={tutorialSion}
         />
-        <span className="absolute top-[6%] left-[6%] rounded bg-gold/80 px-1 font-display text-[9px] font-black text-abyss sm:text-xs">LET GO</span>
+        <span className="absolute top-[6%] left-[6%] rounded bg-gold/80 px-1 font-display text-[9px] font-black text-abyss sm:text-xs">STOP!</span>
       </MiniLane>
     )
   }

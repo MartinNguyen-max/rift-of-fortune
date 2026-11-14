@@ -8,6 +8,7 @@ import {
   hpAt,
   LONGEST_SMITE_FIGHT,
   NO_SMITE,
+  rushAt,
   SMITE_DAMAGE,
   SMITE_HITS,
   SMITE_LEAD_IN,
@@ -51,7 +52,7 @@ describe('smiteFight', () => {
     }
   })
 
-  it('drops to Smite’s 1,600 at a moment you can’t learn, then dies about a second later', () => {
+  it('drops to Smite’s 1,600 at a moment you can’t learn, then dies a bit under a second later', () => {
     for (const fight of fights) {
       expect(hpAt(fight, fight.lineAt)).toBeLessThanOrEqual(SMITE_DAMAGE)
       expect(hpAt(fight, fight.lineAt - 0.001)).toBeGreaterThan(SMITE_DAMAGE)
@@ -62,8 +63,15 @@ describe('smiteFight', () => {
     const lines = fights.map(({ lineAt }) => lineAt)
     expect(quantile(lines, 0.9) - quantile(lines, 0.1)).toBeGreaterThan(1)
     const windows = fights.filter(({ target }) => target === 'baron').map(({ lineAt, deathAt }) => deathAt - lineAt)
-    expect(quantile(windows, 0.5)).toBeGreaterThan(0.9)
-    expect(quantile(windows, 0.5)).toBeLessThan(1.4)
+    expect(quantile(windows, 0.5)).toBeGreaterThan(0.75)
+    expect(quantile(windows, 0.5)).toBeLessThan(1.05)
+  })
+
+  it('hits a little harder near the line, and keeps that pace under it', () => {
+    expect(rushAt(SMITE_DAMAGE + 5000)).toBe(1)
+    expect(rushAt(SMITE_DAMAGE + 600)).toBeCloseTo(1 + (SMITE_HITS.rush.times - 1) / 2)
+    expect(rushAt(SMITE_DAMAGE)).toBe(SMITE_HITS.rush.times)
+    expect(rushAt(200)).toBe(SMITE_HITS.rush.times)
   })
 })
 

@@ -2,7 +2,6 @@ import { gameData } from '../../data'
 import type { MiniGameId } from './catalog'
 import { CLEAVER_RULES } from './cleaver'
 import { COMBO_RULES } from './combo'
-import { DEVOUR_RULES } from './devour'
 import { DESTINY_RULES } from './destiny'
 import { DUEL_RULES } from './duel'
 import { EXECUTE_RULES } from './execute'
@@ -10,7 +9,6 @@ import { forgeRules } from './forge'
 import { GANK_RULES } from './gank'
 import { hookRules } from './hook'
 import { RACE_RULES } from './race'
-import { PARANOIA_RULES } from './paranoia'
 import { SHADOW_RULES } from './shadows'
 import { SHROOM_RULES } from './shrooms'
 import { SMITE_RULES } from './smite'
@@ -32,8 +30,6 @@ export const MINI_GAME_RULES: Record<MiniGameId, MiniGameRules> = {
   shadows: SHADOW_RULES,
   race: RACE_RULES,
   windwall: WIND_WALL_RULES,
-  devour: DEVOUR_RULES,
   destiny: DESTINY_RULES,
-  paranoia: PARANOIA_RULES,
   smite: SMITE_RULES,
 }

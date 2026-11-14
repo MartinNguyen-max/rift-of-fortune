@@ -34,8 +34,8 @@ describe('the wave', () => {
   })
 
   it('never has the bot or the player among the targets', () => {
-    expect(EXECUTE_TARGETS).not.toContain('Garen')
-    expect(EXECUTE_TARGETS).not.toContain('Vayne')
+    expect(EXECUTE_TARGETS).not.toContain('Darius')
+    expect(EXECUTE_TARGETS).not.toContain('Draven')
   })
 
   it('never shows two enemies in a row on the same spot, and each is up a little shorter', () => {

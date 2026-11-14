@@ -6,7 +6,7 @@ import { placeAt } from './laneScreen'
 import { championIconById } from './miniGameArt'
 
 interface LaneMapProps {
-  /** Lights out: the map is almost black (Paranoia). */
+  /** Lights out: the map is almost black (Nocturne’s Paranoia). */
   dark?: boolean
   /** Tapping a lane, while a choice is open. */
   onPick: ((lane: Lane) => void) | null

@@ -31,7 +31,7 @@ After a game, show a short animation, like Mortal Kombat: something cool for the
 - In live events the host plays the game's first champion and the guest the second (Caitlyn vs Jhin), so both see the same matchup and the same finisher.
 - The table of finishers is `src/game/finishers.ts`: one clip per champion. Changing a champion's clip is one line there. The game art (the face-off before each game) uses the clip's skin where League has it.
 - A clip that is not added yet is skipped without a trace, so the game works before the files are in.
-- **Champion swaps (approved by the owner):** Udyr → Riven, Master Yi → Ezreal, Ornn → Gwen, Dr. Mundo → Katarina, Shaco → Akali, Rengar → Warwick, Nunu → Lillia, Darius → Garen, Draven → Vayne. The new games use champions with clips where they can (Vi, Yasuo, Yone, Yuumi, Ahri, Lux, Ekko); Sion, Tahm Kench and Twisted Fate have none.
+- **Champion swaps (approved by the owner):** Udyr → Riven, Master Yi → Ezreal, Nunu → Lillia. Some champions have no clip and that is fine: the owner moved Ornn, Dr. Mundo, Shaco vs Rengar and Darius vs Draven back to their own games. Sion, Twisted Fate and Nocturne have no clip either; when a champion without a clip wins, the finisher is simply skipped.
 
 ## Files to add (for the owner)
 

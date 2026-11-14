@@ -10,7 +10,6 @@ export function championIconById(championId: string): string {
 export const SKINS = {
   sheriffCaitlyn: 2,
   highNoonJhin: 1,
-  battleAcademiaKatarina: 12,
-  bloodMoonKatarina: 21,
+  elMachoMundo: 9,
   projectZed: 3,
 } as const

@@ -91,10 +91,8 @@ export function HomePage() {
       </ModeCard>
 
       <ModeCard route="minigames" badge="New" title="Mini-games" cta="Play mini-games" art={<MiniGameIcons />} delay={0.4} wide>
-        {MINI_GAME_IDS.length} quick fights against a bot, each under a minute: a High Noon headshot, Blitzcrank hooks,
-        Riven combos, Teemo shrooms, Gwen’s stitching, Katarina’s daggers, Akali’s bushes, Malphite’s ult, Garen’s
-        pentakills, Zed’s shadows, Sion’s charge, Yasuo’s Wind Wall, Tahm Kench’s Devour, Twisted Fate’s bluff, Nocturne in
-        the dark and Baron steals. In Multiplayer they are the live events that swing the match.
+        {MINI_GAME_IDS.length} quick champion games against a bot, each under a minute. Beat your best, then play them
+        live with a friend in Multiplayer.
       </ModeCard>
     </div>
   )

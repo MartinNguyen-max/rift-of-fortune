@@ -1,4 +1,4 @@
-/** The three lanes of the Rift, as the lane games (Destiny, Paranoia) use them. */
+/** The three lanes of the Rift, as Global Gank uses them. */
 export type Lane = 0 | 1 | 2
 
 export const LANES: readonly Lane[] = [0, 1, 2]

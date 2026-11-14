@@ -22,8 +22,8 @@ interface SmiteProfile {
 
 /**
  * Both teams hit the objective, so its health drops in small, uneven hits. When it falls to
- * Smite's 1,600 is impossible to time in advance; after that it takes roughly another second to
- * die. Elder is the harder fight: more damage per second, so less time to react.
+ * Smite's 1,600 is impossible to time in advance; it speeds up a little near the line, and after
+ * that it takes a bit under a second to die. Elder is the harder fight: more damage per second, so less time to react.
  */
 export const SMITE_PROFILES: Record<SmiteTarget, SmiteProfile> = {
   baron: { startHp: { min: 4200, max: 6400 }, dps: { min: 1150, max: 1500 }, pace: { min: 0.8, max: 1.25 } },
@@ -42,7 +42,19 @@ export const SMITE_HITS = {
   maxDamage: 450,
   /** How long the damage keeps one pace before it changes. */
   stretch: { min: 0.5, max: 1.1 },
+  /**
+   * Near Smite's line the fight heats up: from `from` health down to the line the damage grows to
+   * `times` as much, and stays there until the objective dies.
+   */
+  rush: { from: SMITE_DAMAGE + 1200, times: 1.3 },
 } as const
+
+/** How much harder the teams hit at this health: 1 far from the line, up to the rush near and under it. */
+export function rushAt(hp: number): number {
+  const { from, times } = SMITE_HITS.rush
+  const closeness = Math.min(1, Math.max(0, (from - hp) / (from - SMITE_DAMAGE)))
+  return 1 + (times - 1) * closeness
+}
 
 /** Seconds at the start health before the hits start, so both players can get ready. */
 export const SMITE_LEAD_IN = 0.6
@@ -85,7 +97,7 @@ function fightHits(profile: SmiteProfile, startHp: number, random: RandomFn): Sm
       paceUntil = at + between(SMITE_HITS.stretch, random)
     }
     const big = random() < SMITE_HITS.big.chance ? between(SMITE_HITS.big.times, random) : 1
-    const damage = Math.min(SMITE_HITS.maxDamage, Math.max(20, Math.round(gap * dps * pace * between(SMITE_HITS.spread, random) * big)))
+    const damage = Math.min(SMITE_HITS.maxDamage, Math.max(20, Math.round(gap * dps * pace * rushAt(hp) * between(SMITE_HITS.spread, random) * big)))
     hp = Math.max(0, hp - damage)
     hits.push({ at, hp })
   }

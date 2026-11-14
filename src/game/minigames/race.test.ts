@@ -3,42 +3,43 @@ import {
   botRun,
   closestRun,
   crashSeconds,
-  holdDistance,
-  holdFor,
-  holdSpeed,
-  NO_RUN,
+  NO_STOP,
   RACE,
   RACE_RULES,
   RACE_SCORE,
   raceTrack,
   raceWinner,
   runOutcome,
+  runDistance,
   runScore,
+  runSpeed,
+  secondsTo,
   trackOfRun,
   type RaceTrack,
   type RunOutcome,
 } from './race'
 import { soloSetup, type BothMoves, type GameSetup } from './versus'
 
-const track: RaceTrack = { target: 60, tower: 75, boost: 8, surge: 2.5 }
+const track: RaceTrack = { target: 60, tower: 75, start: 10, accel: 8 }
 const live: GameSetup = { seed: 7, variant: 'live', bothRoles: false, late: false }
 
-/** The hold (ms) that stops Sion `offset` meters from the target's middle. */
-const holdTo = (at: RaceTrack, offset: number) => Math.round(holdFor(at, at.target + offset) * 1000)
+/** The tap (ms after GO) that stops Sion `offset` meters from the target's middle. */
+const holdTo = (at: RaceTrack, offset: number) => Math.round(secondsTo(at, at.target + offset) * 1000)
 
 describe('tracks', () => {
   it('puts the target in range and the tower behind it, sometimes close', () => {
     let near = 0
     for (let seed = 1; seed <= 300; seed++) {
-      const { target, tower, boost, surge } = raceTrack(seed)
+      const { target, tower, start, accel } = raceTrack(seed)
       expect(target).toBeGreaterThanOrEqual(RACE.target.min)
       expect(target).toBeLessThanOrEqual(RACE.target.max)
       const gap = tower - target
       expect(gap).toBeGreaterThanOrEqual(RACE.nearGap.min)
       expect(gap).toBeLessThanOrEqual(RACE.gap.max)
       if (gap < RACE.gap.min) near += 1
-      expect(boost).toBeGreaterThan(0)
-      expect(surge).toBeGreaterThan(0)
+      expect(start).toBeGreaterThanOrEqual(RACE.start.min)
+      expect(accel).toBeGreaterThanOrEqual(RACE.accel.min)
+      expect(crashSeconds(raceTrack(seed))).toBeLessThan(RACE.maxRunSeconds)
     }
     expect(near).toBeGreaterThan(30)
     expect(near).toBeLessThan(150)
@@ -51,33 +52,27 @@ describe('tracks', () => {
   })
 })
 
-describe('the charge and the slide', () => {
-  it('speeds up faster and faster while held', () => {
-    expect(holdSpeed(track, 2) - holdSpeed(track, 1)).toBeGreaterThan(holdSpeed(track, 1) - holdSpeed(track, 0))
-    expect(holdDistance(track, 0)).toBe(0)
+describe('the run', () => {
+  it('speeds up the whole way', () => {
+    expect(runSpeed(track, 2)).toBeGreaterThan(runSpeed(track, 1))
+    expect(runDistance(track, 0)).toBe(0)
+    expect(runDistance(track, secondsTo(track, 42))).toBeCloseTo(42)
   })
 
-  it('slides further the longer you hold: speed squared over twice the braking', () => {
-    const speed = holdSpeed(track, 2)
-    const expected = holdDistance(track, 2) + (speed * speed) / (2 * RACE.brake)
-    expect(runOutcome(track, 2000).stop).toBeCloseTo(expected)
-    expect(runOutcome(track, 2100).stop).toBeGreaterThan(runOutcome(track, 2000).stop)
+  it('stops where you tap', () => {
+    expect(runOutcome(track, 2000).stop).toBeCloseTo(runDistance(track, 2))
+    expect(runOutcome(track, holdTo(track, 0)).offset).toBeCloseTo(0, 1)
+    expect(runOutcome(track, holdTo(track, -8)).offset).toBeCloseTo(-8, 1)
   })
 
-  it('crashes into the tower when the slide reaches it, or when you never let go', () => {
-    const crash = runOutcome(track, holdTo(track, 20))
-    expect(crash).toMatchObject({ crashed: true, score: 0, stop: track.tower })
-    expect(runOutcome(track, RACE.maxHoldSeconds * 1000).crashed).toBe(true)
-    expect(holdDistance(track, crashSeconds(track))).toBeCloseTo(track.tower, 1)
+  it('crashes into the tower without a tap in time', () => {
+    expect(runOutcome(track, holdTo(track, 20))).toMatchObject({ crashed: true, score: 0, stop: track.tower })
+    expect(runOutcome(track, NO_STOP).crashed).toBe(true)
+    expect(runDistance(track, crashSeconds(track))).toBeCloseTo(track.tower)
   })
 
-  it('stays at the start without a run', () => {
-    expect(runOutcome(track, NO_RUN)).toMatchObject({ stop: 0, crashed: false, score: 0 })
-  })
-
-  it('finds the hold that stops on a spot', () => {
-    expect(runOutcome(track, holdTo(track, 0)).offset).toBeCloseTo(0, 0)
-    expect(runOutcome(track, holdTo(track, -8)).offset).toBeCloseTo(-8, 0)
+  it('stays at the start with a tap at GO', () => {
+    expect(runOutcome(track, 0)).toMatchObject({ stop: 0, crashed: false, score: 0 })
   })
 })
 
@@ -101,8 +96,6 @@ describe('scoring', () => {
     crashed,
     offset,
     score,
-    holdSeconds: 0,
-    slideSeconds: 0,
   })
 
   it('goes to the most points, then the closest single run', () => {
@@ -136,21 +129,21 @@ describe('RACE_RULES', () => {
     expect(RACE_RULES.owed([[1, 1, 1], [1, 1, 1]], live)).toEqual([])
   })
 
-  it('fills in a run that never started, which scores 0', () => {
+  it('fills in a run without a tap: a crash, which scores 0', () => {
     const value = RACE_RULES.fallback({ player: 0, step: 0 }, [[], []], live)
     expect(runOutcome(trackOfRun(live, 0), value).score).toBe(0)
   })
 
   it('keeps your points as the personal best', () => {
     const setup = soloSetup(3)
-    const moves: BothMoves = [[0, 1, 2].map((run) => holdTo(trackOfRun(setup, run), 0)), [NO_RUN, NO_RUN, NO_RUN]]
+    const moves: BothMoves = [[0, 1, 2].map((run) => holdTo(trackOfRun(setup, run), 0)), [NO_STOP, NO_STOP, NO_STOP]]
     expect(RACE_RULES.best?.of(moves, setup)).toBe(300)
     expect(RACE_RULES.formatScore(1, setup)).toBe('1 pt')
     expect(RACE_RULES.formatScore(245, setup)).toBe('245 pts')
   })
 
   it('fits three runs in the Multiplayer time limit', () => {
-    expect(RACE_RULES.liveSeconds(live)).toBeGreaterThanOrEqual(RACE.runs * (3 + RACE.startSeconds + RACE.maxHoldSeconds))
+    expect(RACE_RULES.liveSeconds(live)).toBeGreaterThanOrEqual(RACE.runs * (3 + RACE.maxRunSeconds))
   })
 })
 

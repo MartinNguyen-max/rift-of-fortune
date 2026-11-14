@@ -13,8 +13,8 @@ import {
 } from './versus'
 
 /**
- * Katarina's Dagger Dance: each Katarina stands on one of three spots on their side. Every turn
- * one throws a dagger at a spot and the other dodges, moving at most one spot (from top: top or
+ * Mundo Goes Where He Pleases: each Mundo stands on one of three spots on their side. Every turn
+ * one throws a cleaver at a spot and the other dodges, moving at most one spot (from top: top or
  * mid). Both choose at the same time. The roles switch every turn.
  * A move is a spot (0 top, 1 mid, 2 bot): the target for the thrower, the new spot for the dodger.
  */
@@ -22,16 +22,16 @@ export const SPOTS = ['top', 'mid', 'bot'] as const
 export type Spot = 0 | 1 | 2
 export const START_SPOT: Spot = 1
 
-/** Dagger hits to win. (The game's id is still `cleaver`: it began as Mundo's.) */
+/** Cleaver hits to win. */
 export const CLEAVER_HITS_TO_WIN = 3
-/** The most turns a game lasts; then whoever landed more daggers wins. Multiplayer is short. */
+/** The most turns a game lasts; then the Mundo who landed more cleavers wins. Multiplayer is short. */
 export const MAX_TURNS: Record<Variant, number> = { solo: 12, live: 6 }
 /** Seconds to choose each turn. */
 export const TURN_SECONDS: Record<Variant, number> = { solo: 4, live: 5 }
 
 export const isSpot = (value: number): value is Spot => value === 0 || value === 1 || value === 2
 
-/** The spots a fighter can move to from `from`: the same spot or one next to it. */
+/** The spots a Mundo can move to from `from`: the same spot or one next to it. */
 export function reachable(from: Spot): Spot[] {
   return [0, 1, 2].filter((spot): spot is Spot => isSpot(spot) && Math.abs(spot - from) <= 1)
 }
@@ -74,14 +74,14 @@ export function cleaverTurns(moves: BothMoves, setup: GameSetup): CleaverTurn[] 
   return turns
 }
 
-/** Where each fighter stands after the turns played. */
+/** Where each Mundo stands after the turns played. */
 export function spotsAfter(turns: readonly CleaverTurn[]): [Spot, Spot] {
   const spots: [Spot, Spot] = [START_SPOT, START_SPOT]
   for (const { thrower, to } of turns) spots[other(thrower)] = to
   return spots
 }
 
-/** Daggers each player has landed. */
+/** Cleavers each player has landed. */
 export function hitsLanded(turns: readonly CleaverTurn[]): [number, number] {
   const hits: [number, number] = [0, 0]
   for (const { thrower, hit } of turns) if (hit) hits[thrower] += 1

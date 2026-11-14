@@ -1,5 +1,5 @@
 /** The mini-games, in the order they are shown. Each is played against a bot, or as a live event in Multiplayer. */
-export const MINI_GAME_IDS = ['duel', 'hook', 'combo', 'shrooms', 'forge', 'cleaver', 'gank', 'ult', 'execute', 'shadows', 'race', 'windwall', 'devour', 'destiny', 'paranoia', 'smite'] as const
+export const MINI_GAME_IDS = ['duel', 'hook', 'combo', 'shrooms', 'forge', 'cleaver', 'gank', 'ult', 'execute', 'shadows', 'race', 'windwall', 'destiny', 'smite'] as const
 export type MiniGameId = (typeof MINI_GAME_IDS)[number]
 
 /** Three short captions, one under each tutorial picture. */
@@ -65,29 +65,29 @@ export const MINI_GAMES: Record<MiniGameId, MiniGameInfo> = {
   },
   forge: {
     id: 'forge',
-    name: 'Gwen’s Rush Order',
-    champion: 'Gwen',
-    botChampion: 'Gwen',
-    botName: 'Bot Gwen',
-    tagline: 'Snip snip! Stitch 3 items together from their parts. Fastest needle wins.',
-    tutorial: { solo: ['An item to stitch', 'Tap its parts. Wrong part +2 s', '3 items. Fastest needle wins'] },
+    name: 'Ornn’s Rush Order',
+    champion: 'Ornn',
+    botChampion: 'Ornn',
+    botName: 'Bot Ornn',
+    tagline: 'Build 3 items from their parts. Fastest smith wins.',
+    tutorial: { solo: ['An item to build', 'Tap its parts. Wrong part +2 s', '3 items. Fastest smith wins'] },
   },
   cleaver: {
     id: 'cleaver',
-    name: 'Katarina’s Dagger Dance',
-    champion: 'Katarina',
-    botChampion: 'Katarina',
-    botName: 'Blood Moon Katarina',
-    tagline: 'Throw daggers, dodge daggers. Three hits and she goes down.',
+    name: 'Mundo Goes Where He Pleases',
+    champion: 'DrMundo',
+    botChampion: 'DrMundo',
+    botName: 'El Macho Mundo',
+    tagline: 'Throw cleavers, dodge cleavers. Three hits and Mundo goes down.',
     tutorial: { solo: ['THROW: hit their spot', 'DODGE: move 1 spot', '3 hits wins'] },
   },
   gank: {
     id: 'gank',
     name: 'I Was Hiding',
-    champion: 'Akali',
-    botChampion: 'Warwick',
-    botName: 'Warwick',
-    tagline: 'Akali hides in a bush, Warwick sniffs her out. Then swap. Mind games only.',
+    champion: 'Shaco',
+    botChampion: 'Rengar',
+    botName: 'Rengar',
+    tagline: 'Hide in a bush. Guess their bush. Mind games only.',
     tutorial: {
       solo: ['Hide in a bush', 'Guess where they hide', 'Right guess = 1 point. Most points wins'],
       live: ['Hide in a bush', 'Guess where they hide', 'Right guess wins the gank'],
@@ -107,12 +107,12 @@ export const MINI_GAMES: Record<MiniGameId, MiniGameInfo> = {
   },
   execute: {
     id: 'execute',
-    name: 'Demacian Justice',
-    champion: 'Garen',
-    botChampion: 'Vayne',
-    botName: 'Vayne',
-    tagline: 'Eight enemies, low on health, up for a blink. Drop the sword on them all and chain the penta.',
-    tutorial: { solo: ['8 enemies, each up for a blink', 'Tap it: the sword falls', 'In a row: +1, +2… up to +5 a kill'] },
+    name: 'Noxian Guillotine',
+    champion: 'Darius',
+    botChampion: 'Draven',
+    botName: 'Draven',
+    tagline: 'Eight enemies, low on health, up for a blink. Dunk them all and chain the penta.',
+    tutorial: { solo: ['8 enemies, each up for a blink', 'Tap it: the Guillotine falls', 'In a row: +1, +2… up to +5 a kill'] },
   },
   shadows: {
     id: 'shadows',
@@ -120,10 +120,10 @@ export const MINI_GAMES: Record<MiniGameId, MiniGameInfo> = {
     champion: 'Zed',
     botChampion: 'Akali',
     botName: 'Akali',
-    tagline: 'One Zed, two shadows, a blur of swaps. Find the real one first.',
+    tagline: 'One Zed, two shadows, a blur of swaps. Find the real one. No clock, just your eyes.',
     tutorial: {
-      solo: ['Watch the real Zed', 'The shadows swap fast. Follow him', 'Tap Zed first. Fastest right pick wins'],
-      live: ['Watch the real Zed', 'The same shuffle for both of you', 'Tap Zed first. Fastest right pick wins'],
+      solo: ['Watch the real Zed', 'The shadows swap fast. Follow him', 'Tap Zed. No rush: most found wins'],
+      live: ['Watch the real Zed', 'The same shuffle for both of you', 'Tap Zed. No rush: most found wins'],
     },
   },
   race: {
@@ -132,10 +132,10 @@ export const MINI_GAMES: Record<MiniGameId, MiniGameInfo> = {
     champion: 'Sion',
     botChampion: 'Vi',
     botName: 'Vi',
-    tagline: 'Hold to charge, let go to slide. Stop on the enemy team, not their tower.',
+    tagline: 'Sion charges, faster and faster. Tap STOP on the enemy team, not their tower.',
     tutorial: {
-      solo: ['Hold: Sion charges, faster and faster', 'Let go: he slides. Stop in the gold zone', 'Middle = 100. Hit the tower = 0. 3 runs'],
-      live: ['Hold: Sion charges, faster and faster', 'Let go: he slides. Stop in the gold zone', 'Same 3 tracks for both. Most points wins'],
+      solo: ['GO: Sion charges, faster and faster', 'Tap STOP in the gold zone', 'Middle = 100. Hit the tower = 0. 3 runs'],
+      live: ['GO: Sion charges, faster and faster', 'Tap STOP in the gold zone', 'Same 3 tracks for both. Most points wins'],
     },
   },
   windwall: {
@@ -150,40 +150,16 @@ export const MINI_GAMES: Record<MiniGameId, MiniGameInfo> = {
       live: ['A shooter shows up: a shot is coming', 'Tap that side: Wind Wall!', 'Same volley for both. Most blocked wins'],
     },
   },
-  devour: {
-    id: 'devour',
-    name: 'Devour',
-    champion: 'TahmKench',
-    botChampion: 'Yuumi',
-    botName: 'Yuumi',
-    tagline: 'Jinx’s rocket is coming for your carry. Swallow them at the last second.',
-    tutorial: {
-      solo: ['Jinx fires. The rocket speeds up', 'Devour your carry just before it hits', 'Closer = more points. Early = spat out'],
-      live: ['Jinx fires. The rocket speeds up', 'Devour your carry just before it hits', 'Same rockets. Closer = more points'],
-    },
-  },
   destiny: {
     id: 'destiny',
-    name: 'Destiny',
+    name: 'Global Gank',
     champion: 'TwistedFate',
-    botChampion: 'Ahri',
-    botName: 'Ahri',
-    tagline: 'Twisted Fate shows a card, then Gates in. Is it the truth or a bluff?',
+    botChampion: 'Nocturne',
+    botName: 'Nocturne',
+    tagline: 'Take turns: one picks a lane to gank, the other guesses it.',
     tutorial: {
-      solo: ['TF shows a card over a lane', 'He Gates there, or bluffs', 'Truth +2 · bluff +1 · guard +1'],
-      live: ['TF shows a card over a lane', 'He Gates there, or bluffs', 'Truth +2 · bluff +1 · guard +1'],
-    },
-  },
-  paranoia: {
-    id: 'paranoia',
-    name: 'Paranoia',
-    champion: 'Lux',
-    botChampion: 'Ekko',
-    botName: 'Ekko',
-    tagline: 'Lights out. Nocturne flickers through the dark. Call his lane before he lands.',
-    tutorial: {
-      solo: ['Lights out: Nocturne flickers', 'Watch out, he can turn', 'Call his lane. Most right, then fastest'],
-      live: ['Lights out: Nocturne flickers', 'The same flight for both of you', 'Call his lane. Most right, then fastest'],
+      solo: ['Ganker: pick a lane', 'The other one guesses the lane', 'Right guess +1, else +1 for the gank'],
+      live: ['Ganker: pick a lane', 'The other one guesses the lane', 'Right guess +1, else +1 for the gank'],
     },
   },
   smite: {

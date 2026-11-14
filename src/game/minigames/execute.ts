@@ -2,8 +2,8 @@ import { seededRandom, type RandomFn } from '../random'
 import { stepSeed, type BothMoves, type GameSetup, type MiniGameRules, type Moves, type Owed, type Player, type Settled } from './versus'
 
 /**
- * Garen, Demacian Justice: eight low-health enemies pop up one after another, each for a blink
- * only. Tap one in time and the giant sword falls on it. Kills in a row are a streak, and each
+ * Darius, Noxian Guillotine: eight low-health enemies pop up one after another, each for a blink
+ * only. Tap one in time and the Guillotine executes it. Kills in a row are a streak, and each
  * kill is worth its place in the streak up to a pentakill: a kill 1, a double kill 2... a
  * pentakill 5, and every kill in a row after that 5 again. A miss ends the streak; the next kill
  * starts a new one. All eight is near impossible: the last ones are up for less time than most
@@ -28,7 +28,7 @@ export const MAX_STREAK_POINTS = 5
 /** A move for an enemy that escaped: no tap in time, or a tap beside it. */
 export const MISSED = 60_000
 
-/** Squishy carries and mages, low on health: perfect targets for Demacian Justice. */
+/** Squishy carries and mages, low on health: perfect Guillotine targets. */
 export const EXECUTE_TARGETS = [
   'Jinx',
   'Lux',
@@ -42,7 +42,7 @@ export const EXECUTE_TARGETS = [
   'Caitlyn',
   'Sona',
   'Lulu',
-  'Draven',
+  'Vayne',
   'Katarina',
   'Seraphine',
   'MissFortune',
@@ -179,8 +179,8 @@ function owed(moves: BothMoves): Owed[] {
 }
 
 /**
- * Vayne, the bot: quick but greedy. She reacts in 0.32–0.66 s, too slow for most of the last
- * enemies, and sometimes taps at nothing. About 4 kills of 8 a game.
+ * Draven, the bot: quick but greedy. He reacts in 0.32–0.66 s, too slow for most of the last
+ * enemies, and sometimes swings at nothing. About 4 kills of 8 a game.
  */
 export const BOT_EXECUTE = { reaction: { min: 320, max: 660 }, missChance: 0.05, missPerEnemy: 0.02 } as const
 

@@ -21,12 +21,12 @@ import { BigCall, ContestantTag, Waiting } from './parts'
 import { useShownWhen, useTimeout } from './timing'
 import type { Contestant, MiniGameViewProps, TutorialArtProps } from './types'
 
-/** Garen's ult, Demacian Justice: a giant sword from the sky. */
-const JUSTICE = spellIconUrl('GarenR.png')
+/** Darius's ult, Noxian Guillotine. */
+const GUILLOTINE = spellIconUrl('DariusExecute.png')
 /** How long the last call and the final scores stay up before Victory or Defeat. */
 const LAST_CALL_MS = 2800
 
-/** Garen vs Vayne: eight low-health enemies pop up one by one, fast. Tap each before it escapes. */
+/** Darius vs Draven: eight low-health enemies pop up one by one, fast. Tap each before it escapes. */
 export function ExecuteGame({ setup, me, moves, sendMove, onShown, players }: MiniGameViewProps) {
   const them = other(me)
   const wave = useMemo(() => executeWave(setup.seed), [setup.seed])
@@ -218,7 +218,7 @@ function TimeRing({ ms }: { ms: number }) {
   )
 }
 
-/** The enemy just played: struck by Demacian Justice, or gone. */
+/** The enemy just played: dunked by the Guillotine, or gone. */
 function Aftermath({ enemy, result }: { enemy: ExecuteEnemy; result: EnemyResult }) {
   return (
     <div className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2" style={spotPosition(enemy.spot)} aria-hidden="true">
@@ -233,7 +233,7 @@ function Aftermath({ enemy, result }: { enemy: ExecuteEnemy; result: EnemyResult
             className="size-16 rounded-full border-2 border-red-500 sm:size-[4.5rem]"
           />
           <motion.img
-            src={JUSTICE}
+            src={GUILLOTINE}
             alt=""
             initial={{ y: -70, rotate: -40, opacity: 1 }}
             animate={{ y: 0, rotate: 0, opacity: [1, 1, 0] }}
@@ -315,7 +315,7 @@ function ScoreSide({ contestant, score, you, best }: { contestant: Contestant; s
   )
 }
 
-/** 1: an enemy pops up for a moment. 2: tap it, the sword falls. 3: kills in a row score more. */
+/** 1: an enemy pops up for a moment. 2: tap it, the Guillotine falls. 3: kills in a row score more. */
 export function ExecuteTutorialArt({ step }: TutorialArtProps) {
   const backdrop = 'bg-[radial-gradient(circle_at_50%_40%,rgb(120_20_20/0.5),rgb(1_10_19))]'
   if (step === 0) {
@@ -357,7 +357,7 @@ export function ExecuteTutorialArt({ step }: TutorialArtProps) {
             <span className="block h-full w-[14%] bg-red-500" />
           </span>
           <motion.img
-            src={JUSTICE}
+            src={GUILLOTINE}
             alt=""
             animate={{ y: ['-130%', '0%', '0%'], rotate: [-40, 0, 0], opacity: [0, 1, 0] }}
             transition={{ duration: 1.4, repeat: Infinity, times: [0, 0.3, 1] }}
