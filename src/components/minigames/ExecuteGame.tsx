@@ -24,7 +24,7 @@ import type { Contestant, MiniGameViewProps, TutorialArtProps } from './types'
 /** Darius's ult, Noxian Guillotine. */
 const GUILLOTINE = spellIconUrl('DariusExecute.png')
 /** How long the last call and the final scores stay up before Victory or Defeat. */
-const LAST_CALL_MS = 2800
+const LAST_CALL_MS = 2300
 
 /** Darius vs Draven: eight low-health enemies pop up one by one, fast. Tap each before it escapes. */
 export function ExecuteGame({ setup, me, moves, sendMove, onShown, players }: MiniGameViewProps) {

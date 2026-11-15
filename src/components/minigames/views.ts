@@ -1,11 +1,10 @@
 import type { MiniGameId } from '../../game/minigames/catalog'
 import { CleaverGame, CleaverTutorialArt } from './CleaverGame'
 import { ComboGame, ComboTutorialArt } from './ComboGame'
-import { DestinyGame, DestinyTutorialArt } from './DestinyGame'
+import { DestinyGame, DestinyTutorialArt, HidingGame, HidingTutorialArt } from './DestinyGame'
 import { DuelGame, DuelTutorialArt } from './DuelGame'
 import { ExecuteGame, ExecuteTutorialArt } from './ExecuteGame'
 import { ForgeGame, ForgeTutorialArt } from './ForgeGame'
-import { GankGame, GankReveal, GankTutorialArt } from './GankGame'
 import { HookGame, HookTutorialArt } from './HookGame'
 import { RaceGame, RaceTutorialArt } from './RaceGame'
 import { ShadowsGame, ShadowsTutorialArt } from './ShadowsGame'
@@ -23,7 +22,7 @@ export const MINI_GAME_VIEWS: Record<MiniGameId, MiniGameView> = {
   shrooms: { Game: ShroomGame, TutorialArt: ShroomTutorialArt },
   forge: { Game: ForgeGame, TutorialArt: ForgeTutorialArt },
   cleaver: { Game: CleaverGame, TutorialArt: CleaverTutorialArt },
-  gank: { Game: GankGame, TutorialArt: GankTutorialArt, Reveal: GankReveal },
+  gank: { Game: HidingGame, TutorialArt: HidingTutorialArt },
   ult: { Game: UltGame, TutorialArt: UltTutorialArt },
   execute: { Game: ExecuteGame, TutorialArt: ExecuteTutorialArt },
   shadows: { Game: ShadowsGame, TutorialArt: ShadowsTutorialArt },

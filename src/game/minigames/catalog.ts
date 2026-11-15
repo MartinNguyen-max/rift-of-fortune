@@ -87,10 +87,10 @@ export const MINI_GAMES: Record<MiniGameId, MiniGameInfo> = {
     champion: 'Shaco',
     botChampion: 'Rengar',
     botName: 'Rengar',
-    tagline: 'Hide in a bush. Guess their bush. Mind games only.',
+    tagline: 'Hide in top, mid or bot. Rengar guesses where. 3 rounds.',
     tutorial: {
-      solo: ['Hide in a bush', 'Guess where they hide', 'Right guess = 1 point. Most points wins'],
-      live: ['Hide in a bush', 'Guess where they hide', 'Right guess wins the gank'],
+      solo: ['You hide: pick a lane', 'Rengar guesses the lane', 'Hidden +1 · right guess +2. 3 rounds'],
+      live: ['One hides: pick a lane', 'The other guesses the lane', 'Hidden +1 · right guess +2. 3 rounds'],
     },
   },
   ult: {
@@ -156,10 +156,10 @@ export const MINI_GAMES: Record<MiniGameId, MiniGameInfo> = {
     champion: 'TwistedFate',
     botChampion: 'Nocturne',
     botName: 'Nocturne',
-    tagline: 'You gank, Nocturne guesses the lane. 5 ganks. A right guess is worth 2.',
+    tagline: 'You gank, Nocturne guesses the lane. 3 ganks. A right guess is worth 2.',
     tutorial: {
-      solo: ['You gank: pick a lane', 'Nocturne guesses the lane', 'Gank +1 · right guess +2. 5 ganks'],
-      live: ['One ganks: pick a lane', 'The other guesses the lane', 'Gank +1 · right guess +2. 5 ganks'],
+      solo: ['You gank: pick a lane', 'Nocturne guesses the lane', 'Gank +1 · right guess +2. 3 ganks'],
+      live: ['One ganks: pick a lane', 'The other guesses the lane', 'Gank +1 · right guess +2. 3 ganks'],
     },
   },
   smite: {

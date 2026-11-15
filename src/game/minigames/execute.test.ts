@@ -81,12 +81,13 @@ describe('kills and streaks', () => {
     expect(score('MMMMMMMM')).toMatchObject({ points: 0, kills: 0, bestStreak: 0, time: 0 })
   })
 
-  it('is tuned so a 0.5 s tapper gets 4 and only a 0.37 s tapper all eight', () => {
+  it('is tuned so a 0.5 s tapper gets 3 and only a 0.35 s tapper all eight', () => {
     const steady = (ms: number) => executeScore(enemyResults(Array<number>(EXECUTE.enemies).fill(ms), wave)).kills
-    expect(steady(500)).toBe(4)
+    expect(steady(500)).toBe(3)
     expect(steady(450)).toBe(5)
-    expect(steady(400)).toBe(7)
-    expect(steady(370)).toBe(8)
+    expect(steady(400)).toBe(6)
+    expect(steady(370)).toBe(7)
+    expect(steady(350)).toBe(8)
   })
 
   it('adds up the reaction times of the kills only', () => {

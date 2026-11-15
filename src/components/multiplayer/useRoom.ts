@@ -10,7 +10,7 @@ import {
   type RoomMessage,
 } from '../../game/multiplayer/protocol'
 import { hostMessages, mergeRounds, roundReducer, shiftRound, type RoundState } from '../../game/multiplayer/session'
-import { defaultSettings, DRAFT_SECONDS, type LobbySettings } from '../../game/multiplayer/settings'
+import { defaultSettings, DRAFT_SECONDS, settingsReady, type LobbySettings } from '../../game/multiplayer/settings'
 import { laneTeam } from '../../game/multiplayer/lanes'
 import { randomEncodedTeam } from '../../game/multiplayer/teamCode'
 import { randomTeamName } from '../../game/multiplayer/teamNames'
@@ -195,9 +195,9 @@ export function useRoom(code: string) {
       const [host, guest] = lobby
       if (host && guest && lobby.every(({ ready, playing }) => ready && !playing)) {
         // Both stay "ready" until the start message reaches them, so start only once.
-        if (!starting.current) {
+        const lobbySettings = meRef.current.settings ?? defaultSettings()
+        if (!starting.current && settingsReady(lobbySettings)) {
           starting.current = true
-          const lobbySettings = meRef.current.settings ?? defaultSettings()
           send({
             type: 'startDraft',
             round: crypto.randomUUID().slice(0, 8),

@@ -6,7 +6,6 @@ import { DESTINY_RULES } from './destiny'
 import { DUEL_RULES } from './duel'
 import { EXECUTE_RULES } from './execute'
 import { forgeRules } from './forge'
-import { GANK_RULES } from './gank'
 import { hookRules } from './hook'
 import { RACE_RULES } from './race'
 import { SHADOW_RULES } from './shadows'
@@ -24,7 +23,7 @@ export const MINI_GAME_RULES: Record<MiniGameId, MiniGameRules> = {
   shrooms: SHROOM_RULES,
   forge: forgeRules(gameData.items, gameData.components),
   cleaver: CLEAVER_RULES,
-  gank: GANK_RULES,
+  gank: DESTINY_RULES,
   ult: ULT_RULES,
   execute: EXECUTE_RULES,
   shadows: SHADOW_RULES,

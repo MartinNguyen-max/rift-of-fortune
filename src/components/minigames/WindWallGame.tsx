@@ -33,7 +33,7 @@ const LEAD_MS = 700
 /** How long a wall stays up on screen. */
 const WALL_SHOWN_MS = 450
 /** How long the last call and both scores stay up before Victory or Defeat. */
-const LAST_CALL_MS = 2600
+const LAST_CALL_MS = 2200
 
 const at = ({ x, y }: { x: number; y: number }) => ({ left: `${x}%`, top: `${y}%` })
 

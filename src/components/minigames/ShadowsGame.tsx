@@ -31,7 +31,7 @@ const LIVING_SHADOW = spellIconUrl('ZedW.png')
 /** Time from your pick until the opponent's pick shows. */
 const REVEAL_MS = 900
 /** How long the last round's result shows before Victory or Defeat. */
-const LAST_ROUND_MS = 2600
+const LAST_ROUND_MS = 2200
 /** How far a figure arcs up or down while swapping, as a share of the arena height. */
 const LIFT = 0.2
 const SPOT_NAMES = ['left', 'middle', 'right'] as const

@@ -10,11 +10,11 @@ import type { EncodedTeam } from './teamCode'
 /** Seconds for each step. Players get a little extra time (`grace`) for slow connections. */
 export const TIMINGS = {
   draftGrace: 5,
-  versus: 5,
+  versus: 4,
   /** The intro before each live event: it ends when both press Ready, or after this. */
-  intro: 10,
+  intro: 8,
   /** The face-off (both champions, VS) before each mini-game. */
-  opening: 2.5,
+  opening: 2,
   /** How long the host waits past a mini-game's time limit before filling in missing moves. */
   eventGrace: 6,
   /** A player gone this long gets poor moves filled in, so the other never waits for nothing. */

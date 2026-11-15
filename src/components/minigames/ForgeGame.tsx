@@ -24,7 +24,7 @@ const FORGE_RULES = MINI_GAME_RULES.forge
 /** The "FORGED!" moment after each item. Your clock stops meanwhile: it isn't your time. */
 const FORGED_PAUSE_MS = 1000
 /** The last call and both times stay up this long before the result covers the game. */
-const FINAL_MOMENT_MS = 2600
+const FINAL_MOMENT_MS = 2200
 
 interface PlacedPart {
   part: ItemComponent

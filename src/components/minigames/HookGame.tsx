@@ -25,7 +25,7 @@ const POPUP_SECONDS = 0.9
 /** Seconds ACE! or TIME! stays up alone before both totals show. */
 const CALL_SECONDS = { ace: 1.6, time: 0.8 }
 /** Ms both totals stay up before the result covers the game. */
-const TALLY_MS = 1500
+const TALLY_MS = 1300
 /** The clock turns red for the last seconds. */
 const HURRY_SECONDS = 5
 

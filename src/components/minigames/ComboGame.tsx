@@ -34,9 +34,9 @@ const WATCH_SECONDS = 1.2
 /** Pause between two flashed keys, so the same key twice in a row can be seen. */
 const GAP_SECONDS = 0.14
 /** How long a combo's right and wrong keys stay up before the next combo. */
-const ROUND_RESULT_SECONDS = 1.8
+const ROUND_RESULT_SECONDS = 1.5
 /** The last call and both scores stay up this long before the result covers the game. */
-const FINAL_MOMENT_MS = 2600
+const FINAL_MOMENT_MS = 2200
 
 /** Riven's combos: three new combos of 4, 6 and 7 keys. A wrong key doesn't end a combo: every right key counts. */
 export function ComboGame({ setup, me, moves, sendMove, onShown, players }: MiniGameViewProps) {

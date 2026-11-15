@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { MINI_GAME_IDS, MINI_GAMES, type MiniGameId } from '../../game/minigames/catalog'
 import { MINI_GAME_RULES } from '../../game/minigames/registry'
 import {
+  LANE_GAMES,
   RANDOM_EVENT_COUNT,
   toggleGame,
   withEventMode,
@@ -30,6 +31,9 @@ const EVENT_MODES: { value: EventMode; label: string }[] = [
   { value: 'random5', label: `${RANDOM_EVENT_COUNT.random5} random` },
   { value: 'custom', label: 'Custom' },
 ]
+
+/** The lanes mode always plays 5: random, or 5 picked by the host. */
+const LANE_EVENT_MODES = EVENT_MODES.filter(({ value }) => value !== 'random3')
 
 /** The game settings in the lobby: the mode, rerolls and which mini-games are the live events. */
 export function LobbySettingsPanel({ settings, editable, hostName, onChange }: LobbySettingsPanelProps) {
@@ -63,17 +67,18 @@ export function LobbySettingsPanel({ settings, editable, hostName, onChange }: L
         </Row>
       )}
 
-      <Row label={lanes ? 'Lanes' : 'Live events'}>
-        {lanes ? (
-          <p className="pt-1 text-sm text-gold-light/70">5 random mini-games, one per lane: top, jungle, mid, ADC, support.</p>
-        ) : (
-          EVENT_MODES.map(({ value, label }) => (
-            <Choice key={value} active={settings.eventMode === value} disabled={!editable} onClick={() => onChange(withEventMode(settings, value))}>
-              {label}
-            </Choice>
-          ))
-        )}
+      <Row label={lanes ? 'Mini-games' : 'Live events'}>
+        {(lanes ? LANE_EVENT_MODES : EVENT_MODES).map(({ value, label }) => (
+          <Choice key={value} active={settings.eventMode === value} disabled={!editable} onClick={() => onChange(withEventMode(settings, value))}>
+            {label}
+          </Choice>
+        ))}
       </Row>
+      {lanes && settings.eventMode === 'custom' && (
+        <p className={`-mt-1 text-sm ${settings.games.length === LANE_GAMES ? 'text-gold-light/60' : 'font-semibold text-amber-300'}`}>
+          Pick {LANE_GAMES}, one per lane: {settings.games.length}/{LANE_GAMES}
+        </p>
+      )}
 
       {settings.eventMode === 'custom' && editable ? (
         <CustomGames settings={settings} onChange={onChange} />

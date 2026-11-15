@@ -13,10 +13,10 @@ import {
 } from './versus'
 
 /**
- * Global Gank: one player ganks, the other guesses, the whole game (no switching). Each round the
- * ganker picks a lane in secret, then the guesser guesses it. A right guess counters the gank and
- * is worth 2 to the guesser; a wrong guess (or none) lets the gank through, 1 to the ganker. Over
- * 5 ganks that means 2 right guesses win it for the guesser: about a fair fight, and never a tie.
+ * Global Gank and I Was Hiding: one player picks a lane (gank, or hide), the other guesses it, the
+ * whole game (no switching). Each round the picker picks in secret, then the guesser guesses. A
+ * right guess is worth 2 to the guesser; a wrong guess (or none) is worth 1 to the picker. A guess
+ * is right 1 time in 3, so that is a fair fight. Over 3 rounds, 2–2 is a tie.
  */
 export const DESTINY_POINTS = { gank: 1, counter: 2 } as const
 
@@ -26,8 +26,8 @@ export const NO_GUESS = 3
 /** Seconds for each choice. */
 export const DESTINY_SECONDS = { gank: { solo: 6, live: 5 }, guess: { solo: 6, live: 5 } } as const
 
-/** Ganks per game, solo and Multiplayer alike. */
-export const DESTINY_GANKS = 5
+/** Rounds per game, solo and Multiplayer alike. */
+export const DESTINY_GANKS = 3
 
 export const destinyHalves = (): number => DESTINY_GANKS
 

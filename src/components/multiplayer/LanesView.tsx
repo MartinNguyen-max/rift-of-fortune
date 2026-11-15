@@ -23,7 +23,7 @@ import { SurrenderButton } from './SurrenderButton'
 import type { Room } from './useRoom'
 
 /** How long "Lane 2 · Jungle: Lee Sin vs Vi" shows before the mini-game opens. */
-const LANE_INTRO_MS = 2600
+const LANE_INTRO_MS = 2200
 
 const otherSide = (side: Side): Side => (side === 'blue' ? 'red' : 'blue')
 const laneLabel = (index: number) => `Lane ${index + 1} · ${ROLE_LABELS[LANE_ORDER[index] ?? 'TOP']}`
@@ -127,7 +127,7 @@ function LaneBoard({ round, mySide, lineUps, events, results, current }: LaneBoa
   const theirSide = otherSide(mySide)
   const name = (side: Side) => round.players[side === 'blue' ? 0 : 1]?.name ?? 'Team ?'
   return (
-    <section className="flex w-full flex-col gap-3 rounded-xl border border-gold/30 bg-panel/80 p-3 shadow-2xl shadow-black/50 sm:p-4" aria-label="Five lanes">
+    <section className="flex w-full flex-col gap-3 rounded-xl border border-gold/30 bg-panel/80 p-3 shadow-2xl shadow-black/50 sm:p-4" aria-label="Minigames">
       <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2">
         <Lives name={name(mySide)} lives={livesLeft(results, mySide)} you />
         <span className="pb-1 font-display text-3xl font-black text-gold sm:text-4xl">VS</span>

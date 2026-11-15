@@ -45,7 +45,7 @@ const HOP_MS = 750
 /** Seconds the last hop (and its boom) plays before the result call. */
 const SETTLE_SECONDS = 0.9
 /** Seconds a walk's result stays up. */
-const RESULT_SECONDS = 2.6
+const RESULT_SECONDS = 2.2
 /** Seconds "TIE! Plant again." stays up. */
 const TIE_SECONDS = 2
 /** Seconds "PLANT!" or "WALK!" shows when your turn starts. Your walk timer starts after it. */

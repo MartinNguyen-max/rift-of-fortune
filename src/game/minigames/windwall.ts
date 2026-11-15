@@ -15,11 +15,11 @@ export const WIND_WALL = {
   /** The warning before each shot fires, in ms: shorter every shot. */
   warnMs: [400, 380, 350, 330, 300, 280, 260, 240, 220, 200, 190, 180],
   /** The shot's flight to Yasuo, in ms. */
-  flightMs: [700, 660, 620, 580, 540, 510, 480, 450, 420, 390, 360, 340],
+  flightMs: [650, 610, 570, 530, 500, 470, 440, 410, 380, 360, 340, 320],
   /** The wait after a shot lands before the next warning, in ms. */
   gapMs: { min: 300, max: 750 },
-  /** From the 7th shot on, this often the next shot comes right after, from another side. */
-  double: { from: 6, chance: 0.4, offsetMs: { min: 230, max: 380 } },
+  /** From the 6th shot on, this often the next shot comes right after, from another side. */
+  double: { from: 5, chance: 0.5, offsetMs: { min: 220, max: 360 } },
 } as const
 
 /** The four sides, clockwise from the top. */
@@ -202,7 +202,7 @@ function owed(moves: BothMoves): Owed[] {
  * Yone, the bot: he gets the wall up 0.42–0.76 s after the warning (a bit slower for the second
  * shot of a double) and now and then turns to the wrong side. About 8 of 12.
  */
-export const BOT_WALL = { reaction: { min: 440, max: 780 }, doubleDelay: 180, wrongChance: 0.06, wrongPerShot: 0.006 } as const
+export const BOT_WALL = { reaction: { min: 420, max: 740 }, doubleDelay: 180, wrongChance: 0.06, wrongPerShot: 0.006 } as const
 
 export function botWall(seed: number, step: number): number | undefined {
   const volley = windWallVolley(seed)

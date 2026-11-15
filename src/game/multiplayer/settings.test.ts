@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { MINI_GAME_IDS } from '../minigames/catalog'
 import { seededRandom } from '../random'
-import { defaultSettings, draftRules, parseSettings, toggleGame, withEventMode, withMode } from './settings'
+import { defaultSettings, draftRules, LANE_GAMES, parseSettings, settingsReady, toggleGame, withEventMode, withMode } from './settings'
 
 describe('lobby settings', () => {
   const settings = defaultSettings(seededRandom(3))
@@ -29,14 +29,21 @@ describe('lobby settings', () => {
     expect(draftRules({ ...settings, rerolls: false })).toEqual({ championRerolls: 0, itemRerolls: 0 })
   })
 
-  it('locks five lanes to 5 random games, which can still be shuffled', () => {
+  it('plays the lanes mode with 5 random games, or exactly 5 picked ones', () => {
     const lanes = withMode(settings, 'lanes', seededRandom(5))
     expect(lanes).toMatchObject({ mode: 'lanes', eventMode: 'random5' })
-    expect(lanes.games).toHaveLength(5)
+    expect(lanes.games).toHaveLength(LANE_GAMES)
+    expect(settingsReady(lanes)).toBe(true)
     expect(withEventMode(lanes, 'random3')).toBe(lanes)
-    expect(withEventMode(lanes, 'custom')).toBe(lanes)
-    expect(toggleGame(lanes, lanes.games[0] ?? 'duel')).toBe(lanes)
     expect(withEventMode(lanes, 'random5', seededRandom(6)).games).toHaveLength(5)
+    const custom = withEventMode(lanes, 'custom')
+    expect(custom).toMatchObject({ mode: 'lanes', eventMode: 'custom', games: lanes.games })
+    const missing = MINI_GAME_IDS.find((id) => !custom.games.includes(id)) ?? 'duel'
+    expect(toggleGame(custom, missing)).toBe(custom)
+    const four = toggleGame(custom, custom.games[0] ?? 'duel')
+    expect(four.games).toHaveLength(4)
+    expect(settingsReady(four)).toBe(false)
+    expect(settingsReady(toggleGame(four, missing))).toBe(true)
     expect(withMode(lanes, 'draft').mode).toBe('draft')
   })
 

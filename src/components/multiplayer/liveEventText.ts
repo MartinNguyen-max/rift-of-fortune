@@ -36,7 +36,7 @@ export function eventPrize(kind: LiveEventKind, won: boolean): string {
 }
 
 /** How long the coin spins before it lands, for a tie that must have a winner. */
-export const COIN_FLIP_MS = 1800
+export const COIN_FLIP_MS = 1500
 
 /** In five lanes: which champion falls, or both live on a tie. */
 export interface LaneMatchup {

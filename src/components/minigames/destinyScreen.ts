@@ -21,10 +21,21 @@ export interface DestinyCall {
   scorer: Player
 }
 
-/** A half's result in a word, from your side: the gank got through, or it was read. */
-export function destinyCall(half: DestinyHalf, me: Player, names: readonly [string, string]): DestinyCall {
+/** A game's words: Global Gank ganks, I Was Hiding hides. */
+export interface LaneGuessWords {
+  pick: string
+  picked: (lane: string) => string
+  waiting: (name: string) => string
+  guess: string
+  /** The call when the pick wasn't guessed ("GANKED!"), and when it was ("COUNTERED!"). */
+  through: string
+  found: string
+}
+
+/** A half's result in a word, from your side: the pick got through, or it was read. */
+export function destinyCall(half: DestinyHalf, me: Player, names: readonly [string, string], words: Pick<LaneGuessWords, 'through' | 'found'>): DestinyCall {
   const scorer = halfScorer(half)
-  const text = half.countered ? 'COUNTERED!' : half.guess === null && half.ganker !== me ? 'TOO SLOW!' : 'GANKED!'
+  const text = half.countered ? words.found : half.guess === null && half.ganker !== me ? 'TOO SLOW!' : words.through
   return { text, tone: scorer === me ? 'win' : 'lose', sub: `+${halfPoints(half)} ${names[scorer]}`, scorer }
 }
 
@@ -32,9 +43,9 @@ export function destinyCall(half: DestinyHalf, me: Player, names: readonly [stri
 export const DESTINY_BEAT = { playing: 0, guess: 1, landed: 2, called: 3 } as const
 export type DestinyBeat = (typeof DESTINY_BEAT)[keyof typeof DESTINY_BEAT]
 
-const LAND_MS = 650
-const CALL_MS = 1250
-const NEXT_HALF_MS = 3600
+const LAND_MS = 550
+const CALL_MS = 1050
+const NEXT_HALF_MS = 3000
 
 export interface DestinyCursor {
   half: number

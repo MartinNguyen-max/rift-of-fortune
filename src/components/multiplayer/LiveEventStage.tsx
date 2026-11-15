@@ -23,9 +23,9 @@ import { CoinFlip } from './CoinFlip'
 import { COIN_FLIP_MS, eventPrize, lanePrize, roleNote, type LaneMatchup } from './liveEventText'
 
 /** How long the result stays up before the match goes on. */
-const REVEAL_MS = 3500
+const REVEAL_MS = 3000
 /** If the result is in but your screen is still animating (or stuck), show it after this. */
-const RESULT_WAIT_MS = 4000
+const RESULT_WAIT_MS = 3500
 
 interface LiveEventStageProps {
   round: RoundState

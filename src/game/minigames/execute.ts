@@ -14,7 +14,7 @@ import { stepSeed, type BothMoves, type GameSetup, type MiniGameRules, type Move
 export const EXECUTE = {
   enemies: 8,
   /** How long each enemy is up, in ms: shorter every time. */
-  windowsMs: [700, 640, 580, 530, 480, 440, 400, 370],
+  windowsMs: [650, 590, 540, 490, 450, 410, 380, 350],
   /** The wait before each enemy shows (after the last one died or escaped), in ms. */
   gapMs: { min: 150, max: 750 },
   /** Enemies show up on a 3 by 3 grid. */
@@ -179,10 +179,10 @@ function owed(moves: BothMoves): Owed[] {
 }
 
 /**
- * Draven, the bot: quick but greedy. He reacts in 0.32–0.66 s, too slow for most of the last
+ * Draven, the bot: quick but greedy. He reacts in 0.30–0.63 s, too slow for most of the last
  * enemies, and sometimes swings at nothing. About 4 kills of 8 a game.
  */
-export const BOT_EXECUTE = { reaction: { min: 320, max: 660 }, missChance: 0.05, missPerEnemy: 0.02 } as const
+export const BOT_EXECUTE = { reaction: { min: 300, max: 630 }, missChance: 0.05, missPerEnemy: 0.02 } as const
 
 export function botExecute(seed: number, step: number): number | undefined {
   const enemy = executeWave(seed)[step]

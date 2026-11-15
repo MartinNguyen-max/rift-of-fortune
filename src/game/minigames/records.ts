@@ -7,7 +7,7 @@ import type { Player } from './versus'
  * with fixed roles (+1 a gank, +2 a right guess), Shadow Shuffle counting only the Zeds found, and
  * smite fights that speed up near the line.
  */
-const SCORING_VERSION: Partial<Record<MiniGameId, number>> = { duel: 2, combo: 3, shrooms: 2, ult: 4, smite: 4, execute: 3, shadows: 4, race: 4, destiny: 3 }
+const SCORING_VERSION: Partial<Record<MiniGameId, number>> = { duel: 2, combo: 3, shrooms: 2, ult: 4, smite: 4, execute: 4, shadows: 4, race: 4, destiny: 4, gank: 2, windwall: 2 }
 
 export const scoringVersion = (id: MiniGameId): number => SCORING_VERSION[id] ?? 1
 

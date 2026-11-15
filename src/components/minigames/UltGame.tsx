@@ -16,9 +16,9 @@ const MALPHITE_R = spellIconUrl('UFSlash.png')
 /** Time from your press until the opponent's score shows. */
 const REVEAL_MS = 900
 /** How long a finished bar stays up before the next one. */
-const BETWEEN_BARS_MS = 3400
+const BETWEEN_BARS_MS = 2900
 /** How long the last bar's result shows before Victory or Defeat. */
-const LAST_BAR_MS = 3000
+const LAST_BAR_MS = 2500
 
 const percent = (share: number) => `${share * 100}%`
 

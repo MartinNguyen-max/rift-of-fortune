@@ -63,18 +63,20 @@ describe('Global Gank scoring', () => {
     expect(points[ganker === 0 ? 1 : 0]).toBe(2)
   })
 
-  it('settles after 5 ganks: 2 right guesses win it for the guesser, never a tie', () => {
+  it('settles after 3 rounds: no right guess wins it for the picker, 2 for the guesser, 1 is a tie', () => {
     const setup = live(5)
     const ganker = gankerOf(setup)
     const guesser = ganker === 0 ? 1 : 0
-    expect(DESTINY_RULES.settle(play(setup, [0, 1, 2, 0], [1, 1, 1, 1]), setup)).toBeNull()
-    const oneRead = DESTINY_RULES.settle(play(setup, [0, 1, 2, 0, 1], [0, 0, 0, 1, 2]), setup)
-    expect(oneRead?.winner).toBe(ganker)
-    expect(oneRead?.scores[ganker]).toBe(4)
-    const twoReads = DESTINY_RULES.settle(play(setup, [0, 1, 2, 0, 1], [0, 1, 0, 1, 2]), setup)
+    expect(DESTINY_GANKS).toBe(3)
+    expect(DESTINY_RULES.settle(play(setup, [0, 1], [1, 1]), setup)).toBeNull()
+    const noRead = DESTINY_RULES.settle(play(setup, [0, 1, 2], [1, 2, 0]), setup)
+    expect(noRead).toMatchObject({ winner: ganker })
+    expect(noRead?.scores[ganker]).toBe(3)
+    const oneRead = DESTINY_RULES.settle(play(setup, [0, 1, 2], [0, 0, 0]), setup)
+    expect(oneRead).toEqual({ winner: null, scores: [2, 2] })
+    const twoReads = DESTINY_RULES.settle(play(setup, [0, 1, 2], [0, 1, 0]), setup)
     expect(twoReads?.winner).toBe(guesser)
     expect(twoReads?.scores[guesser]).toBe(4)
-    for (let reads = 0; reads <= DESTINY_GANKS; reads++) expect(reads * 2).not.toBe(DESTINY_GANKS - reads)
   })
 
   it('owes the gank first, then the guess', () => {
@@ -111,14 +113,18 @@ describe('Global Gank bot', () => {
 
   it('is about a fair fight against random ganks', () => {
     let botWins = 0
+    let yourWins = 0
     const games = 1000
     for (let seed = 1; seed <= games; seed++) {
       const setup = soloSetup(seed)
       const random = seededRandom(seed * 31 + 5)
       const mine: Moves = Array.from({ length: DESTINY_GANKS }, () => Math.floor(random() * 3))
-      if (DESTINY_RULES.settle([mine, botMoves(DESTINY_RULES, mine, setup)], setup)?.winner === 1) botWins += 1
+      const winner = DESTINY_RULES.settle([mine, botMoves(DESTINY_RULES, mine, setup)], setup)?.winner
+      if (winner === 1) botWins += 1
+      if (winner === 0) yourWins += 1
     }
-    expect(botWins / games).toBeGreaterThan(0.4)
-    expect(botWins / games).toBeLessThan(0.7)
+    expect(botWins / games).toBeGreaterThan(0.2)
+    expect(yourWins / games).toBeGreaterThan(0.2)
+    expect(Math.abs(botWins - yourWins) / games).toBeLessThan(0.15)
   })
 })

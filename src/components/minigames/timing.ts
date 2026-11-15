@@ -14,7 +14,7 @@ export function useTimeout(callback: () => void, ms: number, active = true) {
 }
 
 /** Calls `onShown` once the game is over and its last moment had `delayMs` to play. */
-export function useShownWhen(over: boolean, onShown: () => void, delayMs = 1600) {
+export function useShownWhen(over: boolean, onShown: () => void, delayMs = 1300) {
   const called = useRef(false)
   useTimeout(
     () => {

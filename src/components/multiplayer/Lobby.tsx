@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { useState } from 'react'
 import type { LobbyPlayer } from '../../game/multiplayer/protocol'
-import { DRAFT_SECONDS } from '../../game/multiplayer/settings'
+import { DRAFT_SECONDS, LANE_GAMES, settingsReady } from '../../game/multiplayer/settings'
 import { forgetRoomIdentity } from '../../services/roomIdentity'
 import { Button } from '../Button'
 import { inviteLink, routeHref } from '../useHashRoute'
@@ -14,6 +14,7 @@ import type { Room } from './useRoom'
 export function Lobby({ room, code }: { room: Room; code: string }) {
   const { me, opponent, setReady, sendEmote, wins, settings, isHost, players, changeSettings } = room
   const bothReady = me.ready && opponent?.ready === true
+  const canStart = settingsReady(settings)
 
   return (
     <div className="flex w-full max-w-2xl flex-col items-center gap-5">
@@ -44,12 +45,14 @@ export function Lobby({ room, code }: { room: Room; code: string }) {
       <LobbySettingsPanel settings={settings} editable={isHost} hostName={players[0]?.name ?? 'the host'} onChange={changeSettings} />
 
       <div className="flex flex-col items-center gap-2">
-        <Button onClick={() => setReady(!me.ready)} disabled={!opponent} className={me.ready ? 'bg-gold/20' : ''}>
+        <Button onClick={() => setReady(!me.ready)} disabled={!opponent || (!me.ready && !canStart)} className={me.ready ? 'bg-gold/20' : ''}>
           {me.ready ? 'Ready ✓' : 'Ready'}
         </Button>
         <p className="text-center text-sm text-gold-light/60" aria-live="polite">
           {!opponent
             ? 'Send the link or the code to a friend.'
+            : !canStart
+              ? `Pick ${LANE_GAMES} mini-games to start.`
             : opponent.playing
               ? 'Your opponent is still finishing the last game.'
               : bothReady
@@ -57,7 +60,7 @@ export function Lobby({ room, code }: { room: Room; code: string }) {
                 : me.ready
                   ? 'Waiting for your opponent to press Ready.'
                   : settings.mode === 'lanes'
-                    ? 'When you are both ready, you both get a random team and the five lanes begin.'
+                    ? 'When you are both ready, you both get a random team and the 5 mini-games begin.'
                     : `When you are both ready, you get ${DRAFT_SECONDS} seconds to draft your team.`}
         </p>
       </div>

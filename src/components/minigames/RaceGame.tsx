@@ -36,7 +36,7 @@ const REVEAL_MS = 1600
  */
 const BETWEEN_RUNS_MS = 5600
 /** How long the last run shows before Victory or Defeat. */
-const LAST_RUN_MS = 5400
+const LAST_RUN_MS = 4500
 /** The enemy team waiting in the zone: meters from its middle, and how high they stand. */
 const ENEMIES = [
   { champion: 'Jinx', at: -4, top: '30%' },

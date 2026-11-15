@@ -30,9 +30,9 @@ const SMITE_ICON = spellIconUrl('SummonerSmite.png')
 /** Time from your smite until the opponent's smite shows. */
 const REVEAL_MS = 900
 /** How long a finished fight stays up before the next one. */
-const BETWEEN_FIGHTS_MS = 3400
+const BETWEEN_FIGHTS_MS = 2900
 /** How long the last fight's result shows before Victory or Defeat. */
-const LAST_FIGHT_MS = 3000
+const LAST_FIGHT_MS = 2500
 
 const PIT_COLORS: Record<SmiteTarget, string> = {
   baron: 'from-purple-800/45 via-purple-950/40',
