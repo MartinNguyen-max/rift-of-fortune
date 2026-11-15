@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { gameData } from '../data'
-import { finisherFor, FINISHERS, finisherUrl } from './finishers'
+import { finisherAfter, finisherFor, FINISHERS, finisherUrl, gameHasFinishers } from './finishers'
 
 describe('finishers', () => {
   it('belong to real champions, each with its own file', () => {
@@ -14,6 +14,12 @@ describe('finishers', () => {
   it('finds a champion’s finisher, or none', () => {
     expect(finisherFor('Caitlyn')?.title).toBe('Chibi Arcane Caitlyn')
     expect(finisherFor('Udyr')).toBeNull()
+  })
+
+  it('skips games where you don’t play the champions shown', () => {
+    expect(finisherAfter('shrooms', 'Teemo')).toBeNull()
+    expect(gameHasFinishers('shrooms')).toBe(false)
+    expect(finisherAfter('duel', 'Caitlyn')?.title).toBe('Chibi Arcane Caitlyn')
   })
 
   it('lives in public/finishers', () => {

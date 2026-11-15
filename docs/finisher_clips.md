@@ -1,8 +1,8 @@
 # Finisher clips to add
 
-The winner's finisher animation plays after a mini-game: in solo only when the player ticks "Play the winner's finisher animation" on the start screen (off by default, remembered in the browser), and in Multiplayer when the lobby's "Finisher animations" setting is on (on by default). A clip that isn't there is just skipped.
+The winner's finisher animation plays after a mini-game: in solo only when the player ticks "Play the winner's finisher animation" on the start screen (off by default, remembered in the browser), and in Multiplayer when the lobby's "Finisher animations" setting is on (off by default; a hint points at it). Shroom Hopscotch never shows one (both players plant and walk, so no champion's finisher fits). A clip that isn't there is just skipped.
 
-**Status: all 16 clips are in `public/finishers/` (720p H.264, 1–3 MB each).**
+**Status: all 14 clips are in `public/finishers/` (720p H.264, 1–3 MB each).**
 
 ## How
 
@@ -11,7 +11,7 @@ The winner's finisher animation plays after a mini-game: in solo only when the p
 - The file name must match exactly.
 - The time is where the clip starts in your YouTube videos (video 1 unless it says video 2).
 
-## All clips needed (16)
+## All clips needed (14)
 
 | Mini-game | Champion | Clip | Time | File name |
 |---|---|---|---|---|
@@ -20,8 +20,6 @@ The winner's finisher animation plays after a mini-game: in solo only when the p
 | Rocket Grab Gold Rush | Blitzcrank | Chibi Space Groove Blitzcrank | 5:03 | `space-groove-blitzcrank.mp4` |
 | Rocket Grab Gold Rush | Thresh | High Noon Thresh Unbound | video 2, 0:58 | `high-noon-thresh.mp4` |
 | Combo Like a Riven Main | Riven | Chibi Dawnbringer Riven | 9:09 | `dawnbringer-riven.mp4` |
-| Shroom Hopscotch | Teemo | Chibi Little Devil Teemo | 1:33 | `little-devil-teemo.mp4` |
-| Shroom Hopscotch | Ezreal | Chibi Battle Academia Ezreal | 4:01 | `battle-academia-ezreal.mp4` |
 | Unstoppable Force | Malphite | Chibi Mecha Malphite | 1:22 | `mecha-malphite.mp4` |
 | Unstoppable Force | Amumu | Chibi Surprise Party Amumu | 8:18 | `surprise-party-amumu.mp4` |
 | Shadow Shuffle | Zed | Chibi PROJECT: Zed | 1:12 | `project-zed.mp4` |
@@ -38,6 +36,6 @@ Ornn (Ornn's Rush Order), Dr. Mundo (Mundo Goes Where He Pleases), Shaco and Ren
 
 ## No longer needed
 
-If you already cut these, they can stay out: `cafe-cuties-gwen.mp4`, `battle-academia-katarina.mp4`, `arcane-warwick.mp4`, `god-king-garen.mp4`, `project-vayne.mp4`, `bewitching-yuumi.mp4`, `spirit-blossom-ahri.mp4`, `star-guardian-lux.mp4`, `firelight-ekko.mp4`.
+If you already cut these, they can stay out: `little-devil-teemo.mp4` and `battle-academia-ezreal.mp4` (still in the folder, unused), `cafe-cuties-gwen.mp4`, `battle-academia-katarina.mp4`, `arcane-warwick.mp4`, `god-king-garen.mp4`, `project-vayne.mp4`, `bewitching-yuumi.mp4`, `spirit-blossom-ahri.mp4`, `star-guardian-lux.mp4`, `firelight-ekko.mp4`.
 
 Every other clip in your list also has a file name ready in `src/game/finishers.ts`, so a later swap is one line of code.

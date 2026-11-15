@@ -120,22 +120,20 @@ describe('scoring', () => {
 })
 
 describe('RACE_RULES', () => {
-  it('settles once both ran all three tracks', () => {
-    const holds = [0, 1, 2].map((run) => holdTo(trackOfRun(live, run), 0))
-    const short = [0, 1, 2].map((run) => holdTo(trackOfRun(live, run), -3))
-    expect(RACE_RULES.settle([holds, short.slice(0, 2)], live)).toBeNull()
-    const settled = RACE_RULES.settle([holds, short], live)
-    expect(settled).toMatchObject({ winner: 0, scores: [300, expect.any(Number)] })
-    expect(settled?.scores[1]).toBeGreaterThan(210)
-    expect(settled?.scores[1]).toBeLessThan(230)
+  it('is one run, and settles once both have run', () => {
+    expect(RACE.runs).toBe(1)
+    const hold = holdTo(trackOfRun(live, 0), 0)
+    const short = holdTo(trackOfRun(live, 0), -3)
+    expect(RACE_RULES.settle([[hold], []], live)).toBeNull()
+    const settled = RACE_RULES.settle([[hold], [short]], live)
+    expect(settled).toMatchObject({ winner: 0, scores: [100, expect.any(Number)] })
+    expect(settled?.scores[1]).toBeGreaterThan(70)
+    expect(settled?.scores[1]).toBeLessThan(77)
   })
 
   it('owes each player their next run', () => {
-    expect(RACE_RULES.owed([[], [2000]], live)).toEqual([
-      { player: 0, step: 0 },
-      { player: 1, step: 1 },
-    ])
-    expect(RACE_RULES.owed([[1, 1, 1], [1, 1, 1]], live)).toEqual([])
+    expect(RACE_RULES.owed([[], [2000]], live)).toEqual([{ player: 0, step: 0 }])
+    expect(RACE_RULES.owed([[1], [1]], live)).toEqual([])
   })
 
   it('fills in a run without a tap: a crash, which scores 0', () => {
@@ -145,13 +143,13 @@ describe('RACE_RULES', () => {
 
   it('keeps your points as the personal best', () => {
     const setup = soloSetup(3)
-    const moves: BothMoves = [[0, 1, 2].map((run) => holdTo(trackOfRun(setup, run), 0)), [NO_STOP, NO_STOP, NO_STOP]]
-    expect(RACE_RULES.best?.of(moves, setup)).toBe(300)
+    const moves: BothMoves = [[holdTo(trackOfRun(setup, 0), 0)], [NO_STOP]]
+    expect(RACE_RULES.best?.of(moves, setup)).toBe(100)
     expect(RACE_RULES.formatScore(1, setup)).toBe('1 pt')
     expect(RACE_RULES.formatScore(245, setup)).toBe('245 pts')
   })
 
-  it('fits three runs in the Multiplayer time limit', () => {
+  it('fits the run in the Multiplayer time limit', () => {
     expect(RACE_RULES.liveSeconds(live)).toBeGreaterThanOrEqual(RACE.runs * (3 + RACE.maxRunSeconds))
   })
 })

@@ -138,6 +138,25 @@ interface HowItWasDecidedProps {
   opponentName: string
 }
 
+const VERDICT_COLORS: Record<PointsVerdict, string> = {
+  sure: 'text-gold',
+  held: 'text-gold-light/80',
+  even: 'text-gold-light/80',
+  upset: 'text-amber-300',
+}
+
+/** Your points (teal) and theirs (red). The side that just scored is bigger and glows. */
+function PointsPair({ mine, theirs, gained }: { mine: number; theirs: number; gained: 'mine' | 'theirs' | null }) {
+  const glow = 'scale-125 drop-shadow-[0_0_6px_currentColor]'
+  return (
+    <span className="flex w-20 shrink-0 items-center justify-center gap-1 font-mono font-bold">
+      <span className={`inline-block text-hextech ${gained === 'mine' ? glow : ''}`}>{mine}</span>
+      <span className="text-gold-light/40">–</span>
+      <span className={`inline-block text-red-400 ${gained === 'theirs' ? glow : ''}`}>{theirs}</span>
+    </span>
+  )
+}
+
 /** One line under the points: why the winner won, so an upset never feels like a cheat. */
 function verdictText(verdict: PointsVerdict, won: boolean, opponentName: string): string {
   switch (verdict) {
@@ -174,14 +193,22 @@ function HowItWasDecided({ round, teams, events, mySide, won, opponentName }: Ho
   const prize = pointsPerEvent(events.length)
   const final = points[points.length - 1]
   const winnerSide = won ? mySide : theirSide
-  const pair = (step: MatchPoints | undefined) => (step ? `${step[mySide]} – ${step[theirSide]}` : '')
+  const pair = (step: MatchPoints | undefined, gainer?: Side) =>
+    step && <PointsPair mine={step[mySide]} theirs={step[theirSide]} gained={gainer === undefined ? null : gainer === mySide ? 'mine' : 'theirs'} />
 
   return (
     <ul className="flex flex-col gap-1 rounded-lg border border-hextech/30 bg-hextech/5 p-2 text-left text-sm">
-      <li className="px-1 text-[10px] tracking-widest text-hextech uppercase">How it was decided</li>
+      <li className="flex items-center gap-2 px-1 text-[10px] tracking-widest uppercase">
+        <span className="flex-1 text-hextech">How it was decided</span>
+        <span className="w-20 shrink-0 text-center font-bold">
+          <span className="text-hextech">You</span>
+          <span className="text-gold-light/40"> · </span>
+          <span className="text-red-400">Them</span>
+        </span>
+      </li>
       <li className="flex items-center gap-2 px-1">
         <span className="flex-1 text-gold-light/90">Team rating</span>
-        <span className="font-mono font-bold text-gold-light">{pair(points[0])}</span>
+        {pair(points[0])}
       </li>
       {played.map(({ live, index, result }, at) => {
         const eventWon = result.winner === mySide
@@ -194,8 +221,10 @@ function HowItWasDecided({ round, teams, events, mySide, won, opponentName }: Ho
             <span className="flex min-w-0 flex-1 flex-col">
               <span className="leading-tight text-gold-light/90">
                 {info.name}{' '}
-                <span className={`font-bold ${eventWon ? 'text-hextech' : 'text-red-400'}`}>
-                  {eventWon ? `won +${prize}` : `lost, +${prize} them`}
+                <span
+                  className={`ml-0.5 rounded px-1 text-xs font-bold ${eventWon ? 'bg-hextech/20 text-hextech' : 'bg-red-500/20 text-red-400'}`}
+                >
+                  {eventWon ? `+${prize} you` : `+${prize} them`}
                 </span>
               </span>
               <span className="font-mono text-[11px] text-gold-light/60">
@@ -203,12 +232,12 @@ function HowItWasDecided({ round, teams, events, mySide, won, opponentName }: Ho
                 {result.tie && ' · coin flip'}
               </span>
             </span>
-            <span className="shrink-0 font-mono font-bold text-gold-light">{pair(points[at + 1])}</span>
+            {pair(points[at + 1], result.winner)}
           </li>
         )
       })}
       {final && !round.surrendered && (
-        <li className="border-t border-hextech/20 px-1 pt-1 text-xs text-gold-light/70">
+        <li className={`border-t border-hextech/20 px-1 pt-1 text-xs font-semibold ${VERDICT_COLORS[pointsVerdict(final, winnerSide)]}`}>
           {verdictText(pointsVerdict(final, winnerSide), won, opponentName)}
         </li>
       )}

@@ -7,8 +7,8 @@ import { stepSeed, type BothMoves, type GameSetup, type MiniGameRules, type Owed
  * is their tower, and reaching it is a crash. Distances are in meters from the start.
  */
 export const RACE = {
-  /** Runs per game, solo and Multiplayer alike: the same seeded tracks for both players. */
-  runs: 3,
+  /** One run per game, solo and Multiplayer alike: the same seeded track for both players. */
+  runs: 1,
   /** Sion's speed at GO (m/s), and how fast it grows (m/s²). Each track is a little different. */
   start: { min: 10, max: 14 },
   accel: { min: 9, max: 14 },

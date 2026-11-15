@@ -30,9 +30,7 @@ export function HomePage() {
         art={<img src={summonersRiftMapUrl} alt="" className="size-full object-cover opacity-30" />}
         delay={0}
       >
-        Roll five random champions, place them on the Rift, hand out random items and get ranked from Iron to
-        Challenger. Three champion and three item rerolls. Play as often as you want.
-        <span className="mt-2 block text-gold-light/50 italic">Then try your team in a real game. We dare you.</span>
+        Roll random champions and items, build a team and get ranked.
       </ModeCard>
 
       <ModeCard
@@ -45,8 +43,7 @@ export function HomePage() {
         }
         delay={0.1}
       >
-        Same champions and items for everyone today. One try. Share your rank and see how you did against everyone
-        else.
+        Same team for everyone today. One try.
         {dailyRating ? (
           <span className="mt-3 flex items-center gap-3 rounded-lg border border-gold/20 bg-abyss/60 p-2">
             <img src={rankEmblemUrl(dailyRating.rank.tier)} alt="" className="size-12 object-contain" />
@@ -74,13 +71,11 @@ export function HomePage() {
         }
         delay={0.2}
       >
-        Send a friend a link. Draft at the same time and fight a live match where the mini-games swing it, or skip
-        champ select: five lanes, five mini-games, five lives. Spam GG when you win.
+        Play a friend with a link. Best team and mini-games win.
       </ModeCard>
 
       <ModeCard route="minigames" badge="New" title="Mini-games" cta="Play mini-games" art={<MiniGameIcons />} delay={0.3}>
-        {MINI_GAME_IDS.length} quick champion games against a bot, each under a minute. Beat your best, then play them
-        live with a friend in Multiplayer.
+        Quick champion games. Beat your best.
       </ModeCard>
     </div>
   )

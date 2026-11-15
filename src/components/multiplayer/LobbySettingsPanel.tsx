@@ -11,6 +11,7 @@ import {
   type GameMode,
   type LobbySettings,
 } from '../../game/multiplayer/settings'
+import { HintBubble } from '../HintBubble'
 import { championIconById } from '../minigames/miniGameArt'
 import { MODE_TEXT } from './modeText'
 
@@ -112,7 +113,8 @@ export function LobbySettingsPanel({ settings, editable, hostName, onChange }: L
         </span>
       </label>
 
-      <label className={`flex items-start gap-2 text-sm ${editable ? 'cursor-pointer' : 'opacity-80'}`}>
+      <label className={`relative flex items-start gap-2 text-sm ${editable ? 'cursor-pointer' : 'opacity-80'}`}>
+        {editable && !settings.animations && <HintBubble text="🎬 Finishers? Tick to turn them on" align="left" />}
         <input
           type="checkbox"
           checked={settings.animations}

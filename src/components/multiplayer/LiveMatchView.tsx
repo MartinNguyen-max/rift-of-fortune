@@ -165,7 +165,7 @@ export function LiveMatchView({ room, round, teams }: LiveMatchViewProps) {
         {over && (
           <LiveEndPanel room={room} round={round} teams={teams} events={events} mySide={mySide} won={winnerId === me.id} match={reelMatch && ended ? reelMatch : null} />
         )}
-        <Collapsible title="Champion scores">
+        <Collapsible title="Champion scores" open>
           <ChampionScoreboard
             teams={viewTeams}
             stats={stats}

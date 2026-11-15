@@ -1,9 +1,6 @@
-import { AnimatePresence, motion } from 'framer-motion'
-import { useEffect, useState, useSyncExternalStore, type ReactNode } from 'react'
+import { useEffect, useSyncExternalStore, type ReactNode } from 'react'
+import { HintBubble } from './HintBubble'
 import { getSoundSettings, setSoundSettings, startSavedMusic, subscribeToSound } from '../services/sound'
-
-/** How long the "Music?" hint stays up on the homepage. */
-const HINT_MS = 4500
 
 /**
  * Two small buttons in the top right corner: sound effects on/off and music on/off.
@@ -36,35 +33,8 @@ export function SoundToggle({ hint = false }: { hint?: boolean }) {
         <circle cx="16.5" cy="16" r="2.5" />
         {!music && <path d="M3 3l18 18" fill="none" />}
       </ToggleButton>
-      {hint && !music && <MusicHint />}
+      {hint && !music && <HintBubble text="♪ Music? Tap to turn it on" align="right" />}
     </div>
-  )
-}
-
-function MusicHint() {
-  const [visible, setVisible] = useState(true)
-
-  useEffect(() => {
-    const id = window.setTimeout(() => setVisible(false), HINT_MS)
-    return () => window.clearTimeout(id)
-  }, [])
-
-  return (
-    <AnimatePresence>
-      {visible && (
-        <motion.span
-          initial={{ opacity: 0, x: 8 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0 }}
-          transition={{ delay: 0.8 }}
-          className="pointer-events-none absolute top-full right-0 mt-2 rounded-md border border-gold/50 bg-panel px-2 py-1 text-xs whitespace-nowrap text-gold-light shadow-lg"
-          role="status"
-        >
-          <span className="absolute -top-1 right-3 size-2 rotate-45 border-t border-l border-gold/50 bg-panel" aria-hidden="true" />
-          ♪ Music? Tap to turn it on
-        </motion.span>
-      )}
-    </AnimatePresence>
   )
 }
 

@@ -3,6 +3,8 @@
  * finishers and Unbound animations). The clips are not in the repo: the owner adds them to
  * `public/finishers/` with the file names below. A missing clip is simply skipped.
  */
+import type { MiniGameId } from './minigames/catalog'
+
 export interface Finisher {
   /** The clip's name in the owner's list. */
   title: string
@@ -62,6 +64,15 @@ export const FINISHERS: Readonly<Record<string, Finisher>> = {
 }
 
 export const finisherFor = (champion: string): Finisher | null => FINISHERS[champion] ?? null
+
+/** Games where a champion's finisher doesn't fit (Shroom Hopscotch: both players plant and walk), so none plays. */
+const NO_FINISHER_GAMES: ReadonlySet<MiniGameId> = new Set<MiniGameId>(['shrooms'])
+
+export const gameHasFinishers = (game: MiniGameId): boolean => !NO_FINISHER_GAMES.has(game)
+
+/** The winner's finisher after this game, if the game shows one and the champion has a clip. */
+export const finisherAfter = (game: MiniGameId, champion: string): Finisher | null =>
+  gameHasFinishers(game) ? finisherFor(champion) : null
 
 /** The clip's address in the built site. */
 export const finisherUrl = (finisher: Finisher, base: string): string => `${base}finishers/${finisher.file}`

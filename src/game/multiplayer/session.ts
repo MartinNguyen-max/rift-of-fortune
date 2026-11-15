@@ -10,7 +10,7 @@ import type { EncodedTeam } from './teamCode'
 /** Seconds for each step. Players get a little extra time (`grace`) for slow connections. */
 export const TIMINGS = {
   draftGrace: 5,
-  versus: 10,
+  versus: 5,
   /** The intro before each live event: it ends when both press Ready, or after this. */
   intro: 10,
   /** The face-off (both champions, VS) before each mini-game. */

@@ -6,8 +6,8 @@ import { defaultSettings, draftRules, parseSettings, toggleGame, withEventMode, 
 describe('lobby settings', () => {
   const settings = defaultSettings(seededRandom(3))
 
-  it('defaults to a draft battle, rerolls, 3 random games, one role and finisher animations', () => {
-    expect(settings).toMatchObject({ mode: 'draft', rerolls: true, eventMode: 'random3', bothRoles: false, animations: true })
+  it('defaults to a draft battle, rerolls, 3 random games, one role and no finisher animations', () => {
+    expect(settings).toMatchObject({ mode: 'draft', rerolls: true, eventMode: 'random3', bothRoles: false, animations: false })
     expect(new Set(settings.games).size).toBe(3)
   })
 
@@ -50,9 +50,9 @@ describe('lobby settings', () => {
     expect(parseSettings(null)).toBeNull()
   })
 
-  it('turns animations on for settings from a version without them', () => {
+  it('leaves animations off for settings from a version without them', () => {
     const older: Partial<typeof settings> = { ...settings }
     delete older.animations
-    expect(parseSettings(older)?.animations).toBe(true)
+    expect(parseSettings(older)?.animations).toBe(false)
   })
 })

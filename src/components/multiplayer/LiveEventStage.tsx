@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { mapIconUrl } from '../../data'
 import type { Side } from '../../game/match/types'
-import { finisherFor } from '../../game/finishers'
+import { finisherAfter } from '../../game/finishers'
 import { MINI_GAMES } from '../../game/minigames/catalog'
 import { MINI_GAME_RULES } from '../../game/minigames/registry'
 import { other } from '../../game/minigames/versus'
@@ -23,7 +23,7 @@ import { CoinFlip } from './CoinFlip'
 import { COIN_FLIP_MS, eventPrize, lanePrize, roleNote, type LaneMatchup } from './liveEventText'
 
 /** How long the result stays up before the match goes on. */
-const REVEAL_MS = 6500
+const REVEAL_MS = 3500
 /** If the result is in but your screen is still animating (or stuck), show it after this. */
 const RESULT_WAIT_MS = 4000
 
@@ -76,7 +76,7 @@ export function LiveEventStage({ round, index, live, myId, mySide, send, sendEmo
   const [finisherDone, setFinisherDone] = useState(false)
   const result = event?.result ?? null
   // A tie has no real winner, so no finisher (in the match a coin flip shows who gets the event).
-  const finisher = result && !result.tie && round.settings.animations ? finisherFor(players[result.winner === 'blue' ? 0 : 1].champion) : null
+  const finisher = result && !result.tie && round.settings.animations ? finisherAfter(live.game, players[result.winner === 'blue' ? 0 : 1].champion) : null
   const bothReady = event?.readyAt !== null && event?.readyAt !== undefined
   const resultPhase: Phase = finisher && !finisherDone ? 'finisher' : 'reveal'
   const phase: Phase = result && (shown || resultWaited) ? resultPhase : introOver || bothReady ? 'game' : 'intro'

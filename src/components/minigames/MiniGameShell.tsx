@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { endOfGameIconUrl, gameData } from '../../data'
 import type { MiniGameInfo } from '../../game/minigames/catalog'
 import type { RecordUpdate } from '../../game/minigames/records'
-import { finisherFor, type Finisher } from '../../game/finishers'
+import { finisherAfter, finisherFor, gameHasFinishers, type Finisher } from '../../game/finishers'
 import { MINI_GAME_RULES } from '../../game/minigames/registry'
 import { botMoves, soloSetup, withMove, type BothMoves, type Moves, type Settled } from '../../game/minigames/versus'
 import { readSoloFinishers, saveSoloFinishers } from '../../services/finisherSetting'
@@ -59,8 +59,12 @@ export function MiniGameShell({ info }: { info: MiniGameInfo }) {
         {seed === null ? (
           <MiniGameIntro info={info} you={players[0]} them={players[1]} live={false}>
             <Button onClick={start}>Start</Button>
-            <FinisherToggle on={finishers} onChange={toggleFinishers} />
-            <FinisherPreviews champions={[info.champion, info.botChampion]} onPlay={setPreview} />
+            {gameHasFinishers(info.id) && (
+              <>
+                <FinisherToggle on={finishers} onChange={toggleFinishers} />
+                <FinisherPreviews champions={[info.champion, info.botChampion]} onPlay={setPreview} />
+              </>
+            )}
           </MiniGameIntro>
         ) : (
           <SoloGame key={seed} info={info} seed={seed} players={players} finishers={finishers} onRematch={start} />
@@ -159,7 +163,7 @@ function SoloGame({ info, seed, players, finishers, onRematch }: SoloGameProps) 
   }, [rules, moves, setup, info.id])
 
   if (!opened) return <GameOpening info={info} you={players[0]} them={players[1]} onDone={open} />
-  const finisher = finishers && outcome && !finished ? finisherOf(outcome.settled, players) : null
+  const finisher = finishers && outcome && !finished ? finisherOf(info, outcome.settled, players) : null
   return (
     <>
       <div className={outcome ? 'pointer-events-none opacity-30 blur-[2px]' : ''} aria-hidden={outcome !== null}>
@@ -177,8 +181,8 @@ function SoloGame({ info, seed, players, finishers, onRematch }: SoloGameProps) 
 }
 
 /** The winner's finisher animation, if their champion has one (a draw has none). */
-const finisherOf = ({ winner }: Settled, players: readonly [Contestant, Contestant]) =>
-  winner === null ? null : finisherFor(players[winner].champion)
+const finisherOf = (info: MiniGameInfo, { winner }: Settled, players: readonly [Contestant, Contestant]) =>
+  winner === null ? null : finisherAfter(info.id, players[winner].champion)
 
 const VERDICTS = {
   win: { title: 'Victory', color: 'text-gold' },

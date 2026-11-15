@@ -42,6 +42,9 @@ const ROCKET_GRAB = { x: HOOK_ORIGIN.x + 9, y: HOOK_ORIGIN.y - 5.5, size: 11 } a
 /** Your "+300g" pops up left of Blitzcrank, where the grabs land. */
 const POPUP_SPOT = { x: HOOK_ORIGIN.x - 14, y: HOOK_ORIGIN.y + 2 } as const
 
+/** The hook's icon: Blitzcrank's Rocket Grab, or Thresh's Death Sentence. */
+const hookIcon = (champion: string) => spellIconUrl(champion === 'Thresh' ? 'ThreshQ.png' : 'RocketGrab.png')
+
 /** Rocket Grab Gold Rush: Gold Miner with Blitzcrank's hook. Most gold when the clock runs out wins. */
 export function HookGame({ setup, me, moves, sendMove, onShown, players }: MiniGameViewProps) {
   const them = other(me)
@@ -110,7 +113,7 @@ export function HookGame({ setup, me, moves, sendMove, onShown, players }: MiniG
         )}
       </HookField>
 
-      <GrabButton cooldownLeft={run.frame.cooldownLeft} denied={run.denied} enabled={started && !over} onGrab={run.fire} />
+      <GrabButton champion={players[me].champion} cooldownLeft={run.frame.cooldownLeft} denied={run.denied} enabled={started && !over} onGrab={run.fire} />
       <p className="min-h-4 text-center text-xs text-gold-light/60">
         {!over && run.shotsFired === 0 && 'Press GRAB when the hook points at a champion. Tapping the field or Space works too.'}
       </p>
@@ -119,6 +122,7 @@ export function HookGame({ setup, me, moves, sendMove, onShown, players }: MiniG
 }
 
 interface GrabButtonProps {
+  champion: string
   cooldownLeft: number | null
   /** Presses while Rocket Grab wasn't ready: each one shakes the button. */
   denied: number
@@ -127,7 +131,7 @@ interface GrabButtonProps {
 }
 
 /** The big GRAB button under the field: glowing when Rocket Grab is ready, grey with the seconds left while it cools down. */
-function GrabButton({ cooldownLeft, denied, enabled, onGrab }: GrabButtonProps) {
+function GrabButton({ champion, cooldownLeft, denied, enabled, onGrab }: GrabButtonProps) {
   const ready = enabled && cooldownLeft === 0
   return (
     <motion.button
@@ -148,7 +152,7 @@ function GrabButton({ cooldownLeft, denied, enabled, onGrab }: GrabButtonProps) 
       }`}
     >
       <img
-        src={spellIconUrl('RocketGrab.png')}
+        src={hookIcon(champion)}
         alt=""
         draggable={false}
         className={`size-11 rounded-md border-2 ${ready ? 'border-hextech' : 'border-gold/30 grayscale'}`}
@@ -223,7 +227,7 @@ function HookField({ champion, frame, popups, denied, onFire, children }: HookFi
         <path d="M0 30 Q 30 24 50 31 T 100 28 L100 36 Q 70 32 50 38 T 0 37 Z" fill="#1c4e66" opacity="0.35" />
         <Bushes />
         <rect width={FIELD.width} height="13" fill="#0a1428" opacity="0.85" />
-        <RocketGrabIcon cooldownLeft={cooldownLeft} denied={denied} greyFilter={`${id}-grey`} />
+        <RocketGrabIcon champion={champion} cooldownLeft={cooldownLeft} denied={denied} greyFilter={`${id}-grey`} />
 
         {cooldownLeft === 0 && (
           <line
@@ -292,6 +296,7 @@ const SHAKE_LEFT = [0, -1.2, 1.2, -0.8, 0.8, 0]
 const SHAKE_RIGHT = [0, 1.2, -1.2, 0.8, -0.8, 0]
 
 interface RocketGrabIconProps {
+  champion: string
   cooldownLeft: number | null
   denied: number
   greyFilter: string
@@ -301,7 +306,7 @@ interface RocketGrabIconProps {
  * Rocket Grab, big and right next to Blitzcrank: glowing when ready, grey with the seconds left
  * while it cools down. It shakes when you tap too early. Drawn under the hook so it never hides it.
  */
-function RocketGrabIcon({ cooldownLeft, denied, greyFilter }: RocketGrabIconProps) {
+function RocketGrabIcon({ champion, cooldownLeft, denied, greyFilter }: RocketGrabIconProps) {
   const { x, y, size } = ROCKET_GRAB
   const ready = cooldownLeft === 0
   return (
@@ -321,7 +326,7 @@ function RocketGrabIcon({ cooldownLeft, denied, greyFilter }: RocketGrabIconProp
         />
       )}
       <image
-        href={spellIconUrl('RocketGrab.png')}
+        href={hookIcon(champion)}
         x={x}
         y={y}
         width={size}

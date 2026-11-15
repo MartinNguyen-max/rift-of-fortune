@@ -48,7 +48,7 @@ const percent = (share: number) => `${share * 100}%`
 
 /**
  * Sion vs Vi: Sion charges by himself, faster and faster. Tap STOP on the enemy team, before their tower.
- * Three runs on the same tracks for both players; the most points wins.
+ * One run on the same track for both players; the most points wins.
  */
 export function RaceGame({ setup, me, moves, sendMove, onShown, players }: MiniGameViewProps) {
   const them = other(me)

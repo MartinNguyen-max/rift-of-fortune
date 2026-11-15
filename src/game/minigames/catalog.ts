@@ -134,8 +134,8 @@ export const MINI_GAMES: Record<MiniGameId, MiniGameInfo> = {
     botName: 'Vi',
     tagline: 'Sion charges, faster and faster. Tap STOP on the enemy team, not their tower.',
     tutorial: {
-      solo: ['GO: Sion charges, faster and faster', 'Tap STOP in the gold zone', 'Middle = 100. Hit the tower = 0. 3 runs'],
-      live: ['GO: Sion charges, faster and faster', 'Tap STOP in the gold zone', 'Same 3 tracks for both. Most points wins'],
+      solo: ['GO: Sion charges, faster and faster', 'Tap STOP in the gold zone', 'Middle = 100. Hit the tower = 0. One run'],
+      live: ['GO: Sion charges, faster and faster', 'Tap STOP in the gold zone', 'Same track for both. Most points wins'],
     },
   },
   windwall: {

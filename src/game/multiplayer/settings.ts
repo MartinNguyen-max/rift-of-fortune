@@ -36,9 +36,9 @@ export const LANE_GAMES = RANDOM_EVENT_COUNT.random5
 
 export const randomGames = (count: number, random?: RandomFn): MiniGameId[] => sample(MINI_GAME_IDS, count, random)
 
-/** A draft battle, rerolls on, 3 random mini-games, one role each, finisher animations on. */
+/** A draft battle, rerolls on, 3 random mini-games, one role each, finisher animations off. */
 export function defaultSettings(random?: RandomFn): LobbySettings {
-  return { mode: 'draft', rerolls: true, eventMode: 'random3', games: randomGames(3, random), bothRoles: false, animations: true }
+  return { mode: 'draft', rerolls: true, eventMode: 'random3', games: randomGames(3, random), bothRoles: false, animations: false }
 }
 
 /** Five lanes is locked to 5 random mini-games (they can still be shuffled). */
@@ -76,7 +76,7 @@ const EVENT_MODES: readonly EventMode[] = ['random3', 'random5', 'custom']
 /** Checks settings from the network: anything malformed is dropped. */
 export function parseSettings(value: unknown): LobbySettings | null {
   if (typeof value !== 'object' || value === null) return null
-  const { mode = 'draft', rerolls, eventMode, games, bothRoles, animations = true } = value as Record<string, unknown>
+  const { mode = 'draft', rerolls, eventMode, games, bothRoles, animations = false } = value as Record<string, unknown>
   if (!MODES.includes(mode as GameMode) || !EVENT_MODES.includes(eventMode as EventMode)) return null
   if (typeof rerolls !== 'boolean' || typeof bothRoles !== 'boolean' || typeof animations !== 'boolean') return null
   if (!Array.isArray(games) || games.length === 0 || games.length > MINI_GAME_IDS.length || !games.every(isMiniGameId)) return null
