@@ -1,51 +1,54 @@
+<div align="center">
+
 # Rift of Fortune
 
-A browser game where you roll random League of Legends champions, place them in roles on Summoner's Rift, give them random items, and see how good (or bad) your team is.
+**Random champions. Random items. Honest feedback.**
+
+Roll random League of Legends champions, put them in roles on Summoner's Rift,<br>
+hand out random items and find out if your team is Challenger or Iron IV.
+
+### [▶ Play now at rift-of-fortune.vercel.app](https://rift-of-fortune.vercel.app)
+
+<img src="docs/screenshots/rating.png" alt="A finished team on Summoner's Rift with its Bronze III rating and coach's notes" width="820">
+
+</div>
 
 ## Game Modes
 
-- **Classic** (main mode): random champions and random items, then 3 champion and 3 item rerolls, play as often as you like. Then try your team in a real game, if you dare.
-- **Daily Rift**: the same champions and items for everyone each day, one try. Share a spoiler-free result (like Wordle) and see how many of today's players you beat.
-- **Multiplayer (1v1)**: create a lobby and send a friend the link or the 5-character code. The creator picks the mode and the rules. **Draft battle**: both draft at the same time (rerolls on or off), see each other's team, then the match plays and stops for each live event: a mini-game you play against each other (3 random, 5 random or your own pick), which swings the match. **Minigames** (no champ select): both get a random team with real positions; the five lanes fight it out in 5 mini-games (5 random, or 5 the host picks), and every lane lost costs a life. Finisher animations after each mini-game (off by default, the host can turn them on). After the match, a short "How it was decided": both team ratings, the points each live event added (30 in total), and why the winner won. A team 15+ points ahead always wins. Spam GG and EZ, surrender any time, then rematch with new teams. Needs the Supabase settings below (Realtime is included in the free plan).
-- **Mini-games**: fourteen quick games against a bot, each with a face-off intro, a picture tutorial and your personal best: a High Noon headshot (Caitlyn vs Jhin), Blitzcrank hooks (like Gold Miner), Riven combos to copy, Teemo shroom hopscotch, Ornn's forge, Mundo's cleavers, Shaco's bush mind game, Malphite's ult timing, Darius's pentakill executes, Zed's shadow shuffle, Sion's charge, Yasuo's Wind Wall, Twisted Fate vs Nocturne's lane gank and a Baron smite duel. The same games are the live events in Multiplayer. See [docs/minigames.md](docs/minigames.md).
+| | |
+| --- | --- |
+| **Classic** | Roll 5 champions, place them on the map, hand out 10 items, get ranked. 3 rerolls each. |
+| **Daily Rift** | Same team for everyone, one try a day. Share your result and see how many players you beat. |
+| **Multiplayer** | Send a friend a link. Draft against each other, or let 5 lanes fight it out in mini-games. |
+| **Mini-games** | 14 quick champion games against a bot, from Blitzcrank hooks to a Baron smite duel. |
 
-## How to Play
-
-1. **Roll** a random champion and drag it onto an empty role on the map (or click a glowing slot). Placed champions are locked. Repeat until all five roles are filled. Off-role picks are part of the fun.
-2. **Roll items in two rounds of 5.** Hand out each round by dragging items onto champions (or click an item and then a champion), max 2 per champion. Round 1 items lock when you roll round 2. In the end every champion has exactly 2.
-3. **Rate your team.** You get a ranked tier (Iron IV up to Challenger), a score per champion and some honest feedback.
-
-## Scoring
-
-Scoring is simple and lives in [`src/game/scoring`](src/game/scoring). All numbers are in [`config.ts`](src/game/scoring/config.ts).
-
-- **Champion score:** half role fit, half item fit. Role fit: main role 100, secondary role 85, otherwise a lane-swap table decides how bad the move is (a mid laner in top is fine-ish, a support in the jungle is a disaster). Item fit: (do the item's stats suit the champion's class and damage type?).
-- **Team score:** the average champion score, minus team balance penalties (up to 45 points): one damage type, no or too much frontline, no real carry, no marksman in bot lane, all melee, too few damage items.
-- **Rank:** the score maps to Iron IV up to Challenger. The cut-offs are calibrated by simulating thousands of games ([`simulate.ts`](src/game/scoring/simulate.ts)).
-- **Coach's notes:** an MVP, a liability and jokes about the team as a whole.
-
-## Daily Rift global stats (optional)
-
-The "you beat X% of players" comparison needs somewhere to store scores. It uses a free [Supabase](https://supabase.com) project. The game talks to it with plain `fetch`, so there is no extra dependency. Without it, the Daily still works; it just hides the comparison.
-
-1. Create a free Supabase project.
-2. Open the SQL editor and run [`supabase/daily-scores.sql`](supabase/daily-scores.sql). It creates the `daily_scores` table, a policy that only accepts scores for today's Daily, and a `daily_stats` function that returns totals only (individual scores stay private).
-3. Copy `.env.example` to `.env.local` and fill in the project URL and the **publishable** (or legacy anon) key from *Project Settings → API Keys*. These are safe to expose in the browser.
-4. Restart `npm run dev`. When you deploy, set the same two variables on your host.
-
-Only an anonymous random player id, the Daily number and the score are stored. Scores are calculated in the browser, so a determined player could submit a fake score. The database only allows one score per player per day, values from 0 to 100, and today's Daily.
-
-## Status
-
-See [docs/launch-setup.md](docs/launch-setup.md) for deploying (Vercel + Supabase), [docs/match-simulation.md](docs/match-simulation.md) for the match mode design, [docs/minigames.md](docs/minigames.md) for the mini-games, and [docs/ideas.md](docs/ideas.md) for the ideas backlog.
-
-MVP. See [SPEC.md](SPEC.md) for the design and [DECISIONS.md](DECISIONS.md) for decisions made while building it.
+<p align="center">
+  <img src="docs/screenshots/draft.png" alt="Drafting a champion onto the map" width="49%">
+  <img src="docs/screenshots/minigames.png" alt="The mini-game list" width="49%">
+</p>
 
 ## Tech Stack
 
-TypeScript · React · Vite · Tailwind CSS · Framer Motion · dnd-kit · Vitest · ESLint
+![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
+![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?logo=tailwindcss&logoColor=white)
+![Framer Motion](https://img.shields.io/badge/Framer_Motion-0055FF?logo=framer&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-Realtime-3FCF8E?logo=supabase&logoColor=white)
+![Vitest](https://img.shields.io/badge/Vitest-657_tests-6E9F18?logo=vitest&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-000000?logo=vercel&logoColor=white)
 
-## Getting Started
+- **Pure game logic.** Drafting, scoring, the match simulation and the multiplayer rules are plain TypeScript in [`src/game/`](src/game), separate from React and covered by 657 Vitest tests.
+- **Real-time multiplayer without a game server.** Lobbies use Supabase Realtime (Broadcast + Presence) and work from a shared link or a 5-character code.
+- **A data pipeline.** A Node script pulls Riot Data Dragon and Meraki Analytics data and trims it into typed JSON, so the game makes no live API calls for game data.
+- **Calibrated with data.** The rank cut-offs come from simulating thousands of random teams. The Daily uses a date-seeded random generator, so every player gets the same team.
+- **Polish.** Drag and drop with dnd-kit, Framer Motion animations, sound, mobile layouts and 14 hand-built mini-games.
+
+## How Scoring Works
+
+Each champion gets a score from **role fit** (main role, off-role or disaster) and **item fit** (do the stats suit the champion?). The team score is the average, minus balance penalties like no frontline, all one damage type or no marksman in bot lane. The score maps to a rank from Iron IV to Challenger. All numbers live in [`src/game/scoring/config.ts`](src/game/scoring/config.ts).
+
+## Run It Locally
 
 Requires Node.js 22.18 or newer.
 
@@ -54,17 +57,11 @@ npm install
 npm run dev
 ```
 
-| Command         | What it does                                  |
-| --------------- | --------------------------------------------- |
-| `npm run dev`   | Start the dev server                          |
-| `npm run build` | Type-check and build for production           |
-| `npm run test`  | Run the unit tests                            |
-| `npm run lint`  | Lint the code                                 |
-| `npm run data`  | Fetch the latest champion, item and rank data |
+`npm run build` · `npm run test` · `npm run lint` · `npm run data` (fetch the latest champion and item data)
 
-## Data
+Daily stats and Multiplayer use a free [Supabase](https://supabase.com) project. The game works without it. See [docs/launch-setup.md](docs/launch-setup.md) for setup and [SPEC.md](SPEC.md) for the full design.
 
-Champion and item data comes from Riot's [Data Dragon](https://developer.riotgames.com/docs/lol#data-dragon). Champion positions come from [Meraki Analytics](https://github.com/meraki-analytics/lolstaticdata), filtered by Meraki's role play rates so rare picks (like Taric mid) don't count as on-role. Common off-roles (like Brand jungle or Galio support) are added from the [League of Legends Wiki](https://wiki.leagueoflegends.com/en-us/Module:ChampionData/data) (CC BY-SA): the roles Riot's client recommends and the roles stats sites list. `npm run data` fetches the latest patch and saves trimmed JSON to `src/data/game-data.json`, so the game needs no live API calls for data. Images are loaded from Riot's Data Dragon CDN. Ranked emblems, minimap icons, the Victory/Defeat crests and the League client sounds are not on Data Dragon, so the script downloads them from [CommunityDragon](https://www.communitydragon.org/) into `public/ranks/`, `public/icons/` and `public/sounds/`.
+**Data from** Riot's [Data Dragon](https://developer.riotgames.com/docs/lol#data-dragon), [Meraki Analytics](https://github.com/meraki-analytics/lolstaticdata), [CommunityDragon](https://www.communitydragon.org/) and the [League of Legends Wiki](https://wiki.leagueoflegends.com/) (CC BY-SA).
 
 ## Disclaimer
 
