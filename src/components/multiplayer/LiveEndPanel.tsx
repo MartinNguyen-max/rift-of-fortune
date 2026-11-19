@@ -64,6 +64,24 @@ export function RematchControls({ room, round }: { room: Room; round: RoundState
   )
 }
 
+/** The Victory or Defeat emblem and title, with one line on how the game ended. */
+export function ResultHeading({ won, note }: { won: boolean; note: string }) {
+  return (
+    <div className="flex flex-col items-center">
+      <motion.img
+        src={endOfGameIconUrl(won ? 'victory' : 'defeat')}
+        alt=""
+        className={`-mb-1 size-20 drop-shadow-[0_0_18px_rgb(200_170_110/0.45)] sm:size-24 ${won ? '' : 'grayscale-[30%]'}`}
+        initial={{ scale: 0.3, rotate: -20, opacity: 0 }}
+        animate={{ scale: 1, rotate: 0, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 220, damping: 12, delay: 0.1 }}
+      />
+      <h2 className={`font-display text-5xl font-black tracking-wider ${won ? 'text-gold' : 'text-red-400'}`}>{won ? 'Victory' : 'Defeat'}</h2>
+      <p className="text-sm text-gold-light/70">{note}</p>
+    </div>
+  )
+}
+
 /** Victory or Defeat, the live events, the series, Rematch and emotes. Nothing else. */
 export function LiveEndPanel({ room, round, teams, events, mySide, won, match }: LiveEndPanelProps) {
   const { me, wins, sendEmote } = room
@@ -92,20 +110,7 @@ export function LiveEndPanel({ room, round, teams, events, mySide, won, match }:
       transition={{ type: 'spring', stiffness: 200, damping: 14 }}
       className="flex flex-col gap-4 rounded-xl border-2 border-gold/50 bg-panel/90 p-4 text-center shadow-2xl shadow-black/60"
     >
-      <div className="flex flex-col items-center">
-        <motion.img
-          src={endOfGameIconUrl(won ? 'victory' : 'defeat')}
-          alt=""
-          className={`-mb-1 size-20 drop-shadow-[0_0_18px_rgb(200_170_110/0.45)] sm:size-24 ${won ? '' : 'grayscale-[30%]'}`}
-          initial={{ scale: 0.3, rotate: -20, opacity: 0 }}
-          animate={{ scale: 1, rotate: 0, opacity: 1 }}
-          transition={{ type: 'spring', stiffness: 220, damping: 12, delay: 0.1 }}
-        />
-        <h2 className={`font-display text-5xl font-black tracking-wider ${won ? 'text-gold' : 'text-red-400'}`}>
-          {won ? 'Victory' : 'Defeat'}
-        </h2>
-        <p className="text-sm text-gold-light/70">{howItEnded}</p>
-      </div>
+      <ResultHeading won={won} note={howItEnded} />
 
       <HowItWasDecided
         round={round}

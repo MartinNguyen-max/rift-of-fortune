@@ -2,13 +2,15 @@ import { useMemo, useState } from 'react'
 import { gameData } from '../../data'
 import { roundTeams, teamsFor } from '../../game/multiplayer/roundTeams'
 import { sideOf, TIMINGS, type RoundState } from '../../game/multiplayer/session'
+import { isTeamOnly } from '../../game/multiplayer/settings'
 import { DraftStage } from './DraftStage'
 import { LanesView } from './LanesView'
 import { LiveMatchView } from './LiveMatchView'
+import { TeamFightView } from './TeamFightView'
 import type { Room } from './useRoom'
 import { VersusScreen } from './VersusScreen'
 
-/** One game in a lobby: draft, versus screen, then the live match; or the five lanes. */
+/** One game in a lobby: draft, versus screen, then the live match (or just the result, without live events); or the five lanes. */
 export function RoundView({ room, round }: { room: Room; round: RoundState }) {
   const [versusDone, setVersusDone] = useState(false)
   const match = round.match
@@ -28,6 +30,7 @@ export function RoundView({ room, round }: { room: Room; round: RoundState }) {
       />
     )
   }
+  if (isTeamOnly(round.settings)) return <TeamFightView room={room} round={round} teams={teams} />
   return <LiveMatchView room={room} round={round} teams={teams} />
 }
 

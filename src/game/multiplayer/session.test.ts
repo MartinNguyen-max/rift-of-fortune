@@ -27,7 +27,7 @@ const SEED = 12
 const teamA: EncodedTeam = [{ role: 'TOP', champion: 'Garen', items: ['1', '2'] }]
 const teamB: EncodedTeam = [{ role: 'TOP', champion: 'Darius', items: ['3', '4'] }]
 const randomTeam = (): EncodedTeam => [{ role: 'MIDDLE', champion: 'Ahri', items: ['5', '6'] }]
-const settings: LobbySettings = { ...defaultSettings(seededRandom(1)), games: ['duel', 'gank', 'hook'] }
+const settings: LobbySettings = { ...defaultSettings(), eventMode: 'custom', games: ['duel', 'gank', 'hook'] }
 
 const startDraft: RoomMessage = {
   type: 'startDraft',

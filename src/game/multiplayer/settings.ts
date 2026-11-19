@@ -9,25 +9,30 @@ import type { GameRules } from '../rules'
  *   both get a random team, and the five lanes fight it out in five mini-games (random, or the
  *   host picks exactly five).
  * - rerolls (draft only): 3 champion and 3 item rerolls, or none.
- * - events: 3 or 5 random mini-games, or a custom list. They are rolled in the lobby, so both
- *   players see which games they will play.
+ * - events: none (draft only: the higher team rating wins, no match is played), 3 or 5 random
+ *   mini-games, or a custom list. They are rolled in the lobby, so both players see which games
+ *   they will play.
  * - bothRoles: in role games (hide/guess, plant/walk, gate/guard) each player plays each role. Still one event.
  * - animations: the winner's finisher animation after each live event.
  */
 export type GameMode = 'draft' | 'lanes'
-export type EventMode = 'random3' | 'random5' | 'custom'
+export type EventMode = 'none' | 'random3' | 'random5' | 'custom'
 
 export interface LobbySettings {
   mode: GameMode
   rerolls: boolean
   eventMode: EventMode
-  /** The mini-games of the match, in the order chosen. */
+  /** The mini-games of the match, in the order chosen. Empty when the event mode is `none`. */
   games: MiniGameId[]
   bothRoles: boolean
   animations: boolean
 }
 
-export const RANDOM_EVENT_COUNT: Record<Exclude<EventMode, 'custom'>, number> = { random3: 3, random5: 5 }
+export const RANDOM_EVENT_COUNT: Record<Exclude<EventMode, 'none' | 'custom'>, number> = { random3: 3, random5: 5 }
+
+/** A draft battle without live events: no match is played, the higher team rating wins. */
+export const isTeamOnly = (settings: Pick<LobbySettings, 'mode' | 'eventMode'>): boolean =>
+  settings.mode === 'draft' && settings.eventMode === 'none'
 
 /** Seconds to draft a team. */
 export const DRAFT_SECONDS = 90
@@ -37,26 +42,32 @@ export const LANE_GAMES = RANDOM_EVENT_COUNT.random5
 
 export const randomGames = (count: number, random?: RandomFn): MiniGameId[] => sample(MINI_GAME_IDS, count, random)
 
-/** A draft battle, rerolls on, 3 random mini-games, one role each, finisher animations off. */
-export function defaultSettings(random?: RandomFn): LobbySettings {
-  return { mode: 'draft', rerolls: true, eventMode: 'random3', games: randomGames(3, random), bothRoles: false, animations: false }
+/** A draft battle, rerolls on, no live events (team rating decides), one role each, finisher animations off. */
+export function defaultSettings(): LobbySettings {
+  return { mode: 'draft', rerolls: true, eventMode: 'none', games: [], bothRoles: false, animations: false }
 }
 
 /** The lanes mode plays exactly 5 mini-games: it starts on 5 random ones (or keeps 5 already chosen). */
 export function withMode(settings: LobbySettings, mode: GameMode, random?: RandomFn): LobbySettings {
   if (mode === 'draft') return { ...settings, mode }
-  if (settings.games.length === LANE_GAMES && settings.eventMode !== 'random3') return { ...settings, mode }
+  if (settings.games.length === LANE_GAMES && (settings.eventMode === 'random5' || settings.eventMode === 'custom')) return { ...settings, mode }
   return { ...settings, mode, eventMode: 'random5', games: randomGames(LANE_GAMES, random) }
 }
 
 /** The settings can start a game: the lanes mode needs exactly one mini-game per lane. */
 export const settingsReady = (settings: LobbySettings): boolean =>
-  settings.mode === 'lanes' ? settings.games.length === LANE_GAMES : settings.games.length > 0
+  settings.mode === 'lanes' ? settings.games.length === LANE_GAMES : isTeamOnly(settings) || settings.games.length > 0
 
-/** The settings after choosing an event mode: random modes roll new games, custom keeps the current ones. */
+/**
+ * The settings after choosing an event mode: none clears the games, random modes roll new ones,
+ * custom keeps the current ones (or starts from 3 random ones when there are none).
+ */
 export function withEventMode(settings: LobbySettings, eventMode: EventMode, random?: RandomFn): LobbySettings {
-  if (settings.mode === 'lanes' && eventMode === 'random3') return settings
-  if (eventMode === 'custom') return { ...settings, eventMode }
+  if (settings.mode === 'lanes' && (eventMode === 'random3' || eventMode === 'none')) return settings
+  if (eventMode === 'none') return { ...settings, eventMode, games: [] }
+  if (eventMode === 'custom') {
+    return { ...settings, eventMode, games: settings.games.length > 0 ? settings.games : randomGames(RANDOM_EVENT_COUNT.random3, random) }
+  }
   return { ...settings, eventMode, games: randomGames(RANDOM_EVENT_COUNT[eventMode], random) }
 }
 
@@ -76,7 +87,7 @@ export function draftRules({ rerolls }: LobbySettings): GameRules {
 }
 
 const MODES: readonly GameMode[] = ['draft', 'lanes']
-const EVENT_MODES: readonly EventMode[] = ['random3', 'random5', 'custom']
+const EVENT_MODES: readonly EventMode[] = ['none', 'random3', 'random5', 'custom']
 
 /** Checks settings from the network: anything malformed is dropped. */
 export function parseSettings(value: unknown): LobbySettings | null {
@@ -84,7 +95,10 @@ export function parseSettings(value: unknown): LobbySettings | null {
   const { mode = 'draft', rerolls, eventMode, games, bothRoles, animations = false } = value as Record<string, unknown>
   if (!MODES.includes(mode as GameMode) || !EVENT_MODES.includes(eventMode as EventMode)) return null
   if (typeof rerolls !== 'boolean' || typeof bothRoles !== 'boolean' || typeof animations !== 'boolean') return null
-  if (!Array.isArray(games) || games.length === 0 || games.length > MINI_GAME_IDS.length || !games.every(isMiniGameId)) return null
+  if (!Array.isArray(games) || games.length > MINI_GAME_IDS.length || !games.every(isMiniGameId)) return null
   if (new Set(games).size !== games.length) return null
-  return { mode: mode as GameMode, rerolls, eventMode: eventMode as EventMode, games, bothRoles, animations }
+  const parsed: LobbySettings = { mode: mode as GameMode, rerolls, eventMode: eventMode as EventMode, games, bothRoles, animations }
+  // Only "no live events" has no games, and it has none at all.
+  if (isTeamOnly(parsed) !== (games.length === 0) || (parsed.mode === 'lanes' && parsed.eventMode === 'none')) return null
+  return parsed
 }

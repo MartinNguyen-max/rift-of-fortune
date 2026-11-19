@@ -52,23 +52,30 @@ export function VersusScreen({ teams, deadline, onDone, onSurrender }: VersusScr
           </motion.span>
         </AnimatePresence>
       </div>
-      {/* The map slots use drag-and-drop hooks, which need a context even when nothing can be dragged. */}
-      <DndContext>
-        <div className="grid w-full items-center gap-4 lg:grid-cols-[1fr_auto_1fr]">
-          <TeamBoard team={teams.blue} side="blue" label="Your team" />
-          <motion.span
-            initial={{ scale: 3, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.4, type: 'spring', stiffness: 200, damping: 12 }}
-            className="text-center font-display text-4xl font-black text-gold sm:text-5xl"
-          >
-            VS
-          </motion.span>
-          <TeamBoard team={teams.red} side="red" label="Opponent" />
-        </div>
-      </DndContext>
+      <VersusBoards teams={teams} />
       <SurrenderButton onSurrender={onSurrender} />
     </section>
+  )
+}
+
+/** Both teams side by side (stacked on phones) with a VS between them. Your team on blue. */
+export function VersusBoards({ teams }: { teams: MatchTeams }) {
+  return (
+    // The map slots use drag-and-drop hooks, which need a context even when nothing can be dragged.
+    <DndContext>
+      <div className="grid w-full items-center gap-4 lg:grid-cols-[1fr_auto_1fr]">
+        <TeamBoard team={teams.blue} side="blue" label="Your team" />
+        <motion.span
+          initial={{ scale: 3, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.4, type: 'spring', stiffness: 200, damping: 12 }}
+          className="text-center font-display text-4xl font-black text-gold sm:text-5xl"
+        >
+          VS
+        </motion.span>
+        <TeamBoard team={teams.red} side="red" label="Opponent" />
+      </div>
+    </DndContext>
   )
 }
 

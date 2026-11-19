@@ -8,6 +8,7 @@ import {
   toggleGame,
   withEventMode,
   withMode,
+  isTeamOnly,
   type EventMode,
   type GameMode,
   type LobbySettings,
@@ -26,20 +27,22 @@ interface LobbySettingsPanelProps {
 
 const MODES: { value: GameMode; label: string; hint: string }[] = (['draft', 'lanes'] as const).map((value) => ({ value, ...MODE_TEXT[value] }))
 
-const EVENT_MODES: { value: EventMode; label: string }[] = [
+const EVENT_MODES: { value: EventMode; label: string; hint?: string }[] = [
+  { value: 'none', label: 'None', hint: 'Higher team rating wins' },
   { value: 'random3', label: `${RANDOM_EVENT_COUNT.random3} random` },
   { value: 'random5', label: `${RANDOM_EVENT_COUNT.random5} random` },
   { value: 'custom', label: 'Custom' },
 ]
 
 /** The lanes mode always plays 5: random, or 5 picked by the host. */
-const LANE_EVENT_MODES = EVENT_MODES.filter(({ value }) => value !== 'random3')
+const LANE_EVENT_MODES = EVENT_MODES.filter(({ value }) => value === 'random5' || value === 'custom')
 
 /** The game settings in the lobby: the mode, rerolls and which mini-games are the live events. */
 export function LobbySettingsPanel({ settings, editable, hostName, onChange }: LobbySettingsPanelProps) {
   const change = (patch: Partial<LobbySettings>) => onChange({ ...settings, ...patch })
   const hasRoleGame = settings.games.some((id) => MINI_GAME_RULES[id].chances === 2)
   const lanes = settings.mode === 'lanes'
+  const teamOnly = isTeamOnly(settings)
 
   return (
     <section className="flex w-full flex-col gap-3 rounded-xl border border-gold/30 bg-panel/70 p-4" aria-label="Game settings">
@@ -68,8 +71,8 @@ export function LobbySettingsPanel({ settings, editable, hostName, onChange }: L
       )}
 
       <Row label={lanes ? 'Mini-games' : 'Live events'}>
-        {(lanes ? LANE_EVENT_MODES : EVENT_MODES).map(({ value, label }) => (
-          <Choice key={value} active={settings.eventMode === value} disabled={!editable} onClick={() => onChange(withEventMode(settings, value))}>
+        {(lanes ? LANE_EVENT_MODES : EVENT_MODES).map(({ value, label, hint }) => (
+          <Choice key={value} active={settings.eventMode === value} disabled={!editable} onClick={() => onChange(withEventMode(settings, value))} hint={hint}>
             {label}
           </Choice>
         ))}
@@ -80,7 +83,7 @@ export function LobbySettingsPanel({ settings, editable, hostName, onChange }: L
         </p>
       )}
 
-      {settings.eventMode === 'custom' && editable ? (
+      {teamOnly ? null : settings.eventMode === 'custom' && editable ? (
         <CustomGames settings={settings} onChange={onChange} />
       ) : (
         <div className="flex flex-col gap-2">
@@ -101,37 +104,41 @@ export function LobbySettingsPanel({ settings, editable, hostName, onChange }: L
         </div>
       )}
 
-      <label className={`flex items-start gap-2 text-sm ${editable ? 'cursor-pointer' : 'opacity-80'}`}>
-        <input
-          type="checkbox"
-          checked={settings.bothRoles}
-          disabled={!editable}
-          onChange={(event) => change({ bothRoles: event.target.checked })}
-          className="mt-0.5 size-4 accent-hextech"
-        />
-        <span>
-          <span className="font-semibold text-gold-light">Both play both roles</span>
-          <span className="block text-xs text-gold-light/60">
-            In 2-chance games (hide/guess, plant/walk) each player gets each role. Still one event each.
-            {!hasRoleGame && ' None of the chosen games has roles.'}
-          </span>
-        </span>
-      </label>
+      {!teamOnly && (
+        <>
+          <label className={`flex items-start gap-2 text-sm ${editable ? 'cursor-pointer' : 'opacity-80'}`}>
+            <input
+              type="checkbox"
+              checked={settings.bothRoles}
+              disabled={!editable}
+              onChange={(event) => change({ bothRoles: event.target.checked })}
+              className="mt-0.5 size-4 accent-hextech"
+            />
+            <span>
+              <span className="font-semibold text-gold-light">Both play both roles</span>
+              <span className="block text-xs text-gold-light/60">
+                In 2-chance games (hide/guess, plant/walk) each player gets each role. Still one event each.
+                {!hasRoleGame && ' None of the chosen games has roles.'}
+              </span>
+            </span>
+          </label>
 
-      <label className={`relative flex items-start gap-2 text-sm ${editable ? 'cursor-pointer' : 'opacity-80'}`}>
-        {editable && !settings.animations && <HintBubble text="🎬 Finishers? Tick to turn them on" align="left" />}
-        <input
-          type="checkbox"
-          checked={settings.animations}
-          disabled={!editable}
-          onChange={(event) => change({ animations: event.target.checked })}
-          className="mt-0.5 size-4 accent-hextech"
-        />
-        <span>
-          <span className="font-semibold text-gold-light">Finisher animations</span>
-          <span className="block text-xs text-gold-light/60">After each live event, the winner's champion plays a finisher.</span>
-        </span>
-      </label>
+          <label className={`relative flex items-start gap-2 text-sm ${editable ? 'cursor-pointer' : 'opacity-80'}`}>
+            {editable && !settings.animations && <HintBubble text="🎬 Finishers? Tick to turn them on" align="left" />}
+            <input
+              type="checkbox"
+              checked={settings.animations}
+              disabled={!editable}
+              onChange={(event) => change({ animations: event.target.checked })}
+              className="mt-0.5 size-4 accent-hextech"
+            />
+            <span>
+              <span className="font-semibold text-gold-light">Finisher animations</span>
+              <span className="block text-xs text-gold-light/60">After each live event, the winner's champion plays a finisher.</span>
+            </span>
+          </label>
+        </>
+      )}
     </section>
   )
 }
