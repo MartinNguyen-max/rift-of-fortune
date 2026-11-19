@@ -76,6 +76,7 @@ export function LobbySettingsPanel({ settings, editable, hostName, onChange }: L
             {label}
           </Choice>
         ))}
+        {editable && teamOnly && <HintBubble text="🎮 Spice it up? Add mini-games" align="left" />}
       </Row>
       {lanes && settings.eventMode === 'custom' && (
         <p className={`-mt-1 text-sm ${settings.games.length === LANE_GAMES ? 'text-gold-light/60' : 'font-semibold text-amber-300'}`}>
@@ -147,7 +148,7 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="grid grid-cols-[5.5rem_1fr] items-start gap-2">
       <span className="pt-1.5 text-xs font-semibold tracking-wider text-gold/80 uppercase">{label}</span>
-      <div className="flex flex-wrap gap-1.5">{children}</div>
+      <div className="relative flex flex-wrap gap-1.5">{children}</div>
     </div>
   )
 }
